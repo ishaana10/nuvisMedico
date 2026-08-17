@@ -1,0 +1,175 @@
+<?php
+session_start();
+if (empty($_SESSION['authenticated'])) {
+    header('Location: login.php');
+    exit;
+}
+
+$certId = $_GET['id'] ?? '';
+
+require_once __DIR__ . '/config/database.php';
+$pdo = getDB();
+
+// Fetch Clinic Settings
+$settingsRows = $pdo->query("SELECT * FROM clinic_settings")->fetchAll();
+$settings = [];
+foreach ($settingsRows as $r) {
+    $settings[$r['setting_key']] = $r['setting_value'];
+}
+
+$clinicName = $settings['clinic_name'] ?? 'ClinicFlow Medical Center';
+$clinicSubtitle = $settings['clinic_subtitle'] ?? 'Integrated Primary & Specialist Healthcare';
+$clinicAddress = $settings['clinic_address'] ?? '100 Healthcare Way, Suite 400, Springfield, OR 97477';
+$clinicPhone = $settings['clinic_phone'] ?? '(555) 019-2831';
+$clinicEmail = $settings['clinic_email'] ?? 'contact@clinicflow.com';
+
+// Fetch Certificate details
+$cert = null;
+if ($certId) {
+    $stmt = $pdo->prepare("SELECT * FROM medical_certificates WHERE id = ? OR certificate_number = ?");
+    $stmt->execute([$certId, $certId]);
+    $cert = $stmt->fetch();
+}
+
+if (!$cert) {
+    // Fallback or latest
+    $stmt = $pdo->query("SELECT * FROM medical_certificates ORDER BY created_at DESC LIMIT 1");
+    $cert = $stmt->fetch();
+}
+
+if (!$cert) {
+    die("Medical Certificate not found.");
+}
+
+// Fetch Patient details
+$stmt = $pdo->prepare("SELECT * FROM patients WHERE id = ?");
+$stmt->execute([$cert['patient_id']]);
+$patient = $stmt->fetch();
+
+if (!$patient) {
+    die("Patient profile not found.");
+}
+
+$prcNo = $cert['prc_number'] ?: ($settings['doc_prc_no'] ?? 'PRC-0098412');
+$ptrNo = $cert['ptr_number'] ?: ($settings['doc_ptr_no'] ?? 'PTR-8842109');
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Certificate - <?= htmlspecialchars($patient['first_name'] . ' ' . $patient['last_name']) ?></title>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; padding: 0; }
+            .cert-box { border: 2px solid #1e293b !important; shadow: none !important; }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 p-6 min-h-screen text-slate-800 font-sans">
+
+<div class="max-w-3xl mx-auto">
+
+    <!-- Action Bar -->
+    <div class="no-print mb-6 flex justify-between items-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <a href="patient_detail.php?id=<?= htmlspecialchars($patient['id']) ?>" class="text-xs font-semibold text-slate-600 hover:text-slate-900">&larr; Back to Patient Chart</a>
+        <div class="flex gap-2">
+            <a href="admin.php" class="px-3 py-2 bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-200 transition">Customize Settings</a>
+            <button onclick="window.print()" class="px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-lg hover:bg-emerald-700 transition flex items-center gap-1.5 shadow-sm">
+                <span class="material-symbols-outlined text-sm">print</span> Print Official Certificate
+            </button>
+        </div>
+    </div>
+
+    <!-- Official Certificate Body -->
+    <div class="cert-box bg-white p-10 rounded-2xl shadow-xl border-2 border-slate-900 relative">
+
+        <!-- Clinic Branding Header -->
+        <div class="text-center border-b-2 border-slate-900 pb-6 mb-8">
+            <h1 class="text-3xl font-extrabold text-slate-900 uppercase tracking-tight"><?= htmlspecialchars($clinicName) ?></h1>
+            <p class="text-sm font-semibold text-slate-700 mt-1"><?= htmlspecialchars($clinicSubtitle) ?></p>
+            <p class="text-xs text-slate-500 mt-1"><?= htmlspecialchars($clinicAddress) ?> • Tel: <?= htmlspecialchars($clinicPhone) ?> • <?= htmlspecialchars($clinicEmail) ?></p>
+        </div>
+
+        <!-- Document Title & Control No -->
+        <div class="flex justify-between items-end mb-8">
+            <div>
+                <span class="text-xs text-slate-500 font-mono block">Certificate No: <strong class="text-slate-900"><?= htmlspecialchars($cert['certificate_number']) ?></strong></span>
+            </div>
+            <div class="text-center">
+                <h2 class="text-xl font-bold uppercase tracking-widest text-slate-900 border-b-2 border-slate-900 pb-1 px-4">Medical Certificate</h2>
+            </div>
+            <div class="text-right">
+                <span class="text-xs text-slate-500 font-mono block">Date: <strong class="text-slate-900"><?= htmlspecialchars(date('F d, Y', strtotime($cert['issue_date']))) ?></strong></span>
+            </div>
+        </div>
+
+        <!-- Certification Body Statement -->
+        <div class="text-sm leading-relaxed text-slate-800 space-y-6 mb-12">
+            <p class="font-serif italic text-base text-slate-700">To Whom It May Concern:</p>
+
+            <p class="text-justify leading-7">
+                This is to certify that
+                <strong class="font-bold text-slate-900 underline underline-offset-4 px-1"><?= htmlspecialchars($patient['first_name'] . ' ' . $patient['last_name']) ?></strong>,
+                <strong class="font-semibold text-slate-900"><?= htmlspecialchars($patient['age']) ?></strong> years of age,
+                <strong class="font-semibold text-slate-900"><?= htmlspecialchars($patient['gender']) ?></strong>,
+                residing at <span class="font-medium text-slate-800"><?= htmlspecialchars($patient['address'] ?: 'N/A') ?></span>,
+                was examined and evaluated at this clinic on
+                <strong class="font-semibold text-slate-900"><?= htmlspecialchars(date('F d, Y', strtotime($cert['issue_date']))) ?></strong>.
+            </p>
+
+            <!-- Diagnosis Block -->
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-300">
+                <p class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Clinical Impression / Diagnosis:</p>
+                <p class="text-base font-bold text-slate-900"><?= htmlspecialchars($cert['diagnosis']) ?></p>
+            </div>
+
+            <!-- Fitness Status & Assessment -->
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-300 space-y-2">
+                <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Fitness Assessment & Classification:</p>
+                <div class="flex items-center gap-2">
+                    <span class="inline-block px-3 py-1 rounded-lg bg-emerald-100 text-emerald-900 font-bold text-sm border border-emerald-300">
+                        <?= htmlspecialchars($cert['fitness_status']) ?>
+                    </span>
+                </div>
+                <?php if (!empty($cert['fit_status_details'])): ?>
+                    <p class="text-xs font-medium text-slate-700 pt-1">
+                        <strong>Details / Duration:</strong> <?= htmlspecialchars($cert['fit_status_details']) ?>
+                    </p>
+                <?php endif; ?>
+            </div>
+
+            <!-- Recommendations / Remarks -->
+            <?php if (!empty($cert['recommendations'])): ?>
+                <div class="space-y-1">
+                    <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Remarks & Medical Recommendations:</p>
+                    <p class="text-xs font-medium text-slate-800 bg-slate-50 p-3 rounded-lg border border-slate-200"><?= htmlspecialchars($cert['recommendations']) ?></p>
+                </div>
+            <?php endif; ?>
+
+            <p class="text-xs text-slate-500 italic pt-2">
+                This medical certificate is issued upon request of the patient for whatever legal or administrative purpose it may serve.
+            </p>
+        </div>
+
+        <!-- Physician Signature Block -->
+        <div class="pt-8 border-t border-slate-300 flex justify-end">
+            <div class="text-center w-72">
+                <div class="border-b border-slate-900 pb-1 mb-2 font-serif text-lg font-bold text-slate-900 italic">
+                    <?= htmlspecialchars($cert['doctor_name']) ?>
+                </div>
+                <p class="font-bold text-slate-900 text-sm"><?= htmlspecialchars($cert['doctor_name']) ?>, M.D.</p>
+                <p class="text-xs text-slate-600 font-medium">Attending Physician</p>
+                <p class="text-xs text-slate-500 font-mono mt-1">PRC No: <?= htmlspecialchars($prcNo) ?></p>
+                <p class="text-xs text-slate-500 font-mono">PTR No: <?= htmlspecialchars($ptrNo) ?></p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>

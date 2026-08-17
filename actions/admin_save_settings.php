@@ -32,18 +32,20 @@ $settings = [
     'invoice_payment_terms' => trim($_POST['invoice_payment_terms'] ?? ''),
     'invoice_footer_note'   => trim($_POST['invoice_footer_note'] ?? ''),
     'receipt_header_title'  => trim($_POST['receipt_header_title'] ?? 'OFFICIAL PAYMENT RECEIPT'),
-    'receipt_thank_you_msg' => trim($_POST['receipt_thank_you_msg'] ?? '')
+    'receipt_thank_you_msg' => trim($_POST['receipt_thank_you_msg'] ?? ''),
+    'doc_prc_no'            => trim($_POST['doc_prc_no'] ?? ''),
+    'doc_ptr_no'            => trim($_POST['doc_ptr_no'] ?? '')
 ];
 
-$stmt = $pdo->prepare("INSERT INTO clinic_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
+$isSqlite = ($pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'sqlite');
+if ($isSqlite) {
+    $stmt = $pdo->prepare("INSERT INTO clinic_settings (setting_key, setting_value) VALUES (?, ?) ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value");
+} else {
+    $stmt = $pdo->prepare("INSERT INTO clinic_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
+}
 
 foreach ($settings as $key => $val) {
-    if ($pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'sqlite') {
-        $sqStmt = $pdo->prepare("INSERT INTO clinic_settings (setting_key, setting_value) VALUES (?, ?) ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value");
-        $sqStmt->execute([$key, $val]);
-    } else {
-        $stmt->execute([$key, $val]);
-    }
+    $stmt->execute([$key, $val]);
 }
 
 setToast("Settings Saved", "Clinic branding and prescription settings updated successfully.");

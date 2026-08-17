@@ -157,6 +157,21 @@ if ($isSqlite) {
             unit TEXT NOT NULL,
             status TEXT NOT NULL DEFAULT 'In Stock',
             last_restocked TEXT NOT NULL
+        );",
+        "CREATE TABLE IF NOT EXISTS medical_certificates (
+            id TEXT PRIMARY KEY,
+            certificate_number TEXT UNIQUE NOT NULL,
+            patient_id TEXT NOT NULL,
+            visit_id TEXT,
+            issue_date TEXT NOT NULL,
+            diagnosis TEXT NOT NULL,
+            fitness_status TEXT NOT NULL,
+            fit_status_details TEXT,
+            recommendations TEXT,
+            doctor_name TEXT NOT NULL,
+            prc_number TEXT,
+            ptr_number TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );"
     ];
 
@@ -171,7 +186,7 @@ if ($isSqlite) {
 echo "Seeding default data...\n";
 
 // Clear existing tables
-$tables = ['doctors', 'clinic_settings', 'patients', 'appointments', 'queue', 'vitals', 'soap_notes', 'prescriptions', 'past_visits', 'activities', 'invoices', 'inventory'];
+$tables = ['doctors', 'clinic_settings', 'patients', 'appointments', 'queue', 'vitals', 'soap_notes', 'prescriptions', 'past_visits', 'activities', 'invoices', 'inventory', 'medical_certificates'];
 foreach ($tables as $t) {
     $pdo->exec("DELETE FROM $t");
 }
@@ -207,7 +222,9 @@ $defaultSettings = [
     'invoice_payment_terms' => 'Net 30 Days. Please remit payment promptly.',
     'invoice_footer_note' => 'Thank you for choosing ClinicFlow Medical Center for your care.',
     'receipt_header_title' => 'OFFICIAL PAYMENT RECEIPT',
-    'receipt_thank_you_msg' => 'Thank you for your payment. Your account balance for this invoice is cleared.'
+    'receipt_thank_you_msg' => 'Thank you for your payment. Your account balance for this invoice is cleared.',
+    'doc_prc_no' => 'PRC-0098412',
+    'doc_ptr_no' => 'PTR-8842109'
 ];
 $stmt = $pdo->prepare("INSERT INTO clinic_settings (setting_key, setting_value) VALUES (?, ?)");
 foreach ($defaultSettings as $key => $val) {

@@ -163,3 +163,20 @@ CREATE TABLE IF NOT EXISTS inventory (
     status VARCHAR(50) NOT NULL DEFAULT 'In Stock',
     last_restocked DATE NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS medical_certificates (
+    id VARCHAR(50) PRIMARY KEY,
+    certificate_number VARCHAR(50) UNIQUE NOT NULL,
+    patient_id VARCHAR(50) NOT NULL,
+    visit_id VARCHAR(50),
+    issue_date DATE NOT NULL,
+    diagnosis TEXT NOT NULL,
+    fitness_status VARCHAR(100) NOT NULL,
+    fit_status_details TEXT,
+    recommendations TEXT,
+    doctor_name VARCHAR(255) NOT NULL,
+    prc_number VARCHAR(100),
+    ptr_number VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -69,7 +69,11 @@ include __DIR__ . '/includes/header.php';
             </div>
         </div>
 
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-3">
+            <button type="button" onclick="document.getElementById('issueMedCertModal').classList.remove('hidden')" class="px-3.5 py-2 bg-emerald-700 text-white font-semibold text-xs rounded-xl hover:bg-emerald-800 transition shadow-xs flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-base">workspace_premium</span>
+                <span>Medical Cert</span>
+            </button>
             <a href="print_prescription.php?patient_id=<?= htmlspecialchars($patient['id']) ?>" target="_blank" class="px-3.5 py-2 bg-surface-container-high text-primary font-semibold text-xs rounded-xl hover:bg-surface-container-highest transition flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-base">print</span>
                 <span>Print Rx</span>
@@ -209,5 +213,88 @@ include __DIR__ . '/includes/header.php';
         </div>
     </div>
 </form>
+
+<!-- Modal: Issue Medical Certificate in Clinical Visit -->
+<?php
+$settingsRows = $pdo->query("SELECT * FROM clinic_settings")->fetchAll();
+$clinicSettings = [];
+foreach ($settingsRows as $sr) {
+    $clinicSettings[$sr['setting_key']] = $sr['setting_value'];
+}
+?>
+<div id="issueMedCertModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-surface-container-lowest rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-outline-variant/30 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/20">
+            <h3 class="text-base font-bold text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-emerald-600">workspace_premium</span>
+                <span>Issue Medical Certificate</span>
+            </h3>
+            <button type="button" onclick="document.getElementById('issueMedCertModal').classList.add('hidden')" class="text-outline hover:text-on-surface">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <form action="actions/medical_certificate_save.php" method="POST" class="space-y-4 text-xs">
+            <input type="hidden" name="patient_id" value="<?= htmlspecialchars($patient['id']) ?>">
+            <input type="hidden" name="print_immediately" value="1">
+
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Issue Date</label>
+                <input type="date" name="issue_date" value="<?= date('Y-m-d') ?>" class="w-full bg-surface-container-low px-3 py-2 rounded-xl border border-outline-variant/40 font-medium" required>
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Diagnosis / Clinical Impression <span class="text-red-500">*</span></label>
+                <textarea name="diagnosis" rows="2" placeholder="e.g. Acute Upper Respiratory Tract Infection" class="w-full bg-surface-container-low p-3 rounded-xl border border-outline-variant/40 font-medium" required><?= htmlspecialchars($soap['subjective'] ?? '') ?></textarea>
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Fitness Status / Classification</label>
+                <select name="fitness_status" class="w-full bg-surface-container-low px-3 py-2 rounded-xl border border-outline-variant/40 font-semibold">
+                    <option value="Fit for Work / School">Fit for Work / School</option>
+                    <option value="Fit to Resume Normal Duties">Fit to Resume Normal Duties</option>
+                    <option value="Unfit for Physical Activity">Unfit for Physical Activity</option>
+                    <option value="Needs Medical Rest">Needs Medical Rest</option>
+                    <option value="Fit with Restrictions">Fit with Restrictions</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Rest Duration / Fit Details</label>
+                <input type="text" name="fit_status_details" placeholder="e.g. Advised medical leave for 3 days" class="w-full bg-surface-container-low px-3 py-2 rounded-xl border border-outline-variant/40 font-medium">
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Remarks & Recommendations</label>
+                <textarea name="recommendations" rows="2" placeholder="e.g. Continuous rest, medications as prescribed." class="w-full bg-surface-container-low p-3 rounded-xl border border-outline-variant/40 font-medium"><?= htmlspecialchars($soap['plan'] ?? '') ?></textarea>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-outline-variant/20">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Attending Physician</label>
+                    <input type="text" name="doctor_name" value="<?= htmlspecialchars($_SESSION['user_name'] ?? $currentDoctor['name'] ?? 'Dr. Sarah Jenkins') ?>" class="w-full bg-surface-container-low px-3 py-2 rounded-xl border border-outline-variant/40 font-medium" required>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">PRC License No.</label>
+                    <input type="text" name="prc_number" value="<?= htmlspecialchars($clinicSettings['doc_prc_no'] ?? 'PRC-0098412') ?>" class="w-full bg-surface-container-low px-3 py-2 rounded-xl border border-outline-variant/40 font-mono font-medium">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block font-bold text-slate-700 mb-1">PTR License No.</label>
+                    <input type="text" name="ptr_number" value="<?= htmlspecialchars($clinicSettings['doc_ptr_no'] ?? 'PTR-8842109') ?>" class="w-full bg-surface-container-low px-3 py-2 rounded-xl border border-outline-variant/40 font-mono font-medium">
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-outline-variant/20">
+                <button type="button" onclick="document.getElementById('issueMedCertModal').classList.add('hidden')" class="px-4 py-2 bg-surface-container-high text-on-surface font-semibold rounded-xl hover:bg-surface-variant transition">
+                    Cancel
+                </button>
+                <button type="submit" class="px-5 py-2 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition shadow-xs flex items-center gap-2">
+                    <span class="material-symbols-outlined text-base">print</span>
+                    <span>Issue & Print Certificate</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>
