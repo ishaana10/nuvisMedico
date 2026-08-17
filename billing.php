@@ -94,7 +94,10 @@ $totalCollected = array_reduce($invoices, fn($acc, $i) => $i['status'] === 'Paid
                                 <?= htmlspecialchars($inv['status']) ?>
                             </span>
                         </td>
-                        <td class="py-3 px-3 text-right">
+                        <td class="py-3 px-3 text-right space-x-1">
+                            <a href="print_invoice.php?id=<?= htmlspecialchars($inv['id']) ?>" target="_blank" class="inline-block px-2.5 py-1 bg-surface-container-high text-primary rounded-lg text-[11px] font-semibold hover:bg-surface-container-highest transition">
+                                Invoice
+                            </a>
                             <?php if ($inv['status'] !== 'Paid'): ?>
                                 <form action="actions/billing_pay.php" method="POST" class="inline">
                                     <input type="hidden" name="invoice_id" value="<?= htmlspecialchars($inv['id']) ?>">
@@ -103,7 +106,9 @@ $totalCollected = array_reduce($invoices, fn($acc, $i) => $i['status'] === 'Paid
                                     </button>
                                 </form>
                             <?php else: ?>
-                                <span class="text-emerald-600 font-semibold text-[11px]">Paid</span>
+                                <a href="print_receipt.php?id=<?= htmlspecialchars($inv['id']) ?>" target="_blank" class="inline-block px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-lg text-[11px] font-semibold hover:bg-emerald-200 transition">
+                                    Receipt
+                                </a>
                             <?php endif; ?>
                         </td>
                     </tr>

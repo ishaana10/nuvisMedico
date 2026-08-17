@@ -12,6 +12,7 @@ $navItems = [
     ['id' => 'billing', 'label' => 'Billing & Financials', 'icon' => 'payments', 'url' => 'billing.php'],
     ['id' => 'inventory', 'label' => 'Inventory', 'icon' => 'inventory_2', 'url' => 'inventory.php'],
     ['id' => 'register-patient', 'label' => 'Register Patient', 'icon' => 'person_add', 'url' => 'register_patient.php'],
+    ['id' => 'admin', 'label' => 'Administrator', 'icon' => 'admin_panel_settings', 'url' => 'admin.php'],
 ];
 ?>
 <aside class="w-64 bg-surface-container-lowest border-r border-outline-variant/30 flex flex-col justify-between p-4 shrink-0 hidden md:flex">

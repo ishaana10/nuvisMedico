@@ -11,6 +11,14 @@ $pdo = getDB();
 $toast = getToast();
 $activePage = $activePage ?? 'dashboard';
 
+// Authentication Check
+if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
+    if (basename($_SERVER['PHP_SELF']) !== 'login.php' && basename($_SERVER['PHP_SELF']) !== 'install.php') {
+        header("Location: login.php");
+        exit;
+    }
+}
+
 // Get doctors for current doctor selector
 $doctors = $pdo->query("SELECT * FROM doctors ORDER BY name ASC")->fetchAll();
 $currentDoctorId = $_SESSION['current_doctor_id'] ?? ($doctors[0]['id'] ?? 'doc-1');
@@ -162,19 +170,24 @@ $currentDoctor = reset($currentDoctor) ?: ($doctors[0] ?? ['id' => 'doc-1', 'nam
                 <span>Book Appointment</span>
             </a>
 
-            <!-- Doctor Selector -->
-            <form action="actions/set_doctor.php" method="POST" class="flex items-center gap-2 pl-3 border-l border-outline-variant/40">
-                <div class="flex items-center gap-2">
-                    <img src="<?= htmlspecialchars($currentDoctor['avatar'] ?? '') ?>" class="w-8 h-8 rounded-full object-cover border border-primary/20" alt="Doctor">
-                    <select name="doctor_id" onchange="this.form.submit()" class="bg-surface-container-low border border-outline-variant/50 text-xs font-semibold text-on-surface rounded-lg px-2.5 py-1.5 focus:outline-none">
-                        <?php foreach ($doctors as $doc): ?>
-                            <option value="<?= htmlspecialchars($doc['id']) ?>" <?= $doc['id'] === $currentDoctor['id'] ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($doc['name']) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-            </form>
+            <!-- Doctor Selector & Logout -->
+            <div class="flex items-center gap-3 pl-3 border-l border-outline-variant/40">
+                <form action="actions/set_doctor.php" method="POST" class="flex items-center gap-2">
+                    <div class="flex items-center gap-2">
+                        <img src="<?= htmlspecialchars($currentDoctor['avatar'] ?? '') ?>" class="w-8 h-8 rounded-full object-cover border border-primary/20" alt="Doctor">
+                        <select name="doctor_id" onchange="this.form.submit()" class="bg-surface-container-low border border-outline-variant/50 text-xs font-semibold text-on-surface rounded-lg px-2.5 py-1.5 focus:outline-none">
+                            <?php foreach ($doctors as $doc): ?>
+                                <option value="<?= htmlspecialchars($doc['id']) ?>" <?= $doc['id'] === $currentDoctor['id'] ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($doc['name']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </form>
+                <a href="actions/logout.php" title="Sign Out" class="p-1.5 text-slate-500 hover:text-red-600 rounded-lg hover:bg-slate-100 transition flex items-center">
+                    <span class="material-symbols-outlined text-lg">logout</span>
+                </a>
+            </div>
         </div>
     </div>
 </header>

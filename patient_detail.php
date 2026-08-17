@@ -26,6 +26,18 @@ $pastVisits = $pvStmt->fetchAll();
 $aptStmt = $pdo->prepare("SELECT * FROM appointments WHERE patient_id = ? ORDER BY appointment_date DESC");
 $aptStmt->execute([$patientId]);
 $patientAppts = $aptStmt->fetchAll();
+
+// Fetch Medical Certificates
+$mcStmt = $pdo->prepare("SELECT * FROM medical_certificates WHERE patient_id = ? ORDER BY issue_date DESC, created_at DESC");
+$mcStmt->execute([$patientId]);
+$medCerts = $mcStmt->fetchAll();
+
+// Fetch default settings for Medical Certificate modal defaults
+$settingsRows = $pdo->query("SELECT * FROM clinic_settings")->fetchAll();
+$clinicSettings = [];
+foreach ($settingsRows as $sr) {
+    $clinicSettings[$sr['setting_key']] = $sr['setting_value'];
+}
 ?>
 
 <!-- Patient Header Card -->
@@ -52,7 +64,11 @@ $patientAppts = $aptStmt->fetchAll();
             </div>
         </div>
 
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-3">
+            <button onclick="document.getElementById('issueMedCertModal').classList.remove('hidden')" class="px-4 py-2 bg-emerald-600 text-white text-xs font-semibold rounded-xl hover:bg-emerald-700 transition shadow-xs flex items-center gap-2">
+                <span class="material-symbols-outlined text-base">workspace_premium</span>
+                <span>Issue Medical Certificate</span>
+            </button>
             <a href="clinical_visit.php?patient_id=<?= htmlspecialchars($patient['id']) ?>" class="px-4 py-2 bg-primary text-white text-xs font-semibold rounded-xl hover:bg-primary/90 transition shadow-xs flex items-center gap-2">
                 <span class="material-symbols-outlined text-base">clinical_notes</span>
                 <span>Start Encounter</span>
@@ -128,8 +144,54 @@ $patientAppts = $aptStmt->fetchAll();
         </div>
     </div>
 
-    <!-- Right Column: Past Encounters & Timeline -->
+    <!-- Right Column: Past Encounters & Medical Certificates -->
     <div class="lg:col-span-2 space-y-6">
+        <!-- Medical Certificates Card -->
+        <div class="bg-surface-container-lowest rounded-2xl border border-outline-variant/30 p-5 shadow-xs">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-base font-bold text-on-surface flex items-center gap-2">
+                    <span class="material-symbols-outlined text-emerald-600">workspace_premium</span>
+                    <span>Issued Medical Certificates</span>
+                </h2>
+                <button onclick="document.getElementById('issueMedCertModal').classList.remove('hidden')" class="text-xs font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">add</span> Issue New Certificate
+                </button>
+            </div>
+
+            <?php if (empty($medCerts)): ?>
+                <div class="p-6 text-center text-outline text-xs bg-surface-container-low/50 rounded-xl">
+                    No medical certificates have been issued for this patient yet.
+                </div>
+            <?php else: ?>
+                <div class="space-y-3">
+                    <?php foreach ($medCerts as $cert): ?>
+                        <div class="p-4 rounded-xl bg-surface-container-low/40 border border-outline-variant/20 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-xs text-on-surface"><?= htmlspecialchars($cert['certificate_number']) ?></span>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                        <?= htmlspecialchars($cert['fitness_status']) ?>
+                                    </span>
+                                </div>
+                                <p class="text-xs text-on-surface-variant font-medium">
+                                    <strong>Diagnosis:</strong> <?= htmlspecialchars($cert['diagnosis']) ?>
+                                </p>
+                                <p class="text-[11px] text-outline">
+                                    Issued on <?= htmlspecialchars($cert['issue_date']) ?> • Attending: <?= htmlspecialchars($cert['doctor_name']) ?>
+                                </p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <a href="print_medical_certificate.php?id=<?= urlencode($cert['id']) ?>" target="_blank" class="px-3 py-1.5 bg-surface-container-highest text-on-surface text-xs font-bold rounded-lg hover:bg-surface-variant transition flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-sm">print</span> Print / View
+                                </a>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <!-- Past Encounters -->
         <div class="bg-surface-container-lowest rounded-2xl border border-outline-variant/30 p-5 shadow-xs">
             <h2 class="text-base font-bold text-on-surface mb-4 flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary">history_edu</span>
@@ -158,6 +220,82 @@ $patientAppts = $aptStmt->fetchAll();
                 </div>
             <?php endif; ?>
         </div>
+    </div>
+</div>
+
+<!-- Modal: Issue Medical Certificate -->
+<div id="issueMedCertModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-surface-container-lowest rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-outline-variant/30 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/20">
+            <h3 class="text-base font-bold text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-emerald-600">workspace_premium</span>
+                <span>Issue Medical Certificate</span>
+            </h3>
+            <button onclick="document.getElementById('issueMedCertModal').classList.add('hidden')" class="text-outline hover:text-on-surface">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <form action="actions/medical_certificate_save.php" method="POST" class="space-y-4 text-xs">
+            <input type="hidden" name="patient_id" value="<?= htmlspecialchars($patient['id']) ?>">
+            <input type="hidden" name="print_immediately" value="1">
+
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Issue Date</label>
+                <input type="date" name="issue_date" value="<?= date('Y-m-d') ?>" class="w-full bg-surface-container-low px-3 py-2 rounded-xl border border-outline-variant/40 font-medium" required>
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Diagnosis / Clinical Impression <span class="text-red-500">*</span></label>
+                <textarea name="diagnosis" rows="2" placeholder="e.g. Acute Upper Respiratory Tract Infection" class="w-full bg-surface-container-low p-3 rounded-xl border border-outline-variant/40 font-medium" required></textarea>
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Fitness Status / Classification</label>
+                <select name="fitness_status" class="w-full bg-surface-container-low px-3 py-2 rounded-xl border border-outline-variant/40 font-semibold">
+                    <option value="Fit for Work / School">Fit for Work / School</option>
+                    <option value="Fit to Resume Normal Duties">Fit to Resume Normal Duties</option>
+                    <option value="Unfit for Physical Activity">Unfit for Physical Activity</option>
+                    <option value="Needs Medical Rest">Needs Medical Rest</option>
+                    <option value="Fit with Restrictions">Fit with Restrictions</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Rest Duration / Fit Details</label>
+                <input type="text" name="fit_status_details" placeholder="e.g. Advised medical leave for 3 days (Oct 24 - Oct 26)" class="w-full bg-surface-container-low px-3 py-2 rounded-xl border border-outline-variant/40 font-medium">
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Remarks & Recommendations</label>
+                <textarea name="recommendations" rows="2" placeholder="e.g. Hydration, completion of prescribed antibiotics, and avoidance of heavy exertion." class="w-full bg-surface-container-low p-3 rounded-xl border border-outline-variant/40 font-medium"></textarea>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-outline-variant/20">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Attending Physician</label>
+                    <input type="text" name="doctor_name" value="<?= htmlspecialchars($_SESSION['user_name'] ?? 'Dr. Sarah Jenkins') ?>" class="w-full bg-surface-container-low px-3 py-2 rounded-xl border border-outline-variant/40 font-medium" required>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">PRC License No.</label>
+                    <input type="text" name="prc_number" value="<?= htmlspecialchars($clinicSettings['doc_prc_no'] ?? 'PRC-0098412') ?>" class="w-full bg-surface-container-low px-3 py-2 rounded-xl border border-outline-variant/40 font-mono font-medium">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block font-bold text-slate-700 mb-1">PTR License No.</label>
+                    <input type="text" name="ptr_number" value="<?= htmlspecialchars($clinicSettings['doc_ptr_no'] ?? 'PTR-8842109') ?>" class="w-full bg-surface-container-low px-3 py-2 rounded-xl border border-outline-variant/40 font-mono font-medium">
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-outline-variant/20">
+                <button type="button" onclick="document.getElementById('issueMedCertModal').classList.add('hidden')" class="px-4 py-2 bg-surface-container-high text-on-surface font-semibold rounded-xl hover:bg-surface-variant transition">
+                    Cancel
+                </button>
+                <button type="submit" class="px-5 py-2 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition shadow-xs flex items-center gap-2">
+                    <span class="material-symbols-outlined text-base">print</span>
+                    <span>Issue & Print Certificate</span>
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
