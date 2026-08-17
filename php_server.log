@@ -50,3 +50,24 @@
 [Mon Aug 17 22:26:33 2026] 127.0.0.1:36066 Accepted
 [Mon Aug 17 22:26:33 2026] 127.0.0.1:36066 [200]: GET /install.php
 [Mon Aug 17 22:26:33 2026] 127.0.0.1:36066 Closing
+[Mon Aug 17 22:35:40 2026] 127.0.0.1:37646 Accepted
+[Mon Aug 17 22:35:40 2026] 127.0.0.1:37646 [200]: GET /login.php
+[Mon Aug 17 22:35:40 2026] 127.0.0.1:37646 Closing
+[Mon Aug 17 22:35:40 2026] 127.0.0.1:37658 Accepted
+[Mon Aug 17 22:35:40 2026] 127.0.0.1:37658 [302]: HEAD /admin.php
+[Mon Aug 17 22:35:40 2026] 127.0.0.1:37658 Closing
+[Mon Aug 17 22:36:04 2026] 127.0.0.1:60048 Accepted
+[Mon Aug 17 22:36:04 2026] 127.0.0.1:60048 [200]: GET /login.php
+[Mon Aug 17 22:36:04 2026] 127.0.0.1:60048 Closing
+[Mon Aug 17 22:36:06 2026] 127.0.0.1:60056 Accepted
+[Mon Aug 17 22:36:06 2026] 127.0.0.1:60056 [302]: POST /actions/login.php
+[Mon Aug 17 22:36:06 2026] 127.0.0.1:60056 Closing
+[Mon Aug 17 22:36:06 2026] 127.0.0.1:60062 Accepted
+[Mon Aug 17 22:36:06 2026] 127.0.0.1:60062 [200]: GET /index.php
+[Mon Aug 17 22:36:06 2026] 127.0.0.1:60062 Closing
+[Mon Aug 17 22:36:07 2026] 127.0.0.1:36670 Accepted
+[Mon Aug 17 22:36:07 2026] 127.0.0.1:36670 [200]: GET /admin.php
+[Mon Aug 17 22:36:07 2026] 127.0.0.1:36670 Closing
+[Mon Aug 17 22:36:10 2026] 127.0.0.1:36684 Accepted
+[Mon Aug 17 22:36:10 2026] 127.0.0.1:36684 [200]: GET /print_prescription.php?patient_id=pat-1
+[Mon Aug 17 22:36:10 2026] 127.0.0.1:36684 Closing

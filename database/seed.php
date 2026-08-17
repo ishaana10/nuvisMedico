@@ -9,7 +9,6 @@ $pdo = getDB();
 
 echo "Initializing database tables...\n";
 
-// SQLite specific table creation statements if driver is sqlite
 $isSqlite = ($pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'sqlite');
 
 if ($isSqlite) {
@@ -18,9 +17,16 @@ if ($isSqlite) {
             id TEXT PRIMARY KEY,
             name TEXT NOT NULL,
             specialty TEXT NOT NULL,
+            email TEXT UNIQUE,
+            password_hash TEXT,
+            role TEXT DEFAULT 'Doctor',
             color TEXT DEFAULT '#10B981',
             dot_color_class TEXT DEFAULT 'bg-emerald-500',
             avatar TEXT
+        );",
+        "CREATE TABLE IF NOT EXISTS clinic_settings (
+            setting_key TEXT PRIMARY KEY,
+            setting_value TEXT
         );",
         "CREATE TABLE IF NOT EXISTS patients (
             id TEXT PRIMARY KEY,
@@ -162,27 +168,47 @@ if ($isSqlite) {
     $pdo->exec($sql);
 }
 
-echo "Seeding data...\n";
+echo "Seeding default data...\n";
 
 // Clear existing tables
-$tables = ['doctors', 'patients', 'appointments', 'queue', 'vitals', 'soap_notes', 'prescriptions', 'past_visits', 'activities', 'invoices', 'inventory'];
+$tables = ['doctors', 'clinic_settings', 'patients', 'appointments', 'queue', 'vitals', 'soap_notes', 'prescriptions', 'past_visits', 'activities', 'invoices', 'inventory'];
 foreach ($tables as $t) {
     $pdo->exec("DELETE FROM $t");
 }
 
-// 1. Doctors
+// Default Doctors with Passwords (Password: "password")
+$defaultPasswordHash = password_hash('password', PASSWORD_DEFAULT);
+
 $doctors = [
-    ['doc-1', 'Dr. Sarah Jenkins', 'Internal Medicine', '#10B981', 'bg-emerald-500', 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=200'],
-    ['doc-2', 'Dr. Marcus Chen', 'Cardiology & Family Practice', '#F59E0B', 'bg-amber-500', 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=200'],
-    ['doc-3', 'Dr. Emily Thorne', 'Pediatrics', '#6366F1', 'bg-indigo-500', 'https://images.unsplash.com/photo-1594824813581-22e6900f68ff?auto=format&fit=crop&q=80&w=200'],
-    ['doc-4', 'Dr. A. Patel', 'General Practice', '#3B82F6', 'bg-blue-500', 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&q=80&w=200']
+    ['doc-1', 'Dr. Sarah Jenkins', 'Internal Medicine', 'admin@clinicflow.com', $defaultPasswordHash, 'Administrator', '#10B981', 'bg-emerald-500', 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=200'],
+    ['doc-2', 'Dr. Marcus Chen', 'Cardiology & Family Practice', 'mchen@clinicflow.com', $defaultPasswordHash, 'Doctor', '#F59E0B', 'bg-amber-500', 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=200'],
+    ['doc-3', 'Dr. Emily Thorne', 'Pediatrics', 'ethorne@clinicflow.com', $defaultPasswordHash, 'Doctor', '#6366F1', 'bg-indigo-500', 'https://images.unsplash.com/photo-1594824813581-22e6900f68ff?auto=format&fit=crop&q=80&w=200'],
+    ['doc-4', 'Dr. A. Patel', 'General Practice', 'apatel@clinicflow.com', $defaultPasswordHash, 'Doctor', '#3B82F6', 'bg-blue-500', 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&q=80&w=200']
 ];
-$stmt = $pdo->prepare("INSERT INTO doctors (id, name, specialty, color, dot_color_class, avatar) VALUES (?, ?, ?, ?, ?, ?)");
+$stmt = $pdo->prepare("INSERT INTO doctors (id, name, specialty, email, password_hash, role, color, dot_color_class, avatar) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
 foreach ($doctors as $doc) {
     $stmt->execute($doc);
 }
 
-// 2. Patients
+// Default Clinic Settings
+$defaultSettings = [
+    'clinic_name' => 'ClinicFlow Medical Center',
+    'clinic_subtitle' => 'Integrated Primary & Specialist Healthcare',
+    'clinic_address' => '100 Healthcare Way, Suite 400, Springfield, OR 97477',
+    'clinic_phone' => '(555) 019-2831',
+    'clinic_email' => 'contact@clinicflow.com',
+    'clinic_dea' => 'FC9823019',
+    'clinic_npi' => '1092830192',
+    'rx_header_title' => 'OFFICIAL MEDICAL PRESCRIPTION',
+    'rx_disclaimer' => 'Notice: This prescription is valid for 30 days from date of issue unless specified otherwise.',
+    'rx_footer_note' => 'Substitution Permitted unless DAW (Dispense As Written) is indicated.'
+];
+$stmt = $pdo->prepare("INSERT INTO clinic_settings (setting_key, setting_value) VALUES (?, ?)");
+foreach ($defaultSettings as $key => $val) {
+    $stmt->execute([$key, $val]);
+}
+
+// Patients
 $patients = [
     ['pat-1', '#98234-A', 'Sarah', 'Jenkins', '1985-04-12', 38, 'Female', '(555) 234-5678', 'sarah.j.patient@example.com', '742 Evergreen Terrace, Suite 4B, Springfield, OR', 'Michael Jenkins', 'Spouse', '(555) 987-6543', 'Blue Cross Blue Shield', 'BCBS-9842109', 'GRP-44120', 'Penicillin Allergy, Peanuts', 'O+', 'Mild Hypertension (controlled), Seasonal Rhinitis', 'Patient experiences urticaria and mild bronchospasm with beta-lactams.', 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200', 'SJ', '2023-01-15'],
     ['pat-2', '#48291', 'Robert', 'Johnson', '1976-08-22', 47, 'Male', '(555) 345-6789', 'robert.johnson@example.com', '128 Meadow Lane, Maplewood, NJ', 'Patricia Johnson', 'Spouse', '(555) 345-6780', 'Aetna Health', 'AET-771928', 'GRP-99381', 'Sulfa Drugs', 'A+', 'Type 2 Diabetes', 'Monitors blood glucose daily.', null, 'RJ', '2022-11-04'],
@@ -200,7 +226,7 @@ foreach ($patients as $p) {
     $stmt->execute($p);
 }
 
-// 3. Appointments
+// Appointments
 $appointments = [
     ['apt-1', 'pat-2', 'Robert Johnson', '#48291', null, 'RJ', 'doc-1', 'Dr. S. Jenkins', '2023-10-24', '09:00 AM', null, '09:00 - 09:45', 'Follow-up', 'Arrived', 'Room 1', null, 0],
     ['apt-2', 'pat-3', 'Elena Rodriguez', '#55102', 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200', 'ER', 'doc-2', 'Dr. M. Chen', '2023-10-24', '09:30 AM', null, '09:30 - 10:15', 'Consultation', 'In Progress', 'Room 3', null, 0],
@@ -217,7 +243,7 @@ foreach ($appointments as $apt) {
     $stmt->execute($apt);
 }
 
-// 4. Queue
+// Queue
 $queue = [
     ['q-1', 'pat-7', 'Jane Cooper', '884920', '8:30 AM', 'Dr. Chen', 'Waiting', null, '08:22 AM'],
     ['q-2', 'pat-8', 'Wade Warren', '112934', '9:15 AM', 'Dr. Jenkins', 'In Room', 'Room 2', '09:05 AM'],
@@ -229,7 +255,7 @@ foreach ($queue as $q) {
     $stmt->execute($q);
 }
 
-// 5. Vitals & SOAP for Sarah Jenkins (pat-1)
+// Vitals & SOAP for Sarah Jenkins (pat-1)
 $stmt = $pdo->prepare("INSERT INTO vitals (id, patient_id, blood_pressure, heart_rate, temperature, weight, height, bmi, oxygen_sat) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
 $stmt->execute(['v-1', 'pat-1', '120/80', 72, 98.6, 145, 66, 23.4, 99]);
 
@@ -244,7 +270,7 @@ $stmt->execute([
     'Advised rest and hydration. Prescribed Amoxicillin 500mg PO BID for 7 days. Normal saline nasal rinses BID. Return to clinic if symptoms fail to improve in 5 days or if high fevers develop.'
 ]);
 
-// 6. Prescriptions
+// Prescriptions
 $prescriptions = [
     ['rx-1', 'pat-1', 'Amoxicillin', '500mg', 'BID (Twice a day)', '7 days', 'Take with food and full glass of water.']
 ];
@@ -253,7 +279,7 @@ foreach ($prescriptions as $rx) {
     $stmt->execute($rx);
 }
 
-// 7. Past Visits
+// Past Visits
 $pastVisits = [
     ['pv-1', 'pat-1', 'Oct 12, 2023', 'Follow-up: Hypertension', 'BP stable. Refilled Lisinopril. Advised dietary changes.', 'Dr. Sarah Jenkins', json_encode(['bloodPressure' => '122/82', 'heartRate' => 70, 'weight' => 146]), json_encode([['id' => 'rx-prev-1', 'medicationName' => 'Lisinopril', 'dosage' => '10mg', 'frequency' => 'QD (Once daily)']])],
     ['pv-2', 'pat-1', 'Jun 05, 2023', 'Annual Physical', 'General checkup. Labs ordered. Flu shot administered.', 'Dr. Sarah Jenkins', json_encode(['bloodPressure' => '118/78', 'heartRate' => 74, 'weight' => 144]), null],
@@ -264,7 +290,7 @@ foreach ($pastVisits as $pv) {
     $stmt->execute($pv);
 }
 
-// 8. Activities
+// Activities
 $activities = [
     ['act-1', 'patient_registered', 'New Patient Registered: David Kim', '10 mins ago • via Portal', '10 mins ago', 'emerald'],
     ['act-2', 'visit_completed', 'Visit Completed: Sarah Connor', '45 mins ago • Dr. Jenkins', '45 mins ago', 'blue'],
@@ -276,7 +302,7 @@ foreach ($activities as $act) {
     $stmt->execute($act);
 }
 
-// 9. Invoices
+// Invoices
 $invoices = [
     ['inv-1', 'INV-2023-8821', 'Robert Johnson', '#48291', '2023-10-24', '2023-11-24', 250.00, 'Pending', 200.00, 50.00, json_encode(['Follow-up Consultation', 'Point of Care Blood Glucose'])],
     ['inv-2', 'INV-2023-8819', 'Elena Rodriguez', '#55102', '2023-10-24', '2023-11-24', 320.00, 'Pending', 270.00, 50.00, json_encode(['Specialist Consultation', 'ECG Interpretation'])],
@@ -290,7 +316,7 @@ foreach ($invoices as $inv) {
     $stmt->execute($inv);
 }
 
-// 10. Inventory
+// Inventory
 $inventory = [
     ['inv-item-1', 'Amoxicillin 500mg Capsules', 'MED-AMOX-500', 'Pharmaceuticals', 14, 50, 'Bottles (100ct)', 'Low Stock', '2023-09-15'],
     ['inv-item-2', 'Sterile Syringes 5ml (Luer Lock)', 'SUP-SYR-005', 'Supplies', 25, 100, 'Boxes (100ct)', 'Low Stock', '2023-09-20'],

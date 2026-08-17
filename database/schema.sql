@@ -4,9 +4,17 @@ CREATE TABLE IF NOT EXISTS doctors (
     id VARCHAR(50) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     specialty VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE,
+    password_hash VARCHAR(255),
+    role VARCHAR(50) DEFAULT 'Doctor',
     color VARCHAR(20) DEFAULT '#10B981',
     dot_color_class VARCHAR(50) DEFAULT 'bg-emerald-500',
     avatar TEXT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS clinic_settings (
+    setting_key VARCHAR(100) PRIMARY KEY,
+    setting_value TEXT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS patients (

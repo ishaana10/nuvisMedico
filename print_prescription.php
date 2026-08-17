@@ -4,6 +4,26 @@ $patientId = $_GET['patient_id'] ?? 'pat-1';
 require_once __DIR__ . '/config/database.php';
 $pdo = getDB();
 
+// Fetch Clinic Settings for custom prescription customization
+$settingsRows = $pdo->query("SELECT * FROM clinic_settings")->fetchAll();
+$settings = [];
+foreach ($settingsRows as $r) {
+    $settings[$r['setting_key']] = $r['setting_value'];
+}
+
+$clinicName = $settings['clinic_name'] ?? 'ClinicFlow Medical Center';
+$clinicSubtitle = $settings['clinic_subtitle'] ?? 'Integrated Primary & Specialist Healthcare';
+$clinicAddress = $settings['clinic_address'] ?? '100 Healthcare Way, Suite 400, Springfield, OR 97477';
+$clinicPhone = $settings['clinic_phone'] ?? '(555) 019-2831';
+$clinicEmail = $settings['clinic_email'] ?? 'contact@clinicflow.com';
+$clinicDea = $settings['clinic_dea'] ?? 'FC9823019';
+$clinicNpi = $settings['clinic_npi'] ?? '1092830192';
+
+$rxHeaderTitle = $settings['rx_header_title'] ?? 'OFFICIAL MEDICAL PRESCRIPTION';
+$rxDisclaimer = $settings['rx_disclaimer'] ?? 'Notice: This prescription is valid for 30 days from date of issue unless specified otherwise.';
+$rxFooterNote = $settings['rx_footer_note'] ?? 'Substitution Permitted unless DAW (Dispense As Written) is indicated.';
+
+// Fetch patient info
 $stmt = $pdo->prepare("SELECT * FROM patients WHERE id = ?");
 $stmt->execute([$patientId]);
 $patient = $stmt->fetch();
@@ -20,13 +40,19 @@ $soapStmt = $pdo->prepare("SELECT * FROM soap_notes WHERE patient_id = ? ORDER B
 $soapStmt->execute([$patientId]);
 $soap = $soapStmt->fetch();
 $assessmentCodes = json_decode($soap['assessment_codes'] ?? '[]', true) ?: [];
+
+// Get attending doctor details
+$docId = $_SESSION['current_doctor_id'] ?? 'doc-1';
+$docStmt = $pdo->prepare("SELECT * FROM doctors WHERE id = ?");
+$docStmt->execute([$docId]);
+$attendingDoc = $docStmt->fetch() ?: ['name' => 'Dr. Sarah Jenkins', 'specialty' => 'Internal Medicine'];
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Official Prescription - <?= htmlspecialchars($patient['first_name'] . ' ' . $patient['last_name']) ?></title>
+    <title>Prescription - <?= htmlspecialchars($patient['first_name'] . ' ' . $patient['last_name']) ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @media print {
@@ -41,20 +67,29 @@ $assessmentCodes = json_decode($soap['assessment_codes'] ?? '[]', true) ?: [];
     <!-- Action buttons -->
     <div class="no-print mb-6 flex justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-200">
         <a href="clinical_visit.php?patient_id=<?= htmlspecialchars($patient['id']) ?>" class="text-xs font-semibold text-slate-600 hover:text-slate-900">&larr; Back to Encounter</a>
-        <button onclick="window.print()" class="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition">Print Official Prescription</button>
+        <div class="flex gap-2">
+            <a href="admin.php" class="px-3 py-2 bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-300 transition">Customize Template</a>
+            <button onclick="window.print()" class="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition">Print Official Prescription</button>
+        </div>
     </div>
 
-    <!-- Clinic Header -->
+    <!-- Customized Clinic Header -->
     <div class="border-b-2 border-blue-900 pb-4 mb-6 flex justify-between items-start">
         <div>
-            <h1 class="text-2xl font-bold text-blue-900 uppercase tracking-tight">ClinicFlow Medical Center</h1>
-            <p class="text-xs text-slate-500 mt-1">100 Healthcare Way, Suite 400 • Phone: (555) 019-2831</p>
-            <p class="text-xs text-slate-500">DEA: FC9823019 • NPI: 1092830192</p>
+            <h1 class="text-2xl font-bold text-blue-900 uppercase tracking-tight"><?= htmlspecialchars($clinicName) ?></h1>
+            <p class="text-xs text-blue-700 font-medium"><?= htmlspecialchars($clinicSubtitle) ?></p>
+            <p class="text-xs text-slate-500 mt-1"><?= htmlspecialchars($clinicAddress) ?> • Phone: <?= htmlspecialchars($clinicPhone) ?></p>
+            <p class="text-xs text-slate-500">DEA: <?= htmlspecialchars($clinicDea) ?> • NPI: <?= htmlspecialchars($clinicNpi) ?></p>
         </div>
         <div class="text-right">
             <span class="text-2xl font-serif font-bold text-blue-900">Rx</span>
             <p class="text-xs text-slate-500 font-mono mt-1">Date: <?= date('M d, Y') ?></p>
         </div>
+    </div>
+
+    <!-- Header Prescription Title -->
+    <div class="text-center mb-6">
+        <h2 class="text-xs font-bold uppercase tracking-widest text-slate-500 border-y border-slate-200 py-1.5"><?= htmlspecialchars($rxHeaderTitle) ?></h2>
     </div>
 
     <!-- Patient Header -->
@@ -82,7 +117,7 @@ $assessmentCodes = json_decode($soap['assessment_codes'] ?? '[]', true) ?: [];
     <?php endif; ?>
 
     <!-- Prescription Lines -->
-    <div class="mb-10">
+    <div class="mb-8">
         <h2 class="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 pb-2 mb-4">Prescribed Medication Details</h2>
         <div class="space-y-4">
             <?php foreach ($prescriptions as $index => $rx): ?>
@@ -105,16 +140,22 @@ $assessmentCodes = json_decode($soap['assessment_codes'] ?? '[]', true) ?: [];
         </div>
     </div>
 
+    <!-- Custom Disclaimer & Refill Notes -->
+    <div class="mb-8 p-3 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 space-y-1">
+        <p><strong>Refill Policy:</strong> <?= htmlspecialchars($rxFooterNote) ?></p>
+        <p class="italic text-slate-500"><?= htmlspecialchars($rxDisclaimer) ?></p>
+    </div>
+
     <!-- Physician Signature Block -->
-    <div class="pt-8 border-t border-slate-300 flex justify-between items-end text-xs">
+    <div class="pt-6 border-t border-slate-300 flex justify-between items-end text-xs">
         <div>
             <p class="text-slate-500 text-[10px] uppercase font-semibold">Substitution</p>
             <p class="font-medium text-slate-700">Refill: [ ] 0  [ ] 1  [ ] 2  [ ] 3  [ ] PRN</p>
         </div>
         <div class="text-right w-64">
-            <div class="border-b border-slate-400 mb-1 pb-2 font-serif text-lg font-bold text-blue-900 italic">Dr. Sarah Jenkins, M.D.</div>
-            <p class="font-bold text-slate-800">Dr. Sarah Jenkins, M.D.</p>
-            <p class="text-slate-500">Internal Medicine Specialist</p>
+            <div class="border-b border-slate-400 mb-1 pb-2 font-serif text-lg font-bold text-blue-900 italic"><?= htmlspecialchars($attendingDoc['name']) ?></div>
+            <p class="font-bold text-slate-800"><?= htmlspecialchars($attendingDoc['name']) ?></p>
+            <p class="text-slate-500"><?= htmlspecialchars($attendingDoc['specialty']) ?></p>
         </div>
     </div>
 </div>
