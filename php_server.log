@@ -41,3 +41,12 @@
 [Mon Aug 17 21:10:28 2026] 127.0.0.1:58286 Accepted
 [Mon Aug 17 21:10:28 2026] 127.0.0.1:58286 [200]: GET /clinical_visit.php?patient_id=pat-1
 [Mon Aug 17 21:10:28 2026] 127.0.0.1:58286 Closing
+[Mon Aug 17 22:26:01 2026] 127.0.0.1:45502 Accepted
+[Mon Aug 17 22:26:01 2026] 127.0.0.1:45502 [200]: GET /install.php
+[Mon Aug 17 22:26:01 2026] 127.0.0.1:45502 Closing
+[Mon Aug 17 22:26:13 2026] 127.0.0.1:48950 Accepted
+[Mon Aug 17 22:26:14 2026] 127.0.0.1:48950 [200]: POST /install.php
+[Mon Aug 17 22:26:14 2026] 127.0.0.1:48950 Closing
+[Mon Aug 17 22:26:33 2026] 127.0.0.1:36066 Accepted
+[Mon Aug 17 22:26:33 2026] 127.0.0.1:36066 [200]: GET /install.php
+[Mon Aug 17 22:26:33 2026] 127.0.0.1:36066 Closing
