@@ -201,7 +201,13 @@ $defaultSettings = [
     'clinic_npi' => '1092830192',
     'rx_header_title' => 'OFFICIAL MEDICAL PRESCRIPTION',
     'rx_disclaimer' => 'Notice: This prescription is valid for 30 days from date of issue unless specified otherwise.',
-    'rx_footer_note' => 'Substitution Permitted unless DAW (Dispense As Written) is indicated.'
+    'rx_footer_note' => 'Substitution Permitted unless DAW (Dispense As Written) is indicated.',
+    'invoice_header_title' => 'MEDICAL SERVICES INVOICE',
+    'invoice_tax_id' => '93-1029384',
+    'invoice_payment_terms' => 'Net 30 Days. Please remit payment promptly.',
+    'invoice_footer_note' => 'Thank you for choosing ClinicFlow Medical Center for your care.',
+    'receipt_header_title' => 'OFFICIAL PAYMENT RECEIPT',
+    'receipt_thank_you_msg' => 'Thank you for your payment. Your account balance for this invoice is cleared.'
 ];
 $stmt = $pdo->prepare("INSERT INTO clinic_settings (setting_key, setting_value) VALUES (?, ?)");
 foreach ($defaultSettings as $key => $val) {

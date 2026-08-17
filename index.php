@@ -14,7 +14,9 @@ $queueItems = $queueStmt->fetchAll();
 $waitingCount = count(array_filter($queueItems, fn($q) => $q['status'] === 'Waiting'));
 $inRoomCount = count(array_filter($queueItems, fn($q) => $q['status'] === 'In Room'));
 
-$todayApptsCount = $pdo->query("SELECT COUNT(*) FROM appointments WHERE appointment_date = '$todayDate' OR appointment_date = '2023-10-24'")->fetchColumn();
+$todayApptsStmt = $pdo->prepare("SELECT COUNT(*) FROM appointments WHERE appointment_date = ? OR appointment_date = '2023-10-24'");
+$todayApptsStmt->execute([$todayDate]);
+$todayApptsCount = $todayApptsStmt->fetchColumn();
 $totalPatientsCount = $pdo->query("SELECT COUNT(*) FROM patients")->fetchColumn();
 
 // 3. Today's Scheduled Appointments

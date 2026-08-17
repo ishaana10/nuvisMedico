@@ -2,6 +2,11 @@
 /**
  * Administrator Settings Save Action
  */
+session_start();
+if (empty($_SESSION['authenticated'])) {
+    header('Location: ../login.php');
+    exit;
+}
 require_once __DIR__ . '/../config/database.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -19,9 +24,15 @@ $settings = [
     'clinic_email'     => trim($_POST['clinic_email'] ?? ''),
     'clinic_dea'       => trim($_POST['clinic_dea'] ?? ''),
     'clinic_npi'       => trim($_POST['clinic_npi'] ?? ''),
-    'rx_header_title'  => trim($_POST['rx_header_title'] ?? 'OFFICIAL MEDICAL PRESCRIPTION'),
-    'rx_disclaimer'    => trim($_POST['rx_disclaimer'] ?? ''),
-    'rx_footer_note'   => trim($_POST['rx_footer_note'] ?? '')
+    'rx_header_title'       => trim($_POST['rx_header_title'] ?? 'OFFICIAL MEDICAL PRESCRIPTION'),
+    'rx_disclaimer'         => trim($_POST['rx_disclaimer'] ?? ''),
+    'rx_footer_note'        => trim($_POST['rx_footer_note'] ?? ''),
+    'invoice_header_title'  => trim($_POST['invoice_header_title'] ?? 'MEDICAL SERVICES INVOICE'),
+    'invoice_tax_id'        => trim($_POST['invoice_tax_id'] ?? ''),
+    'invoice_payment_terms' => trim($_POST['invoice_payment_terms'] ?? ''),
+    'invoice_footer_note'   => trim($_POST['invoice_footer_note'] ?? ''),
+    'receipt_header_title'  => trim($_POST['receipt_header_title'] ?? 'OFFICIAL PAYMENT RECEIPT'),
+    'receipt_thank_you_msg' => trim($_POST['receipt_thank_you_msg'] ?? '')
 ];
 
 $stmt = $pdo->prepare("INSERT INTO clinic_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");

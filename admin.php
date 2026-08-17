@@ -94,10 +94,50 @@ $doctorsList = $pdo->query("SELECT * FROM doctors ORDER BY name ASC")->fetchAll(
                 </div>
             </div>
 
+            <hr class="border-outline-variant/20">
+
+            <!-- Fully Customisable Invoice & Receipt Settings -->
+            <h2 class="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-2">
+                <span class="material-symbols-outlined text-base">receipt_long</span>
+                <span>3. Invoice & Payment Receipt Customization</span>
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Invoice Header Title</label>
+                    <input type="text" name="invoice_header_title" value="<?= htmlspecialchars($settings['invoice_header_title'] ?? 'MEDICAL SERVICES INVOICE') ?>" class="w-full bg-surface-container-low px-3.5 py-2.5 rounded-xl border border-outline-variant/40 font-bold">
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Tax ID / EIN Number</label>
+                    <input type="text" name="invoice_tax_id" value="<?= htmlspecialchars($settings['invoice_tax_id'] ?? '93-1029384') ?>" class="w-full bg-surface-container-low px-3.5 py-2.5 rounded-xl border border-outline-variant/40 font-mono font-medium">
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block font-bold text-slate-700 mb-1">Invoice Payment Terms & Instructions</label>
+                    <input type="text" name="invoice_payment_terms" value="<?= htmlspecialchars($settings['invoice_payment_terms'] ?? 'Net 30 Days. Please remit payment promptly.') ?>" class="w-full bg-surface-container-low px-3.5 py-2.5 rounded-xl border border-outline-variant/40 font-medium">
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block font-bold text-slate-700 mb-1">Invoice Footer Note</label>
+                    <textarea name="invoice_footer_note" rows="2" class="w-full bg-surface-container-low p-3 rounded-xl border border-outline-variant/40 font-medium"><?= htmlspecialchars($settings['invoice_footer_note'] ?? 'Thank you for choosing ClinicFlow Medical Center for your care.') ?></textarea>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Receipt Header Title</label>
+                    <input type="text" name="receipt_header_title" value="<?= htmlspecialchars($settings['receipt_header_title'] ?? 'OFFICIAL PAYMENT RECEIPT') ?>" class="w-full bg-surface-container-low px-3.5 py-2.5 rounded-xl border border-outline-variant/40 font-bold">
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block font-bold text-slate-700 mb-1">Receipt Thank You & Confirmation Message</label>
+                    <textarea name="receipt_thank_you_msg" rows="2" class="w-full bg-surface-container-low p-3 rounded-xl border border-outline-variant/40 font-medium"><?= htmlspecialchars($settings['receipt_thank_you_msg'] ?? 'Thank you for your payment. Your account balance for this invoice is cleared.') ?></textarea>
+                </div>
+            </div>
+
             <div class="flex justify-end pt-3">
                 <button type="submit" class="px-6 py-2.5 bg-primary text-white text-xs font-semibold rounded-xl hover:bg-primary/90 transition shadow-sm flex items-center gap-2">
                     <span class="material-symbols-outlined text-base">save</span>
-                    <span>Save Clinic & Prescription Settings</span>
+                    <span>Save Clinic & Financial Template Settings</span>
                 </button>
             </div>
         </form>

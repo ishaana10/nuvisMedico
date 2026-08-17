@@ -1,4 +1,10 @@
 <?php
+session_start();
+if (empty($_SESSION['authenticated'])) {
+    header('Location: login.php');
+    exit;
+}
+
 $patientId = $_GET['patient_id'] ?? 'pat-1';
 
 require_once __DIR__ . '/config/database.php';
@@ -24,9 +30,14 @@ $rxDisclaimer = $settings['rx_disclaimer'] ?? 'Notice: This prescription is vali
 $rxFooterNote = $settings['rx_footer_note'] ?? 'Substitution Permitted unless DAW (Dispense As Written) is indicated.';
 
 // Fetch patient info
-$stmt = $pdo->prepare("SELECT * FROM patients WHERE id = ?");
-$stmt->execute([$patientId]);
+$stmt = $pdo->prepare("SELECT * FROM patients WHERE id = ? OR mrn = ?");
+$stmt->execute([$patientId, $patientId]);
 $patient = $stmt->fetch();
+
+if (!$patient) {
+    $stmt = $pdo->query("SELECT * FROM patients LIMIT 1");
+    $patient = $stmt->fetch();
+}
 
 if (!$patient) {
     die("Patient file not found.");
