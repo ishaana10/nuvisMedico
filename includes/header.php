@@ -1,6 +1,6 @@
 <?php
 /**
- * Common Header Layout Component
+ * Common Header Layout Component with Mobile Responsiveness
  */
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -111,11 +111,11 @@ $currentDoctor = reset($currentDoctor) ?: ($doctors[0] ?? ['id' => 'doc-1', 'nam
       }
     </style>
 </head>
-<body class="h-full font-sans text-on-surface bg-background flex flex-col">
+<body class="h-full font-sans text-on-surface bg-background flex flex-col min-h-screen">
 
 <!-- Toast Notification -->
 <?php if ($toast): ?>
-<div id="toast-notification" class="fixed top-5 right-5 z-50 flex items-center p-4 mb-4 text-gray-800 bg-white rounded-xl shadow-lg border border-slate-200" role="alert">
+<div id="toast-notification" class="fixed top-5 right-5 z-50 flex items-center p-4 mb-4 text-gray-800 bg-white rounded-xl shadow-lg border border-slate-200 max-w-sm" role="alert">
     <div class="inline-flex items-center justify-center flex-shrink-0 w-9 h-9 text-<?= $toast['type'] === 'error' ? 'red-600 bg-red-100' : 'emerald-600 bg-emerald-100' ?> rounded-lg">
         <span class="material-symbols-outlined"><?= $toast['type'] === 'error' ? 'error' : 'check_circle' ?></span>
     </div>
@@ -137,39 +137,42 @@ $currentDoctor = reset($currentDoctor) ?: ($doctors[0] ?? ['id' => 'doc-1', 'nam
 
 <!-- Top Navigation Bar -->
 <header class="bg-surface-container-lowest border-b border-outline-variant/30 sticky top-0 z-30 shadow-xs">
-    <div class="flex items-center justify-between px-6 py-3">
-        <!-- Logo & Brand -->
+    <div class="flex items-center justify-between px-4 sm:px-6 py-3">
+        <!-- Mobile Menu Toggle & Logo -->
         <div class="flex items-center gap-3">
-            <a href="index.php" class="flex items-center gap-2.5">
-                <img src="assets/images/nuvis_medico_logo.png" alt="Nuvis Medico" class="h-10 object-contain">
+            <button type="button" onclick="toggleMobileSidebar()" class="md:hidden p-2 text-on-surface hover:bg-surface-container-low rounded-xl transition">
+                <span class="material-symbols-outlined text-2xl">menu</span>
+            </button>
+            <a href="index.php" class="flex items-center gap-2">
+                <img src="assets/images/nuvis_medico_logo.png" alt="Nuvis Medico" class="h-8 sm:h-10 object-contain">
             </a>
         </div>
 
-        <!-- Global Search -->
-        <div class="relative w-96 hidden md:block">
+        <!-- Global Search (Desktop) -->
+        <div class="relative w-80 lg:w-96 hidden md:block">
             <form action="patients.php" method="GET" class="relative">
                 <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-outline text-lg">search</span>
-                <input type="text" name="q" placeholder="Search patients by name, MRN, phone..." class="w-full bg-surface-container-low pl-10 pr-4 py-2 rounded-xl text-xs border border-transparent focus:border-primary focus:bg-white focus:outline-none transition-all">
+                <input type="text" name="q" placeholder="Search patients by name, MRN..." class="w-full bg-surface-container-low pl-10 pr-4 py-2 rounded-xl text-xs border border-transparent focus:border-primary focus:bg-white focus:outline-none transition-all">
             </form>
         </div>
 
         <!-- Right Quick Actions & Doctor Switcher -->
-        <div class="flex items-center gap-4">
-            <a href="register_patient.php" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-primary text-white text-xs font-semibold rounded-xl hover:bg-primary/90 transition shadow-sm">
+        <div class="flex items-center gap-2 sm:gap-3">
+            <a href="register_patient.php" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 bg-primary text-white text-xs font-semibold rounded-xl hover:bg-primary/90 transition shadow-sm">
                 <span class="material-symbols-outlined text-base">person_add</span>
-                <span>Register Patient</span>
+                <span class="hidden lg:inline">Register Patient</span>
             </a>
-            <a href="calendar.php?action=book" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-primary-container text-white text-xs font-semibold rounded-xl hover:bg-primary-container/90 transition shadow-sm">
+            <a href="calendar.php?action=book" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 bg-primary-container text-white text-xs font-semibold rounded-xl hover:bg-primary-container/90 transition shadow-sm">
                 <span class="material-symbols-outlined text-base">calendar_add_on</span>
-                <span>Book Appointment</span>
+                <span class="hidden lg:inline">Book Appointment</span>
             </a>
 
             <!-- Doctor Selector & Logout -->
-            <div class="flex items-center gap-3 pl-3 border-l border-outline-variant/40">
+            <div class="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-3 border-l border-outline-variant/40">
                 <form action="actions/set_doctor.php" method="POST" class="flex items-center gap-2">
-                    <div class="flex items-center gap-2">
-                        <img src="<?= htmlspecialchars($currentDoctor['avatar'] ?? '') ?>" class="w-8 h-8 rounded-full object-cover border border-primary/20" alt="Doctor">
-                        <select name="doctor_id" onchange="this.form.submit()" class="bg-surface-container-low border border-outline-variant/50 text-xs font-semibold text-on-surface rounded-lg px-2.5 py-1.5 focus:outline-none">
+                    <div class="flex items-center gap-1.5 sm:gap-2">
+                        <img src="<?= htmlspecialchars($currentDoctor['avatar'] ?? '') ?>" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-primary/20" alt="Doctor">
+                        <select name="doctor_id" onchange="this.form.submit()" class="bg-surface-container-low border border-outline-variant/50 text-[11px] sm:text-xs font-semibold text-on-surface rounded-lg px-2 py-1.5 focus:outline-none max-w-[110px] sm:max-w-none truncate">
                             <?php foreach ($doctors as $doc): ?>
                                 <option value="<?= htmlspecialchars($doc['id']) ?>" <?= $doc['id'] === $currentDoctor['id'] ? 'selected' : '' ?>>
                                     <?= htmlspecialchars($doc['name']) ?>
@@ -186,6 +189,6 @@ $currentDoctor = reset($currentDoctor) ?: ($doctors[0] ?? ['id' => 'doc-1', 'nam
     </div>
 </header>
 
-<div class="flex flex-1 overflow-hidden">
+<div class="flex flex-1 overflow-hidden relative">
 <?php include __DIR__ . '/sidebar.php'; ?>
-<main class="flex-1 overflow-y-auto p-6">
+<main class="flex-1 overflow-y-auto p-3 sm:p-6 w-full">
