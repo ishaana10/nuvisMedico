@@ -137,14 +137,14 @@ $currentDoctor = reset($currentDoctor) ?: ($doctors[0] ?? ['id' => 'doc-1', 'nam
 
 <!-- Top Navigation Bar -->
 <header class="bg-surface-container-lowest border-b border-outline-variant/30 sticky top-0 z-30 shadow-xs">
-    <div class="flex items-center justify-between px-4 sm:px-6 py-3">
+    <div class="flex items-center justify-between px-3 sm:px-6 py-2.5 sm:py-3">
         <!-- Mobile Menu Toggle & Logo -->
-        <div class="flex items-center gap-3">
-            <button type="button" onclick="toggleMobileSidebar()" class="md:hidden p-2 text-on-surface hover:bg-surface-container-low rounded-xl transition">
-                <span class="material-symbols-outlined text-2xl">menu</span>
+        <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+            <button type="button" onclick="toggleMobileSidebar()" aria-label="Toggle Navigation Menu" class="md:hidden p-2 text-primary hover:bg-primary/10 rounded-xl transition flex items-center justify-center border border-primary/20">
+                <span class="material-symbols-outlined text-2xl font-bold">menu</span>
             </button>
             <a href="index.php" class="flex items-center gap-2">
-                <img src="assets/images/nuvis_medico_logo.png" alt="Nuvis Medico" class="h-8 sm:h-10 object-contain">
+                <img src="assets/images/nuvis_medico_logo.png" alt="Nuvis Medico" class="h-7 sm:h-10 object-contain max-w-[120px] sm:max-w-none">
             </a>
         </div>
 
@@ -157,22 +157,22 @@ $currentDoctor = reset($currentDoctor) ?: ($doctors[0] ?? ['id' => 'doc-1', 'nam
         </div>
 
         <!-- Right Quick Actions & Doctor Switcher -->
-        <div class="flex items-center gap-2 sm:gap-3">
-            <a href="register_patient.php" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 bg-primary text-white text-xs font-semibold rounded-xl hover:bg-primary/90 transition shadow-sm">
+        <div class="flex items-center gap-1.5 sm:gap-3 shrink-0">
+            <a href="register_patient.php" class="hidden md:inline-flex items-center gap-1.5 px-3 py-2 bg-primary text-white text-xs font-semibold rounded-xl hover:bg-primary/90 transition shadow-sm">
                 <span class="material-symbols-outlined text-base">person_add</span>
                 <span class="hidden lg:inline">Register Patient</span>
             </a>
-            <a href="calendar.php?action=book" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 bg-primary-container text-white text-xs font-semibold rounded-xl hover:bg-primary-container/90 transition shadow-sm">
+            <a href="calendar.php?action=book" class="hidden md:inline-flex items-center gap-1.5 px-3 py-2 bg-primary-container text-white text-xs font-semibold rounded-xl hover:bg-primary-container/90 transition shadow-sm">
                 <span class="material-symbols-outlined text-base">calendar_add_on</span>
                 <span class="hidden lg:inline">Book Appointment</span>
             </a>
 
             <!-- Doctor Selector & Logout -->
-            <div class="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-3 border-l border-outline-variant/40">
-                <form action="actions/set_doctor.php" method="POST" class="flex items-center gap-2">
-                    <div class="flex items-center gap-1.5 sm:gap-2">
+            <div class="flex items-center gap-1.5 sm:gap-3 pl-1.5 sm:pl-3 border-l border-outline-variant/40">
+                <form action="actions/set_doctor.php" method="POST" class="flex items-center gap-1 sm:gap-2">
+                    <div class="flex items-center gap-1 sm:gap-2">
                         <img src="<?= htmlspecialchars($currentDoctor['avatar'] ?? '') ?>" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-primary/20" alt="Doctor">
-                        <select name="doctor_id" onchange="this.form.submit()" class="bg-surface-container-low border border-outline-variant/50 text-[11px] sm:text-xs font-semibold text-on-surface rounded-lg px-2 py-1.5 focus:outline-none max-w-[110px] sm:max-w-none truncate">
+                        <select name="doctor_id" onchange="this.form.submit()" class="bg-surface-container-low border border-outline-variant/50 text-[11px] sm:text-xs font-semibold text-on-surface rounded-lg px-1.5 py-1 sm:px-2 sm:py-1.5 focus:outline-none max-w-[90px] sm:max-w-none truncate">
                             <?php foreach ($doctors as $doc): ?>
                                 <option value="<?= htmlspecialchars($doc['id']) ?>" <?= $doc['id'] === $currentDoctor['id'] ? 'selected' : '' ?>>
                                     <?= htmlspecialchars($doc['name']) ?>
