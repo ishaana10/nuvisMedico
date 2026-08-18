@@ -141,13 +141,7 @@ $currentDoctor = reset($currentDoctor) ?: ($doctors[0] ?? ['id' => 'doc-1', 'nam
         <!-- Logo & Brand -->
         <div class="flex items-center gap-3">
             <a href="index.php" class="flex items-center gap-2.5">
-                <div class="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-white shadow-sm">
-                    <span class="material-symbols-outlined text-xl">medical_services</span>
-                </div>
-                <div>
-                    <span class="text-lg font-bold text-primary leading-none block">ClinicFlow</span>
-                    <span class="text-[10px] text-outline font-medium tracking-wider uppercase">Medical Center</span>
-                </div>
+                <img src="assets/images/nuvis_medico_logo.png" alt="Nuvis Medico" class="h-10 object-contain">
             </a>
         </div>
 

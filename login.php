@@ -41,14 +41,15 @@ $toast = getToast();
 </div>
 <?php endif; ?>
 
-<div class="max-w-md w-full bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
-    <!-- Brand Header -->
-    <div class="bg-gradient-to-r from-blue-900 to-indigo-900 p-8 text-white text-center">
-        <div class="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center mx-auto mb-3 backdrop-blur-xs">
-            <span class="material-symbols-outlined text-3xl text-blue-200">medical_services</span>
+<div class="max-w-md w-full bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden relative">
+    <!-- Brand Header with Nuvis Medico logo & assets -->
+    <div class="bg-white p-6 border-b border-slate-100 text-center flex flex-col items-center justify-center">
+        <img src="assets/images/nuvis_medico_logo.png" alt="Nuvis Medico" class="h-16 object-contain mb-2">
+        <div class="flex items-center gap-3 mt-1">
+            <img src="assets/images/stethoscope_heart.png" alt="Stethoscope" class="h-6 object-contain">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-widest">Clinical EHR Platform</span>
+            <img src="assets/images/caduceus_logo.png" alt="Caduceus" class="h-6 object-contain">
         </div>
-        <h1 class="text-2xl font-bold tracking-tight">ClinicFlow</h1>
-        <p class="text-xs text-blue-200 mt-1">Medical Center Clinical EHR Platform</p>
     </div>
 
     <!-- Login Form -->
