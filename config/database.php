@@ -52,6 +52,7 @@ function getDB(): PDO {
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 PDO::ATTR_EMULATE_PREPARES => false,
             ]);
+            ensureDoctorColumnsExist($pdo);
             return $pdo;
         } catch (PDOException $e) {
             // Fallback to SQLite if MySQL is unavailable locally in dev mode
@@ -73,10 +74,51 @@ function getDB(): PDO {
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         ]);
         $pdo->exec("PRAGMA foreign_keys = ON;");
+        ensureDoctorColumnsExist($pdo);
         return $pdo;
     }
 
     throw new RuntimeException("Unsupported database driver: " . $driver);
+}
+
+/**
+ * Auto-migrate columns for doctor signatures & stamps if missing
+ */
+function ensureDoctorColumnsExist(PDO $pdo): void {
+    static $checked = false;
+    if ($checked) return;
+    $checked = true;
+
+    try {
+        $cols = [];
+        $driver = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+        if ($driver === 'sqlite') {
+            $stmt = $pdo->query("PRAGMA table_info(doctors)");
+            while ($row = $stmt->fetch()) {
+                $cols[] = strtolower($row['name']);
+            }
+        } else {
+            $stmt = $pdo->query("DESCRIBE doctors");
+            while ($row = $stmt->fetch()) {
+                $cols[] = strtolower($row['Field']);
+            }
+        }
+
+        $newCols = [
+            'prc_number' => 'VARCHAR(100)',
+            'ptr_number' => 'VARCHAR(100)',
+            'esignature' => 'TEXT',
+            'digital_stamp' => 'TEXT'
+        ];
+
+        foreach ($newCols as $colName => $colDef) {
+            if (!in_array($colName, $cols)) {
+                $pdo->exec("ALTER TABLE doctors ADD COLUMN {$colName} {$colDef}");
+            }
+        }
+    } catch (Exception $e) {
+        // Table might not exist yet during fresh install
+    }
 }
 
 // Session & Toast helper

@@ -237,53 +237,53 @@ $doctorsList = $pdo->query("SELECT * FROM doctors ORDER BY name ASC")->fetchAll(
     <!-- Right 1 Col: Staff & Physician Directory -->
     <div class="space-y-6">
         <div class="bg-surface-container-lowest rounded-2xl border border-outline-variant/30 p-5 shadow-xs">
-            <h2 class="text-xs font-bold text-outline uppercase tracking-wider mb-4 flex items-center gap-2">
-                <span class="material-symbols-outlined text-primary text-base">badge</span>
-                <span>Physicians & Staff Accounts</span>
-            </h2>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xs font-bold text-outline uppercase tracking-wider flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-base">badge</span>
+                    <span>Physicians & Credentials</span>
+                </h2>
+                <button type="button" onclick="openDoctorModal()" class="px-3 py-1.5 bg-primary text-white text-[11px] font-bold rounded-lg hover:bg-primary/90 transition flex items-center gap-1 shadow-xs">
+                    <span class="material-symbols-outlined text-xs">add</span>
+                    <span>Add Doctor</span>
+                </button>
+            </div>
 
             <div class="space-y-3 mb-6">
                 <?php foreach ($doctorsList as $doc): ?>
-                    <div class="p-3 rounded-xl bg-surface-container-low border border-outline-variant/30 flex items-center justify-between text-xs">
-                        <div class="flex items-center gap-3">
-                            <img src="<?= htmlspecialchars($doc['avatar'] ?: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&q=80&w=200') ?>" class="w-9 h-9 rounded-full object-cover border border-slate-200" alt="Avatar">
-                            <div>
-                                <p class="font-bold text-on-surface"><?= htmlspecialchars($doc['name']) ?></p>
-                                <p class="text-[11px] text-outline"><?= htmlspecialchars($doc['specialty']) ?></p>
+                    <div class="p-3.5 rounded-xl bg-surface-container-low border border-outline-variant/30 space-y-2 text-xs">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <img src="<?= htmlspecialchars($doc['avatar'] ?: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&q=80&w=200') ?>" class="w-10 h-10 rounded-full object-cover border border-slate-200" alt="Avatar">
+                                <div>
+                                    <p class="font-bold text-on-surface"><?= htmlspecialchars($doc['name']) ?></p>
+                                    <p class="text-[11px] text-outline"><?= htmlspecialchars($doc['specialty']) ?></p>
+                                </div>
                             </div>
+                            <button type="button" onclick='openDoctorModal(<?= htmlspecialchars(json_encode($doc), ENT_QUOTES, "UTF-8") ?>)' class="p-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg transition" title="Edit Doctor & Credentials">
+                                <span class="material-symbols-outlined text-sm">edit</span>
+                            </button>
                         </div>
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800">
-                            <?= htmlspecialchars($doc['role'] ?? 'Doctor') ?>
-                        </span>
+
+                        <div class="pt-2 border-t border-slate-200/60 grid grid-cols-2 gap-2 text-[10px] text-slate-600 font-mono">
+                            <div><span class="text-slate-400">PRC:</span> <?= htmlspecialchars($doc['prc_number'] ?? 'N/A') ?></div>
+                            <div><span class="text-slate-400">PTR:</span> <?= htmlspecialchars($doc['ptr_number'] ?? 'N/A') ?></div>
+                        </div>
+
+                        <div class="flex items-center gap-2 pt-1">
+                            <?php if (!empty($doc['esignature'])): ?>
+                                <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[12px]">draw</span> Signature
+                                </span>
+                            <?php endif; ?>
+                            <?php if (!empty($doc['digital_stamp'])): ?>
+                                <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-[10px] font-bold flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[12px]">verified</span> Digital Stamp
+                                </span>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 <?php endforeach; ?>
             </div>
-
-            <!-- Add Staff Form -->
-            <form action="actions/admin_save_doctor.php" method="POST" class="pt-4 border-t border-outline-variant/20 space-y-3 text-xs">
-                <p class="font-bold text-slate-700">Add New Doctor / Staff Account</p>
-                <div>
-                    <input type="text" name="name" required placeholder="Doctor Name (e.g. Dr. Alex Vance)" class="w-full bg-surface-container-low px-3 py-2 rounded-xl border border-outline-variant/40 font-medium">
-                </div>
-                <div>
-                    <input type="text" name="specialty" placeholder="Specialty (e.g. Neurology)" class="w-full bg-surface-container-low px-3 py-2 rounded-xl border border-outline-variant/40 font-medium">
-                </div>
-                <div>
-                    <input type="email" name="email" required placeholder="email@clinicflow.com" class="w-full bg-surface-container-low px-3 py-2 rounded-xl border border-outline-variant/40 font-medium">
-                </div>
-                <div>
-                    <input type="password" name="password" placeholder="Password (default: password)" class="w-full bg-surface-container-low px-3 py-2 rounded-xl border border-outline-variant/40 font-medium">
-                </div>
-                <div>
-                    <select name="role" class="w-full bg-surface-container-low px-3 py-2 rounded-xl border border-outline-variant/40 font-semibold">
-                        <option value="Doctor">Doctor</option>
-                        <option value="Administrator">Administrator</option>
-                    </select>
-                </div>
-                <button type="submit" class="w-full py-2 bg-primary-container text-white text-xs font-semibold rounded-xl hover:bg-primary-container/90 transition shadow-xs">
-                    + Add Staff Account
-                </button>
-            </form>
         </div>
     </div>
 </div>
@@ -437,6 +437,173 @@ function loadGitHistory() {
 }
 
 document.addEventListener('DOMContentLoaded', refreshGitStatus);
+</script>
+
+<!-- Modal: Doctor Add/Edit & Credentials Upload -->
+<div id="doctorModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-xl w-full shadow-2xl border border-slate-200 overflow-hidden my-8">
+        <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+            <h3 id="docModalTitle" class="font-bold text-sm flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-base">badge</span>
+                <span>Manage Doctor Credentials & Signatures</span>
+            </h3>
+            <button type="button" onclick="closeDoctorModal()" class="text-slate-400 hover:text-white text-lg">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <form action="actions/doctor_actions.php" method="POST" enctype="multipart/form-data" class="p-6 space-y-4 text-xs">
+            <input type="hidden" name="action" value="save">
+            <input type="hidden" name="doctor_id" id="doc_id">
+            <input type="hidden" name="existing_esignature" id="doc_existing_esignature">
+            <input type="hidden" name="existing_digital_stamp" id="doc_existing_digital_stamp">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Doctor Name <span class="text-red-500">*</span></label>
+                    <input type="text" name="name" id="doc_name" required placeholder="Dr. Sarah Jenkins" class="w-full bg-slate-50 px-3 py-2 rounded-xl border border-slate-300 font-bold">
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Specialty</label>
+                    <input type="text" name="specialty" id="doc_specialty" placeholder="Internal Medicine / General Practice" class="w-full bg-slate-50 px-3 py-2 rounded-xl border border-slate-300 font-medium">
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Email <span class="text-red-500">*</span></label>
+                    <input type="email" name="email" id="doc_email" required placeholder="sjenkins@clinicflow.com" class="w-full bg-slate-50 px-3 py-2 rounded-xl border border-slate-300 font-medium">
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Password</label>
+                    <input type="password" name="password" id="doc_password" placeholder="Leave blank to keep unchanged" class="w-full bg-slate-50 px-3 py-2 rounded-xl border border-slate-300 font-medium">
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">PRC License Number</label>
+                    <input type="text" name="prc_number" id="doc_prc" placeholder="PRC-0098412" class="w-full bg-slate-50 px-3 py-2 rounded-xl border border-slate-300 font-mono font-medium">
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">PTR Number</label>
+                    <input type="text" name="ptr_number" id="doc_ptr" placeholder="PTR-8842109" class="w-full bg-slate-50 px-3 py-2 rounded-xl border border-slate-300 font-mono font-medium">
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Role</label>
+                    <select name="role" id="doc_role" class="w-full bg-slate-50 px-3 py-2 rounded-xl border border-slate-300 font-semibold">
+                        <option value="Doctor">Doctor</option>
+                        <option value="Administrator">Administrator</option>
+                        <option value="Developer">Developer</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Avatar Image URL</label>
+                    <input type="text" name="avatar" id="doc_avatar" placeholder="https://..." class="w-full bg-slate-50 px-3 py-2 rounded-xl border border-slate-300 font-medium">
+                </div>
+            </div>
+
+            <hr class="border-slate-200">
+
+            <!-- E-Signature Section -->
+            <div class="space-y-2">
+                <label class="block font-bold text-slate-700">Official E-Signature (Image File or Data URL)</label>
+                <div class="flex items-center gap-3">
+                    <input type="file" name="esignature_file" accept="image/*" class="text-xs text-slate-600">
+                    <span class="text-xs text-slate-400 font-semibold">OR Data String:</span>
+                </div>
+                <textarea name="esignature_data" id="doc_esignature_data" rows="2" placeholder="data:image/png;base64,..." class="w-full bg-slate-50 p-2.5 rounded-xl border border-slate-300 font-mono text-[11px]"></textarea>
+                <div id="esignature_preview" class="p-2 border border-slate-200 rounded-xl bg-slate-50 hidden">
+                    <p class="text-[10px] text-slate-500 font-bold mb-1">E-Signature Preview:</p>
+                    <img id="img_esignature_preview" src="" class="h-12 object-contain" alt="Signature Preview">
+                </div>
+            </div>
+
+            <!-- Digital Stamp Section -->
+            <div class="space-y-2">
+                <label class="block font-bold text-slate-700">Official Digital Stamp (Image File or Data URL)</label>
+                <div class="flex items-center gap-3">
+                    <input type="file" name="stamp_file" accept="image/*" class="text-xs text-slate-600">
+                    <span class="text-xs text-slate-400 font-semibold">OR Data String:</span>
+                </div>
+                <textarea name="digital_stamp_data" id="doc_digital_stamp_data" rows="2" placeholder="data:image/png;base64,..." class="w-full bg-slate-50 p-2.5 rounded-xl border border-slate-300 font-mono text-[11px]"></textarea>
+                <div id="stamp_preview" class="p-2 border border-slate-200 rounded-xl bg-slate-50 hidden">
+                    <p class="text-[10px] text-slate-500 font-bold mb-1">Digital Stamp Preview:</p>
+                    <img id="img_stamp_preview" src="" class="h-16 object-contain" alt="Stamp Preview">
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-3 border-t border-slate-200">
+                <button type="button" onclick="closeDoctorModal()" class="px-4 py-2 bg-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-300 transition">
+                    Cancel
+                </button>
+                <button type="submit" class="px-5 py-2 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition shadow-sm flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-sm">save</span>
+                    <span>Save Physician Record</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openDoctorModal(doc = null) {
+    const modal = document.getElementById('doctorModal');
+    modal.classList.remove('hidden');
+
+    if (doc) {
+        document.getElementById('docModalTitle').innerText = 'Edit Physician & Credentials';
+        document.getElementById('doc_id').value = doc.id || '';
+        document.getElementById('doc_name').value = doc.name || '';
+        document.getElementById('doc_specialty').value = doc.specialty || '';
+        document.getElementById('doc_email').value = doc.email || '';
+        document.getElementById('doc_password').value = '';
+        document.getElementById('doc_prc').value = doc.prc_number || '';
+        document.getElementById('doc_ptr').value = doc.ptr_number || '';
+        document.getElementById('doc_role').value = doc.role || 'Doctor';
+        document.getElementById('doc_avatar').value = doc.avatar || '';
+
+        document.getElementById('doc_existing_esignature').value = doc.esignature || '';
+        document.getElementById('doc_esignature_data').value = doc.esignature || '';
+        if (doc.esignature) {
+            document.getElementById('esignature_preview').classList.remove('hidden');
+            document.getElementById('img_esignature_preview').src = doc.esignature;
+        } else {
+            document.getElementById('esignature_preview').classList.add('hidden');
+        }
+
+        document.getElementById('doc_existing_digital_stamp').value = doc.digital_stamp || '';
+        document.getElementById('doc_digital_stamp_data').value = doc.digital_stamp || '';
+        if (doc.digital_stamp) {
+            document.getElementById('stamp_preview').classList.remove('hidden');
+            document.getElementById('img_stamp_preview').src = doc.digital_stamp;
+        } else {
+            document.getElementById('stamp_preview').classList.add('hidden');
+        }
+    } else {
+        document.getElementById('docModalTitle').innerText = 'Add New Physician Account';
+        document.getElementById('doc_id').value = '';
+        document.getElementById('doc_name').value = '';
+        document.getElementById('doc_specialty').value = '';
+        document.getElementById('doc_email').value = '';
+        document.getElementById('doc_password').value = '';
+        document.getElementById('doc_prc').value = '';
+        document.getElementById('doc_ptr').value = '';
+        document.getElementById('doc_role').value = 'Doctor';
+        document.getElementById('doc_avatar').value = '';
+        document.getElementById('doc_existing_esignature').value = '';
+        document.getElementById('doc_esignature_data').value = '';
+        document.getElementById('esignature_preview').classList.add('hidden');
+        document.getElementById('doc_existing_digital_stamp').value = '';
+        document.getElementById('doc_digital_stamp_data').value = '';
+        document.getElementById('stamp_preview').classList.add('hidden');
+    }
+}
+
+function closeDoctorModal() {
+    document.getElementById('doctorModal').classList.add('hidden');
+}
 </script>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>

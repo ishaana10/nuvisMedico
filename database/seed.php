@@ -22,7 +22,11 @@ if ($isSqlite) {
             role TEXT DEFAULT 'Doctor',
             color TEXT DEFAULT '#10B981',
             dot_color_class TEXT DEFAULT 'bg-emerald-500',
-            avatar TEXT
+            avatar TEXT,
+            prc_number TEXT,
+            ptr_number TEXT,
+            esignature TEXT,
+            digital_stamp TEXT
         );",
         "CREATE TABLE IF NOT EXISTS clinic_settings (
             setting_key TEXT PRIMARY KEY,
@@ -194,14 +198,17 @@ foreach ($tables as $t) {
 // Default Developer & Doctors with Passwords (Password: "password")
 $defaultPasswordHash = password_hash('password', PASSWORD_DEFAULT);
 
+$sampleSignature = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='250' height='70' viewBox='0 0 250 70'><path d='M10,45 C30,10 60,60 90,25 C110,5 140,55 170,20 C190,5 220,40 240,30' fill='none' stroke='%230f2b5c' stroke-width='3' stroke-linecap='round'/><text x='15' y='62' font-family='cursive, sans-serif' font-size='14' fill='%231e3a8a'>Dr. Sarah Jenkins, MD</text></svg>";
+$sampleStamp = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'><circle cx='60' cy='60' r='54' fill='none' stroke='%231e3a8a' stroke-width='3' stroke-dasharray='4,2'/><circle cx='60' cy='60' r='48' fill='none' stroke='%231e3a8a' stroke-width='1.5'/><text x='60' y='42' font-family='sans-serif' font-size='9' font-weight='bold' fill='%231e3a8a' text-anchor='middle'>OFFICIAL CLINICAL STAMP</text><text x='60' y='62' font-family='sans-serif' font-size='10' font-weight='bold' fill='%230f2b5c' text-anchor='middle'>NUVIS MEDICO</text><text x='60' y='78' font-family='sans-serif' font-size='8' fill='%231e3a8a' text-anchor='middle'>LIC: PRC-0098412</text></svg>";
+
 $doctors = [
-    ['doc-1', 'System Developer', 'Developer / IT Administrator', 'medico@nuvistechnologies.com.fj', $defaultPasswordHash, 'Developer', '#10B981', 'bg-emerald-500', 'assets/images/nuvis_medico_logo.png'],
-    ['doc-2', 'Dr. Sarah Jenkins', 'Internal Medicine', 'sjenkins@clinicflow.com', $defaultPasswordHash, 'Doctor', '#10B981', 'bg-emerald-500', 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=200'],
-    ['doc-3', 'Dr. Marcus Chen', 'Cardiology & Family Practice', 'mchen@clinicflow.com', $defaultPasswordHash, 'Doctor', '#F59E0B', 'bg-amber-500', 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=200'],
-    ['doc-4', 'Dr. Emily Thorne', 'Pediatrics', 'ethorne@clinicflow.com', $defaultPasswordHash, 'Doctor', '#6366F1', 'bg-indigo-500', 'https://images.unsplash.com/photo-1594824813581-22e6900f68ff?auto=format&fit=crop&q=80&w=200'],
-    ['doc-5', 'Dr. A. Patel', 'General Practice', 'apatel@clinicflow.com', $defaultPasswordHash, 'Doctor', '#3B82F6', 'bg-blue-500', 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&q=80&w=200']
+    ['doc-1', 'System Developer', 'Developer / IT Administrator', 'medico@nuvistechnologies.com.fj', $defaultPasswordHash, 'Developer', '#10B981', 'bg-emerald-500', 'assets/images/nuvis_medico_logo.png', 'PRC-DEV-001', 'PTR-DEV-001', $sampleSignature, $sampleStamp],
+    ['doc-2', 'Dr. Sarah Jenkins', 'Internal Medicine', 'sjenkins@clinicflow.com', $defaultPasswordHash, 'Doctor', '#10B981', 'bg-emerald-500', 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=200', 'PRC-0098412', 'PTR-8842109', $sampleSignature, $sampleStamp],
+    ['doc-3', 'Dr. Marcus Chen', 'Cardiology & Family Practice', 'mchen@clinicflow.com', $defaultPasswordHash, 'Doctor', '#F59E0B', 'bg-amber-500', 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=200', 'PRC-0087123', 'PTR-7721092', $sampleSignature, $sampleStamp],
+    ['doc-4', 'Dr. Emily Thorne', 'Pediatrics', 'ethorne@clinicflow.com', $defaultPasswordHash, 'Doctor', '#6366F1', 'bg-indigo-500', 'https://images.unsplash.com/photo-1594824813581-22e6900f68ff?auto=format&fit=crop&q=80&w=200', 'PRC-0076210', 'PTR-6610923', $sampleSignature, $sampleStamp],
+    ['doc-5', 'Dr. A. Patel', 'General Practice', 'apatel@clinicflow.com', $defaultPasswordHash, 'Doctor', '#3B82F6', 'bg-blue-500', 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&q=80&w=200', 'PRC-0065109', 'PTR-5509812', $sampleSignature, $sampleStamp]
 ];
-$stmt = $pdo->prepare("INSERT INTO doctors (id, name, specialty, email, password_hash, role, color, dot_color_class, avatar) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+$stmt = $pdo->prepare("INSERT INTO doctors (id, name, specialty, email, password_hash, role, color, dot_color_class, avatar, prc_number, ptr_number, esignature, digital_stamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 foreach ($doctors as $doc) {
     $stmt->execute($doc);
 }

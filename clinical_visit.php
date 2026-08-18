@@ -1,5 +1,7 @@
 <?php
 $patientId = $_GET['patient_id'] ?? 'pat-1';
+$visitId = $_GET['visit_id'] ?? ''; // Present if editing an existing encounter
+$mode = $_GET['mode'] ?? ($visitId ? 'edit' : 'new');
 
 require_once __DIR__ . '/config/database.php';
 $pdo = getDB();
@@ -39,10 +41,18 @@ $soap = $soapStmt->fetch() ?: [
 
 $assessmentCodes = json_decode($soap['assessment_codes'] ?? '[]', true) ?: [];
 
-// Fetch Prescriptions
-$rxStmt = $pdo->prepare("SELECT * FROM prescriptions WHERE patient_id = ? ORDER BY created_at ASC");
-$rxStmt->execute([$patientId]);
-$prescriptions = $rxStmt->fetchAll();
+// Fetch Prescriptions based on mode (New vs Edit Encounter)
+$prescriptions = [];
+if ($mode === 'edit' || !empty($visitId)) {
+    $rxStmt = $pdo->prepare("SELECT * FROM prescriptions WHERE patient_id = ? ORDER BY created_at ASC");
+    $rxStmt->execute([$patientId]);
+    $prescriptions = $rxStmt->fetchAll();
+}
+
+// Fetch Historical Prescriptions for Patient History tab
+$historicalRxStmt = $pdo->prepare("SELECT * FROM prescriptions WHERE patient_id = ? ORDER BY created_at DESC");
+$historicalRxStmt->execute([$patientId]);
+$historicalPrescriptions = $historicalRxStmt->fetchAll();
 
 $pageTitle = "Clinical Encounter - " . htmlspecialchars($patient['first_name'] . ' ' . $patient['last_name']);
 $activePage = "clinical-visit";
@@ -161,18 +171,27 @@ include __DIR__ . '/includes/header.php';
         </div>
     </div>
 
-    <!-- Right Column (1 Col): Prescriptions Section -->
+    <!-- Right Column (1 Col): Prescriptions Section & History Tab -->
     <div class="space-y-6">
         <div class="bg-surface-container-lowest rounded-2xl border border-outline-variant/30 p-5 shadow-xs">
-            <h2 class="text-xs font-bold text-outline uppercase tracking-wider mb-4 flex items-center gap-2">
-                <span class="material-symbols-outlined text-primary text-base">prescriptions</span>
-                <span>Active Prescriptions</span>
-            </h2>
+            <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-2">
+                <h2 class="text-xs font-bold text-outline uppercase tracking-wider flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-base">prescriptions</span>
+                    <span>Encounter Prescription</span>
+                </h2>
+                <?php if ($mode === 'new'): ?>
+                    <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-bold">New Encounter (Blank Rx)</span>
+                <?php else: ?>
+                    <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-[10px] font-bold">Editing Encounter</span>
+                <?php endif; ?>
+            </div>
 
-            <!-- Existing Prescriptions -->
+            <!-- Current Encounter Prescriptions -->
             <div class="space-y-3 mb-4">
                 <?php if (empty($prescriptions)): ?>
-                    <p class="text-xs text-outline italic">No medications added yet.</p>
+                    <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-500 italic">
+                        Prescription form is blank for this new encounter. Add new medication lines below.
+                    </div>
                 <?php endif; ?>
                 <?php foreach ($prescriptions as $rx): ?>
                     <div class="p-3 rounded-xl bg-surface-container-low border border-outline-variant/30 flex items-start justify-between">
@@ -210,6 +229,33 @@ include __DIR__ . '/includes/header.php';
                     + Add Medication Line
                 </button>
             </div>
+        </div>
+
+        <!-- Prescription History Tab (Previous Prescriptions) -->
+        <div class="bg-surface-container-lowest rounded-2xl border border-outline-variant/30 p-5 shadow-xs">
+            <h2 class="text-xs font-bold text-outline uppercase tracking-wider mb-3 flex items-center gap-2">
+                <span class="material-symbols-outlined text-emerald-600 text-base">history</span>
+                <span>Prescription History</span>
+            </h2>
+
+            <?php if (empty($historicalPrescriptions)): ?>
+                <p class="text-xs text-outline italic">No past prescription history found.</p>
+            <?php else: ?>
+                <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                    <?php foreach ($historicalPrescriptions as $hrx): ?>
+                        <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1">
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-slate-800"><?= htmlspecialchars($hrx['medication_name']) ?> (<?= htmlspecialchars($hrx['dosage']) ?>)</span>
+                                <span class="text-[10px] text-slate-400 font-mono"><?= date('M d, Y', strtotime($hrx['created_at'])) ?></span>
+                            </div>
+                            <p class="text-[11px] text-slate-600"><?= htmlspecialchars($hrx['frequency']) ?> • <?= htmlspecialchars($hrx['duration']) ?></p>
+                            <?php if (!empty($hrx['instructions'])): ?>
+                                <p class="text-[10px] text-slate-500 italic"><?= htmlspecialchars($hrx['instructions']) ?></p>
+                            <?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 </form>
