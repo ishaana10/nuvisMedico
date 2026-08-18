@@ -41,48 +41,62 @@ $toast = getToast();
 </div>
 <?php endif; ?>
 
-<div class="max-w-md w-full bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden relative">
-    <!-- Brand Header with Nuvis Medico logo & assets -->
-    <div class="bg-white p-6 border-b border-slate-100 text-center flex flex-col items-center justify-center">
-        <img src="assets/images/nuvis_medico_logo.png" alt="Nuvis Medico" class="h-16 object-contain mb-2">
-        <div class="flex items-center gap-3 mt-1">
-            <img src="assets/images/stethoscope_heart.png" alt="Stethoscope" class="h-6 object-contain">
-            <span class="text-xs font-semibold text-slate-500 uppercase tracking-widest">Clinical EHR Platform</span>
-            <img src="assets/images/caduceus_logo.png" alt="Caduceus" class="h-6 object-contain">
+<div class="max-w-4xl w-full bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden relative grid grid-cols-1 md:grid-cols-2">
+    <!-- Left Column: Login Form & Branding -->
+    <div class="flex flex-col justify-between">
+        <!-- Brand Header with Nuvis Medico logo & assets -->
+        <div class="bg-white p-6 border-b border-slate-100 text-center flex flex-col items-center justify-center">
+            <img src="assets/images/nuvis_medico_logo.png" alt="Nuvis Medico" class="h-16 object-contain mb-2">
+            <div class="flex items-center gap-3 mt-1">
+                <img src="assets/images/stethoscope_heart.png" alt="Stethoscope" class="h-6 object-contain">
+                <span class="text-xs font-semibold text-slate-500 uppercase tracking-widest">Clinical EHR Platform</span>
+                <img src="assets/images/caduceus_logo.png" alt="Caduceus" class="h-6 object-contain">
+            </div>
+        </div>
+
+        <!-- Login Form -->
+        <div class="p-8">
+            <form action="actions/login.php" method="POST" class="space-y-5 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1.5">Email Address</label>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg">mail</span>
+                        <input type="email" name="email" value="medico@nuvistechnologies.com.fj" required placeholder="medico@nuvistechnologies.com.fj" class="w-full bg-slate-50 pl-10 pr-4 py-3 rounded-xl border border-slate-300 font-medium text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white transition">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1.5">Password</label>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg">lock</span>
+                        <input type="password" name="password" value="password" required placeholder="••••••••" class="w-full bg-slate-50 pl-10 pr-4 py-3 rounded-xl border border-slate-300 font-medium text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white transition">
+                    </div>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" class="w-full py-3.5 bg-blue-900 text-white font-bold text-xs rounded-xl hover:bg-blue-800 transition shadow-md flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-lg">login</span>
+                        <span>Sign In to Clinical Portal</span>
+                    </button>
+                </div>
+            </form>
+
+            <div class="mt-6 p-4 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 space-y-1">
+                <p class="font-bold text-slate-800">Developer / Administrator Credentials:</p>
+                <p>Email: <code class="text-blue-700 font-mono font-bold">medico@nuvistechnologies.com.fj</code></p>
+                <p>Password: <code class="text-blue-700 font-mono font-bold">password</code></p>
+            </div>
         </div>
     </div>
 
-    <!-- Login Form -->
-    <div class="p-8">
-        <form action="actions/login.php" method="POST" class="space-y-5 text-xs">
-            <div>
-                <label class="block font-bold text-slate-700 mb-1.5">Email Address</label>
-                <div class="relative">
-                    <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg">mail</span>
-                    <input type="email" name="email" value="medico@nuvistechnologies.com.fj" required placeholder="medico@nuvistechnologies.com.fj" class="w-full bg-slate-50 pl-10 pr-4 py-3 rounded-xl border border-slate-300 font-medium text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white transition">
-                </div>
+    <!-- Right Column: Hero Image Attachment -->
+    <div class="hidden md:block relative bg-blue-900 overflow-hidden min-h-[450px]">
+        <img src="assets/images/login_hero.jfif" alt="Nuvis Medico Healthcare" class="w-full h-full object-cover">
+        <div class="absolute inset-0 bg-gradient-to-t from-blue-950/80 via-blue-950/20 to-transparent flex items-end p-8">
+            <div class="text-white">
+                <h3 class="text-xl font-bold">Nuvis Medico Healthcare</h3>
+                <p class="text-xs text-blue-100 mt-1 leading-relaxed">Comprehensive electronic medical records, clinical decision support & patient care management platform.</p>
             </div>
-
-            <div>
-                <label class="block font-bold text-slate-700 mb-1.5">Password</label>
-                <div class="relative">
-                    <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg">lock</span>
-                    <input type="password" name="password" value="password" required placeholder="••••••••" class="w-full bg-slate-50 pl-10 pr-4 py-3 rounded-xl border border-slate-300 font-medium text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white transition">
-                </div>
-            </div>
-
-            <div class="pt-2">
-                <button type="submit" class="w-full py-3.5 bg-blue-900 text-white font-bold text-xs rounded-xl hover:bg-blue-800 transition shadow-md flex items-center justify-center gap-2">
-                    <span class="material-symbols-outlined text-lg">login</span>
-                    <span>Sign In to Clinical Portal</span>
-                </button>
-            </div>
-        </form>
-
-        <div class="mt-6 p-4 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 space-y-1">
-            <p class="font-bold text-slate-800">Developer / Administrator Credentials:</p>
-            <p>Email: <code class="text-blue-700 font-mono font-bold">medico@nuvistechnologies.com.fj</code></p>
-            <p>Password: <code class="text-blue-700 font-mono font-bold">password</code></p>
         </div>
     </div>
 </div>
