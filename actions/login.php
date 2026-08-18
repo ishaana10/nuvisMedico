@@ -23,6 +23,12 @@ $stmt = $pdo->prepare("SELECT * FROM doctors WHERE email = ? LIMIT 1");
 $stmt->execute([$email]);
 $user = $stmt->fetch();
 
+if ($user && isset($user['is_active']) && (int)$user['is_active'] === 0) {
+    setToast('Account Disabled', 'Your user account has been deactivated. Please contact an administrator.', 'error');
+    header("Location: ../login.php");
+    exit;
+}
+
 if ($user && (!empty($user['password_hash']) ? password_verify($password, $user['password_hash']) : $password === 'password')) {
     $_SESSION['authenticated'] = true;
     $_SESSION['user_id'] = $user['id'];
