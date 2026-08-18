@@ -53,10 +53,10 @@ $soap = $soapStmt->fetch();
 $assessmentCodes = json_decode($soap['assessment_codes'] ?? '[]', true) ?: [];
 
 // Get attending doctor details
-$docId = $_SESSION['current_doctor_id'] ?? 'doc-1';
-$docStmt = $pdo->prepare("SELECT * FROM doctors WHERE id = ?");
+$docId = $_SESSION['current_doctor_id'] ?? 'doc-2';
+$docStmt = $pdo->prepare("SELECT * FROM doctors WHERE id = ? OR role = 'Doctor'");
 $docStmt->execute([$docId]);
-$attendingDoc = $docStmt->fetch() ?: ['name' => 'Dr. Sarah Jenkins', 'specialty' => 'Internal Medicine'];
+$attendingDoc = $docStmt->fetch() ?: ['name' => 'Dr. Sarah Jenkins', 'specialty' => 'Internal Medicine', 'prc_number' => 'PRC-0098412', 'ptr_number' => 'PTR-8842109'];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -160,13 +160,21 @@ $attendingDoc = $docStmt->fetch() ?: ['name' => 'Dr. Sarah Jenkins', 'specialty'
     <!-- Physician Signature Block -->
     <div class="pt-6 border-t border-slate-300 flex justify-between items-end text-xs">
         <div>
+            <?php if (!empty($attendingDoc['digital_stamp'])): ?>
+                <img src="<?= $attendingDoc['digital_stamp'] ?>" class="h-24 object-contain opacity-90 mb-1" alt="Official Stamp">
+            <?php endif; ?>
             <p class="text-slate-500 text-[10px] uppercase font-semibold">Substitution</p>
             <p class="font-medium text-slate-700">Refill: [ ] 0  [ ] 1  [ ] 2  [ ] 3  [ ] PRN</p>
         </div>
-        <div class="text-right w-64">
-            <div class="border-b border-slate-400 mb-1 pb-2 font-serif text-lg font-bold text-blue-900 italic"><?= htmlspecialchars($attendingDoc['name']) ?></div>
+        <div class="text-right w-64 relative">
+            <?php if (!empty($attendingDoc['esignature'])): ?>
+                <img src="<?= $attendingDoc['esignature'] ?>" class="h-14 object-contain ml-auto -mb-3 relative z-10" alt="E-Signature">
+            <?php endif; ?>
+            <div class="border-b border-slate-400 mb-1 pb-1 font-serif text-lg font-bold text-blue-900 italic"><?= htmlspecialchars($attendingDoc['name']) ?></div>
             <p class="font-bold text-slate-800"><?= htmlspecialchars($attendingDoc['name']) ?></p>
             <p class="text-slate-500"><?= htmlspecialchars($attendingDoc['specialty']) ?></p>
+            <p class="text-[10px] font-mono text-slate-500 mt-0.5">PRC No: <?= htmlspecialchars($attendingDoc['prc_number'] ?? $settings['doc_prc_no'] ?? 'N/A') ?></p>
+            <p class="text-[10px] font-mono text-slate-500">PTR No: <?= htmlspecialchars($attendingDoc['ptr_number'] ?? $settings['doc_ptr_no'] ?? 'N/A') ?></p>
         </div>
     </div>
 </div>

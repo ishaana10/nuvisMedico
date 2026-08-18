@@ -9,7 +9,11 @@ CREATE TABLE IF NOT EXISTS doctors (
     role VARCHAR(50) DEFAULT 'Doctor',
     color VARCHAR(20) DEFAULT '#10B981',
     dot_color_class VARCHAR(50) DEFAULT 'bg-emerald-500',
-    avatar TEXT
+    avatar TEXT,
+    prc_number VARCHAR(100),
+    ptr_number VARCHAR(100),
+    esignature TEXT,
+    digital_stamp TEXT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS clinic_settings (

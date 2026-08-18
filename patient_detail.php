@@ -65,9 +65,13 @@ foreach ($settingsRows as $sr) {
         </div>
 
         <div class="flex flex-wrap items-center gap-3">
+            <button onclick="document.getElementById('editPatientModal').classList.remove('hidden')" class="px-4 py-2 bg-slate-800 text-white text-xs font-semibold rounded-xl hover:bg-slate-900 transition shadow-xs flex items-center gap-2">
+                <span class="material-symbols-outlined text-base">edit</span>
+                <span>Edit Patient Info</span>
+            </button>
             <button onclick="document.getElementById('issueMedCertModal').classList.remove('hidden')" class="px-4 py-2 bg-emerald-600 text-white text-xs font-semibold rounded-xl hover:bg-emerald-700 transition shadow-xs flex items-center gap-2">
                 <span class="material-symbols-outlined text-base">workspace_premium</span>
-                <span>Issue Medical Certificate</span>
+                <span>Issue Certificate</span>
             </button>
             <a href="clinical_visit.php?patient_id=<?= htmlspecialchars($patient['id']) ?>" class="px-4 py-2 bg-primary text-white text-xs font-semibold rounded-xl hover:bg-primary/90 transition shadow-xs flex items-center gap-2">
                 <span class="material-symbols-outlined text-base">clinical_notes</span>
@@ -220,6 +224,130 @@ foreach ($settingsRows as $sr) {
                 </div>
             <?php endif; ?>
         </div>
+    </div>
+</div>
+
+<!-- Modal: Edit Patient Info -->
+<div id="editPatientModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden my-8">
+        <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+            <h3 class="font-bold text-sm flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-base">person_edit</span>
+                <span>Edit Patient Information</span>
+            </h3>
+            <button onclick="document.getElementById('editPatientModal').classList.add('hidden')" class="text-slate-400 hover:text-white">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <form action="actions/patient_update.php" method="POST" class="p-6 space-y-4 text-xs">
+            <input type="hidden" name="patient_id" value="<?= htmlspecialchars($patient['id']) ?>">
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">First Name <span class="text-red-500">*</span></label>
+                    <input type="text" name="first_name" value="<?= htmlspecialchars($patient['first_name']) ?>" required class="w-full bg-slate-50 px-3 py-2 rounded-xl border border-slate-300 font-bold">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Last Name <span class="text-red-500">*</span></label>
+                    <input type="text" name="last_name" value="<?= htmlspecialchars($patient['last_name']) ?>" required class="w-full bg-slate-50 px-3 py-2 rounded-xl border border-slate-300 font-bold">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Date of Birth <span class="text-red-500">*</span></label>
+                    <input type="date" name="dob" value="<?= htmlspecialchars($patient['dob']) ?>" required class="w-full bg-slate-50 px-3 py-2 rounded-xl border border-slate-300 font-medium">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Gender</label>
+                    <select name="gender" class="w-full bg-slate-50 px-3 py-2 rounded-xl border border-slate-300 font-semibold">
+                        <option value="Female" <?= $patient['gender'] === 'Female' ? 'selected' : '' ?>>Female</option>
+                        <option value="Male" <?= $patient['gender'] === 'Male' ? 'selected' : '' ?>>Male</option>
+                        <option value="Other" <?= $patient['gender'] === 'Other' ? 'selected' : '' ?>>Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Blood Group</label>
+                    <input type="text" name="blood_group" value="<?= htmlspecialchars($patient['blood_group'] ?? '') ?>" placeholder="e.g. O+, A-, B+" class="w-full bg-slate-50 px-3 py-2 rounded-xl border border-slate-300 font-bold text-primary">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Phone Number</label>
+                    <input type="text" name="phone" value="<?= htmlspecialchars($patient['phone'] ?? '') ?>" class="w-full bg-slate-50 px-3 py-2 rounded-xl border border-slate-300 font-medium">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block font-bold text-slate-700 mb-1">Email Address</label>
+                    <input type="email" name="email" value="<?= htmlspecialchars($patient['email'] ?? '') ?>" class="w-full bg-slate-50 px-3 py-2 rounded-xl border border-slate-300 font-medium">
+                </div>
+                <div class="md:col-span-3">
+                    <label class="block font-bold text-slate-700 mb-1">Address</label>
+                    <input type="text" name="address" value="<?= htmlspecialchars($patient['address'] ?? '') ?>" class="w-full bg-slate-50 px-3 py-2 rounded-xl border border-slate-300 font-medium">
+                </div>
+            </div>
+
+            <hr class="border-slate-200">
+
+            <!-- Emergency Contact -->
+            <p class="font-bold text-slate-800 text-xs">Emergency Contact Details</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Contact Name</label>
+                    <input type="text" name="emergency_contact_name" value="<?= htmlspecialchars($patient['emergency_contact_name'] ?? '') ?>" class="w-full bg-slate-50 px-3 py-2 rounded-xl border border-slate-300 font-medium">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Relationship</label>
+                    <input type="text" name="emergency_contact_relationship" value="<?= htmlspecialchars($patient['emergency_contact_relationship'] ?? '') ?>" class="w-full bg-slate-50 px-3 py-2 rounded-xl border border-slate-300 font-medium">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Phone Number</label>
+                    <input type="text" name="emergency_contact_phone" value="<?= htmlspecialchars($patient['emergency_contact_phone'] ?? '') ?>" class="w-full bg-slate-50 px-3 py-2 rounded-xl border border-slate-300 font-medium">
+                </div>
+            </div>
+
+            <hr class="border-slate-200">
+
+            <!-- Insurance Info -->
+            <p class="font-bold text-slate-800 text-xs">Insurance Information</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Insurance Provider</label>
+                    <input type="text" name="insurance_provider" value="<?= htmlspecialchars($patient['insurance_provider'] ?? '') ?>" class="w-full bg-slate-50 px-3 py-2 rounded-xl border border-slate-300 font-medium">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Policy Number</label>
+                    <input type="text" name="insurance_policy_number" value="<?= htmlspecialchars($patient['insurance_policy_number'] ?? '') ?>" class="w-full bg-slate-50 px-3 py-2 rounded-xl border border-slate-300 font-mono font-medium">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Group Number</label>
+                    <input type="text" name="insurance_group_number" value="<?= htmlspecialchars($patient['insurance_group_number'] ?? '') ?>" class="w-full bg-slate-50 px-3 py-2 rounded-xl border border-slate-300 font-mono font-medium">
+                </div>
+            </div>
+
+            <hr class="border-slate-200">
+
+            <!-- Clinical Alerts -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Known Allergies</label>
+                    <textarea name="known_allergies" rows="2" class="w-full bg-slate-50 p-2.5 rounded-xl border border-slate-300 font-medium"><?= htmlspecialchars($patient['known_allergies'] ?? '') ?></textarea>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Chronic Conditions</label>
+                    <textarea name="chronic_conditions" rows="2" class="w-full bg-slate-50 p-2.5 rounded-xl border border-slate-300 font-medium"><?= htmlspecialchars($patient['chronic_conditions'] ?? '') ?></textarea>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block font-bold text-slate-700 mb-1">Clinical Notes</label>
+                    <textarea name="clinical_notes" rows="2" class="w-full bg-slate-50 p-2.5 rounded-xl border border-slate-300 font-medium"><?= htmlspecialchars($patient['clinical_notes'] ?? '') ?></textarea>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
+                <button type="button" onclick="document.getElementById('editPatientModal').classList.add('hidden')" class="px-4 py-2 bg-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-300 transition">
+                    Cancel
+                </button>
+                <button type="submit" class="px-5 py-2 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition shadow-sm flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-sm">save</span>
+                    <span>Save Patient Changes</span>
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 

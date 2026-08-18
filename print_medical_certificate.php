@@ -50,8 +50,21 @@ if (!$patient) {
     die("Patient profile not found.");
 }
 
-$prcNo = $cert['prc_number'] ?: ($settings['doc_prc_no'] ?? 'PRC-0098412');
-$ptrNo = $cert['ptr_number'] ?: ($settings['doc_ptr_no'] ?? 'PTR-8842109');
+// Fetch Attending Doctor details for e-signature, stamp, PRC, PTR
+$doctor = null;
+if (!empty($cert['doctor_name'])) {
+    $stmt = $pdo->prepare("SELECT * FROM doctors WHERE name = ? OR name LIKE ?");
+    $stmt->execute([$cert['doctor_name'], '%' . $cert['doctor_name'] . '%']);
+    $doctor = $stmt->fetch();
+}
+if (!$doctor) {
+    $doctor = $pdo->query("SELECT * FROM doctors WHERE role = 'Doctor' LIMIT 1")->fetch();
+}
+
+$prcNo = $cert['prc_number'] ?: ($doctor['prc_number'] ?? $settings['doc_prc_no'] ?? 'PRC-0098412');
+$ptrNo = $cert['ptr_number'] ?: ($doctor['ptr_number'] ?? $settings['doc_ptr_no'] ?? 'PTR-8842109');
+$esignature = $doctor['esignature'] ?? '';
+$digitalStamp = $doctor['digital_stamp'] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -155,9 +168,19 @@ $ptrNo = $cert['ptr_number'] ?: ($settings['doc_ptr_no'] ?? 'PTR-8842109');
             </p>
         </div>
 
-        <!-- Physician Signature Block -->
-        <div class="pt-8 border-t border-slate-300 flex justify-end">
-            <div class="text-center w-72">
+        <!-- Physician Signature Block & Digital Stamp -->
+        <div class="pt-8 border-t border-slate-300 flex justify-between items-end">
+            <div>
+                <?php if (!empty($digitalStamp)): ?>
+                    <img src="<?= $digitalStamp ?>" class="h-28 object-contain opacity-90" alt="Official Digital Stamp">
+                <?php endif; ?>
+            </div>
+
+            <div class="text-center w-72 relative">
+                <?php if (!empty($esignature)): ?>
+                    <img src="<?= $esignature ?>" class="h-16 object-contain mx-auto -mb-4 relative z-10" alt="E-Signature">
+                <?php endif; ?>
+
                 <div class="border-b border-slate-900 pb-1 mb-2 font-serif text-lg font-bold text-slate-900 italic">
                     <?= htmlspecialchars($cert['doctor_name']) ?>
                 </div>
