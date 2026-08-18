@@ -19,7 +19,7 @@ $toast = getToast();
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Login - ClinicFlow Medical Center</title>
+    <title>Login - Nuvis Medico Healthcare</title>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -59,7 +59,7 @@ $toast = getToast();
                 <label class="block font-bold text-slate-700 mb-1.5">Email Address</label>
                 <div class="relative">
                     <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg">mail</span>
-                    <input type="email" name="email" value="admin@clinicflow.com" required placeholder="name@clinicflow.com" class="w-full bg-slate-50 pl-10 pr-4 py-3 rounded-xl border border-slate-300 font-medium text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white transition">
+                    <input type="email" name="email" value="medico@nuvistechnologies.com.fj" required placeholder="medico@nuvistechnologies.com.fj" class="w-full bg-slate-50 pl-10 pr-4 py-3 rounded-xl border border-slate-300 font-medium text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white transition">
                 </div>
             </div>
 
@@ -80,8 +80,8 @@ $toast = getToast();
         </form>
 
         <div class="mt-6 p-4 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 space-y-1">
-            <p class="font-bold text-slate-800">Demo Administrator Credentials:</p>
-            <p>Email: <code class="text-blue-700 font-mono font-bold">admin@clinicflow.com</code></p>
+            <p class="font-bold text-slate-800">Developer / Administrator Credentials:</p>
+            <p>Email: <code class="text-blue-700 font-mono font-bold">medico@nuvistechnologies.com.fj</code></p>
             <p>Password: <code class="text-blue-700 font-mono font-bold">password</code></p>
         </div>
     </div>
