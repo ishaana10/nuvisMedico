@@ -49,10 +49,10 @@ $navItems = [
 </aside>
 
 <!-- Mobile Overlay Backdrop -->
-<div id="mobileBackdrop" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-40 hidden md:hidden transition-opacity"></div>
+<div id="mobileBackdrop" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[60] hidden md:hidden transition-opacity"></div>
 
 <!-- Mobile Drawer Sidebar -->
-<aside id="mobileSidebar" class="fixed top-0 left-0 bottom-0 w-72 bg-surface-container-lowest z-50 transform -translate-x-full transition-transform duration-300 ease-in-out md:hidden flex flex-col justify-between p-5 shadow-2xl border-r border-outline-variant/30">
+<aside id="mobileSidebar" class="fixed top-0 left-0 bottom-0 w-[280px] sm:w-72 bg-surface-container-lowest z-[70] transform -translate-x-full transition-transform duration-300 ease-in-out md:hidden flex flex-col justify-between p-5 shadow-2xl border-r border-outline-variant/30 overflow-y-auto">
     <div class="space-y-4">
         <div class="flex items-center justify-between border-b border-outline-variant/30 pb-3">
             <div class="flex items-center gap-2">
@@ -93,9 +93,11 @@ function toggleMobileSidebar() {
     const backdrop = document.getElementById('mobileBackdrop');
     if (sidebar.classList.contains('-translate-x-full')) {
         sidebar.classList.remove('-translate-x-full');
+        sidebar.classList.add('translate-x-0');
         backdrop.classList.remove('hidden');
     } else {
         sidebar.classList.add('-translate-x-full');
+        sidebar.classList.remove('translate-x-0');
         backdrop.classList.add('hidden');
     }
 }
