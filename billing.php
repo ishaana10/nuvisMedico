@@ -100,6 +100,7 @@ $totalCollected = array_reduce($invoices, fn($acc, $i) => $i['status'] === 'Paid
                             </a>
                             <?php if ($inv['status'] !== 'Paid'): ?>
                                 <form action="actions/billing_pay.php" method="POST" class="inline">
+                                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
                                     <input type="hidden" name="invoice_id" value="<?= htmlspecialchars($inv['id']) ?>">
                                     <button type="submit" class="px-2.5 py-1 bg-emerald-600 text-white rounded-lg text-[11px] font-semibold hover:bg-emerald-700 transition">
                                         Mark Paid

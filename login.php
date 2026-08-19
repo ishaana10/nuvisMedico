@@ -21,7 +21,7 @@ $csrfToken = generateCsrfToken();
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Login - Nuvis Medico Healthcare</title>
+    <title>Login - Nuvis Medcare X</title>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -46,12 +46,12 @@ $csrfToken = generateCsrfToken();
 <div class="max-w-4xl w-full bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden relative grid grid-cols-1 md:grid-cols-2">
     <!-- Left Column: Login Form & Branding -->
     <div class="flex flex-col justify-between">
-        <!-- Brand Header with Nuvis Medico logo & assets -->
+        <!-- Brand Header with Nuvis Medcare X logo & assets -->
         <div class="bg-white p-6 border-b border-slate-100 text-center flex flex-col items-center justify-center">
-            <img src="assets/images/nuvis_medico_logo.png" alt="Nuvis Medico" class="h-16 object-contain mb-2">
+            <img src="assets/images/NuvisMedcareX_logo.jpg" alt="Nuvis Medcare X" class="h-16 object-contain mb-2 rounded-lg">
             <div class="flex items-center gap-3 mt-1">
                 <img src="assets/images/stethoscope_heart.png" alt="Stethoscope" class="h-6 object-contain">
-                <span class="text-xs font-semibold text-slate-500 uppercase tracking-widest">Clinical EHR Platform</span>
+                <span class="text-xs font-semibold text-slate-500 uppercase tracking-widest">Nuvis Medcare X EHR Platform</span>
                 <img src="assets/images/caduceus_logo.png" alt="Caduceus" class="h-6 object-contain">
             </div>
         </div>
@@ -94,11 +94,12 @@ $csrfToken = generateCsrfToken();
 
     <!-- Right Column: Hero Image Attachment -->
     <div class="hidden md:block relative bg-blue-900 overflow-hidden min-h-[450px]">
-        <img src="assets/images/login_hero.jfif" alt="Nuvis Medico Healthcare" class="w-full h-full object-cover">
+        <img src="assets/images/login_hero.jfif" alt="Nuvis Medcare X" class="w-full h-full object-cover">
         <div class="absolute inset-0 bg-gradient-to-t from-blue-950/80 via-blue-950/20 to-transparent flex items-end p-8">
             <div class="text-white">
-                <h3 class="text-xl font-bold">Nuvis Medico Healthcare</h3>
-                <p class="text-xs text-blue-100 mt-1 leading-relaxed">Comprehensive electronic medical records, clinical decision support & patient care management platform.</p>
+                <h3 class="text-xl font-bold">Nuvis Medcare X</h3>
+                <p class="text-xs font-semibold text-blue-200 mb-1">by Nuvis Technologies</p>
+                <p class="text-xs text-blue-100 leading-relaxed">Comprehensive electronic medical records, clinical decision support & patient care management platform.</p>
             </div>
         </div>
     </div>
