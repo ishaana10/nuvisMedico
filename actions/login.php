@@ -41,18 +41,8 @@ if ($user && isset($user['is_active']) && (int)$user['is_active'] === 0) {
 }
 
 $valid = false;
-if ($user) {
-    if (!empty($user['password_hash'])) {
-        $valid = password_verify($password, $user['password_hash']);
-    } else {
-        // Migration mode: if password equals 'password' for seeded users, verify and upgrade to hash
-        if ($password === 'password') {
-            $valid = true;
-            $newHash = password_hash($password, PASSWORD_BCRYPT);
-            $updateStmt = $pdo->prepare("UPDATE doctors SET password_hash = ? WHERE id = ?");
-            $updateStmt->execute([$newHash, $user['id']]);
-        }
-    }
+if ($user && !empty($user['password_hash'])) {
+    $valid = password_verify($password, $user['password_hash']);
 }
 
 if ($valid && $user) {
