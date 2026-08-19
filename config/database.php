@@ -117,6 +117,24 @@ function ensureDoctorColumnsExist(PDO $pdo): void {
                 $pdo->exec("ALTER TABLE doctors ADD COLUMN {$colName} {$colDef}");
             }
         }
+
+        // Auto-migrate visit_id for prescriptions table
+        $rxCols = [];
+        if ($driver === 'sqlite') {
+            $stmt = $pdo->query("PRAGMA table_info(prescriptions)");
+            while ($row = $stmt->fetch()) {
+                $rxCols[] = strtolower($row['name']);
+            }
+        } else {
+            $stmt = $pdo->query("DESCRIBE prescriptions");
+            while ($row = $stmt->fetch()) {
+                $rxCols[] = strtolower($row['Field']);
+            }
+        }
+
+        if (!in_array('visit_id', $rxCols)) {
+            $pdo->exec("ALTER TABLE prescriptions ADD COLUMN visit_id VARCHAR(100)");
+        }
     } catch (Exception $e) {
         // Table might not exist yet during fresh install
     }

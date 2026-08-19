@@ -13,6 +13,7 @@ $pdo = getDB();
 
 $action = $_REQUEST['action'] ?? 'save';
 $patientId = $_REQUEST['patient_id'] ?? '';
+$visitId = $_REQUEST['visit_id'] ?? '';
 
 if ($patientId === '') {
     header("Location: ../patients.php");
@@ -26,11 +27,55 @@ if ($action === 'delete_rx') {
         $stmt->execute([$rxId, $patientId]);
         setToast("Medication Removed", "Prescription line removed.", "info");
     }
-    header("Location: ../clinical_visit.php?patient_id=$patientId");
+    header("Location: ../clinical_visit.php?patient_id=$patientId&visit_id=$visitId");
+    exit;
+}
+
+if ($action === 'copy_rx') {
+    $rxId = $_GET['rx_id'] ?? '';
+    if ($rxId !== '') {
+        $stmt = $pdo->prepare("SELECT * FROM prescriptions WHERE id = ? AND patient_id = ?");
+        $stmt->execute([$rxId, $patientId]);
+        $oldRx = $stmt->fetch();
+
+        if ($oldRx) {
+            $newRxId = "rx-" . time() . '-' . rand(100, 999);
+            $copyStmt = $pdo->prepare("INSERT INTO prescriptions (id, patient_id, visit_id, medication_name, dosage, frequency, duration, instructions) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            $copyStmt->execute([
+                $newRxId,
+                $patientId,
+                $visitId,
+                $oldRx['medication_name'],
+                $oldRx['dosage'],
+                $oldRx['frequency'],
+                $oldRx['duration'],
+                $oldRx['instructions']
+            ]);
+            setToast("Medication Copied", "Copied " . $oldRx['medication_name'] . " to current encounter.");
+        }
+    }
+    header("Location: ../clinical_visit.php?patient_id=$patientId&visit_id=$visitId");
     exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if ($action === 'edit_rx') {
+        $rxId = trim($_POST['rx_id'] ?? '');
+        $medName = trim($_POST['medication_name'] ?? '');
+        $dosage = trim($_POST['dosage'] ?? '');
+        $frequency = trim($_POST['frequency'] ?? '');
+        $duration = trim($_POST['duration'] ?? '');
+        $instructions = trim($_POST['instructions'] ?? '');
+
+        if ($rxId !== '' && $medName !== '') {
+            $updateStmt = $pdo->prepare("UPDATE prescriptions SET medication_name = ?, dosage = ?, frequency = ?, duration = ?, instructions = ? WHERE id = ? AND patient_id = ?");
+            $updateStmt->execute([$medName, $dosage, $frequency, $duration, $instructions, $rxId, $patientId]);
+            setToast("Medication Updated", "Prescription line updated successfully.");
+        }
+        header("Location: ../clinical_visit.php?patient_id=$patientId&visit_id=$visitId");
+        exit;
+    }
+
     if (isset($_POST['add_rx'])) {
         $medName = trim($_POST['medication_name'] ?? '');
         $dosage = trim($_POST['dosage'] ?? '');
@@ -39,12 +84,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $instructions = trim($_POST['instructions'] ?? '');
 
         if ($medName !== '') {
-            $rxId = "rx-" . time();
-            $stmt = $pdo->prepare("INSERT INTO prescriptions (id, patient_id, medication_name, dosage, frequency, duration, instructions) VALUES (?, ?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$rxId, $patientId, $medName, $dosage, $frequency, $duration, $instructions]);
+            $rxId = "rx-" . time() . '-' . rand(100, 999);
+            $stmt = $pdo->prepare("INSERT INTO prescriptions (id, patient_id, visit_id, medication_name, dosage, frequency, duration, instructions) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$rxId, $patientId, $visitId, $medName, $dosage, $frequency, $duration, $instructions]);
             setToast("Medication Added", "$medName $dosage added to prescription.");
         }
-        header("Location: ../clinical_visit.php?patient_id=$patientId");
+        header("Location: ../clinical_visit.php?patient_id=$patientId&visit_id=$visitId");
         exit;
     }
 
@@ -112,7 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         } else {
             setToast("Changes Saved", "Vitals and SOAP notes updated successfully.");
-            header("Location: ../clinical_visit.php?patient_id=$patientId");
+            header("Location: ../clinical_visit.php?patient_id=$patientId&visit_id=$visitId");
             exit;
         }
     }
