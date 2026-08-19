@@ -1,7 +1,6 @@
 <?php
 $patientId = $_GET['patient_id'] ?? 'pat-1';
-$visitId = $_GET['visit_id'] ?? ''; // Present if editing an existing encounter
-$mode = $_GET['mode'] ?? ($visitId ? 'edit' : 'new');
+$visitId = $_GET['visit_id'] ?? ('visit-' . date('Ymd') . '-' . substr(md5($patientId . time()), 0, 6));
 
 require_once __DIR__ . '/config/database.php';
 $pdo = getDB();
@@ -41,17 +40,14 @@ $soap = $soapStmt->fetch() ?: [
 
 $assessmentCodes = json_decode($soap['assessment_codes'] ?? '[]', true) ?: [];
 
-// Fetch Prescriptions based on mode (New vs Edit Encounter)
-$prescriptions = [];
-if ($mode === 'edit' || !empty($visitId)) {
-    $rxStmt = $pdo->prepare("SELECT * FROM prescriptions WHERE patient_id = ? ORDER BY created_at ASC");
-    $rxStmt->execute([$patientId]);
-    $prescriptions = $rxStmt->fetchAll();
-}
+// Fetch Prescriptions for THIS encounter only (visit_id)
+$rxStmt = $pdo->prepare("SELECT * FROM prescriptions WHERE patient_id = ? AND (visit_id = ? OR visit_id IS NULL AND datetime(created_at) >= datetime('now', '-10 minutes')) ORDER BY created_at ASC");
+$rxStmt->execute([$patientId, $visitId]);
+$prescriptions = $rxStmt->fetchAll();
 
-// Fetch Historical Prescriptions for Patient History tab
-$historicalRxStmt = $pdo->prepare("SELECT * FROM prescriptions WHERE patient_id = ? ORDER BY created_at DESC");
-$historicalRxStmt->execute([$patientId]);
+// Fetch Historical Prescriptions for Patient History (excluding current encounter visit_id)
+$historicalRxStmt = $pdo->prepare("SELECT * FROM prescriptions WHERE patient_id = ? AND (visit_id IS NULL OR visit_id != ?) ORDER BY created_at DESC");
+$historicalRxStmt->execute([$patientId, $visitId]);
 $historicalPrescriptions = $historicalRxStmt->fetchAll();
 
 $pageTitle = "Clinical Encounter - " . htmlspecialchars($patient['first_name'] . ' ' . $patient['last_name']);
@@ -84,12 +80,13 @@ include __DIR__ . '/includes/header.php';
                 <span class="material-symbols-outlined text-base">workspace_premium</span>
                 <span>Medical Cert</span>
             </button>
-            <a href="print_prescription.php?patient_id=<?= htmlspecialchars($patient['id']) ?>" target="_blank" class="px-3.5 py-2 bg-surface-container-high text-primary font-semibold text-xs rounded-xl hover:bg-surface-container-highest transition flex items-center gap-1.5">
+            <a href="print_prescription.php?patient_id=<?= htmlspecialchars($patient['id']) ?>&visit_id=<?= htmlspecialchars($visitId) ?>" target="_blank" class="px-3.5 py-2 bg-surface-container-high text-primary font-semibold text-xs rounded-xl hover:bg-surface-container-highest transition flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-base">print</span>
                 <span>Print Rx</span>
             </a>
             <form action="actions/encounter_save.php" method="POST">
                 <input type="hidden" name="patient_id" value="<?= htmlspecialchars($patient['id']) ?>">
+                <input type="hidden" name="visit_id" value="<?= htmlspecialchars($visitId) ?>">
                 <input type="hidden" name="action" value="finish">
                 <button type="submit" class="px-4 py-2 bg-emerald-600 text-white font-semibold text-xs rounded-xl hover:bg-emerald-700 transition shadow-xs flex items-center gap-1.5">
                     <span class="material-symbols-outlined text-base">task_alt</span>
@@ -102,6 +99,7 @@ include __DIR__ . '/includes/header.php';
 
 <form action="actions/encounter_save.php" method="POST" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <input type="hidden" name="patient_id" value="<?= htmlspecialchars($patient['id']) ?>">
+    <input type="hidden" name="visit_id" value="<?= htmlspecialchars($visitId) ?>">
     <input type="hidden" name="action" value="save">
 
     <!-- Left Column (2 Cols): Vitals & SOAP Notes -->
@@ -177,34 +175,37 @@ include __DIR__ . '/includes/header.php';
             <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-2">
                 <h2 class="text-xs font-bold text-outline uppercase tracking-wider flex items-center gap-2">
                     <span class="material-symbols-outlined text-primary text-base">prescriptions</span>
-                    <span>Encounter Prescription</span>
+                    <span>Current Encounter Prescription</span>
                 </h2>
-                <?php if ($mode === 'new'): ?>
-                    <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-bold">New Encounter (Blank Rx)</span>
-                <?php else: ?>
-                    <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-[10px] font-bold">Editing Encounter</span>
-                <?php endif; ?>
+                <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">Active Encounter</span>
             </div>
 
-            <!-- Current Encounter Prescriptions -->
+            <!-- Current Encounter Prescriptions List -->
             <div class="space-y-3 mb-4">
                 <?php if (empty($prescriptions)): ?>
                     <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-500 italic">
-                        Prescription form is blank for this new encounter. Add new medication lines below.
+                        Prescription form is blank for this encounter. Add new medication lines below.
                     </div>
                 <?php endif; ?>
+
                 <?php foreach ($prescriptions as $rx): ?>
-                    <div class="p-3 rounded-xl bg-surface-container-low border border-outline-variant/30 flex items-start justify-between">
-                        <div>
-                            <p class="font-bold text-xs text-on-surface"><?= htmlspecialchars($rx['medication_name']) ?> <span class="text-primary font-mono"><?= htmlspecialchars($rx['dosage']) ?></span></p>
+                    <div class="p-3 rounded-xl bg-surface-container-low border border-outline-variant/30 flex items-start justify-between gap-2 text-xs">
+                        <div class="flex-1">
+                            <p class="font-bold text-on-surface"><?= htmlspecialchars($rx['medication_name']) ?> <span class="text-primary font-mono"><?= htmlspecialchars($rx['dosage']) ?></span></p>
                             <p class="text-[11px] text-outline mt-0.5"><?= htmlspecialchars($rx['frequency']) ?> • <?= htmlspecialchars($rx['duration']) ?></p>
                             <?php if (!empty($rx['instructions'])): ?>
                                 <p class="text-[10px] text-slate-600 mt-1 italic"><?= htmlspecialchars($rx['instructions']) ?></p>
                             <?php endif; ?>
                         </div>
-                        <a href="actions/encounter_save.php?action=delete_rx&rx_id=<?= htmlspecialchars($rx['id']) ?>&patient_id=<?= htmlspecialchars($patient['id']) ?>" class="text-red-500 hover:text-red-700">
-                            <span class="material-symbols-outlined text-base">delete</span>
-                        </a>
+
+                        <div class="flex items-center gap-1.5 shrink-0">
+                            <button type="button" onclick='openEditRxModal(<?= htmlspecialchars(json_encode($rx), ENT_QUOTES, "UTF-8") ?>)' class="p-1 text-slate-600 hover:text-primary hover:bg-slate-200 rounded-md transition" title="Edit Medication">
+                                <span class="material-symbols-outlined text-base">edit</span>
+                            </button>
+                            <a href="actions/encounter_save.php?action=delete_rx&rx_id=<?= htmlspecialchars($rx['id']) ?>&patient_id=<?= htmlspecialchars($patient['id']) ?>&visit_id=<?= htmlspecialchars($visitId) ?>" onclick="return confirm('Remove this medication line?')" class="p-1 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-md transition" title="Delete Medication">
+                                <span class="material-symbols-outlined text-base">delete</span>
+                            </a>
+                        </div>
                     </div>
                 <?php endforeach; ?>
             </div>
@@ -225,8 +226,9 @@ include __DIR__ . '/includes/header.php';
                 <div>
                     <input type="text" name="instructions" placeholder="Instructions (Take with food)" class="w-full bg-surface-container-low px-3 py-2 rounded-xl border border-outline-variant/40 font-medium">
                 </div>
-                <button type="submit" name="add_rx" value="1" class="w-full py-2 bg-primary-container text-white text-xs font-semibold rounded-xl hover:bg-primary-container/90 transition shadow-xs">
-                    + Add Medication Line
+                <button type="submit" name="add_rx" value="1" class="w-full py-2 bg-primary-container text-white text-xs font-semibold rounded-xl hover:bg-primary-container/90 transition shadow-xs flex items-center justify-center gap-1.5">
+                    <span class="material-symbols-outlined text-sm">add</span>
+                    <span>Add Medication Line</span>
                 </button>
             </div>
         </div>
@@ -243,15 +245,26 @@ include __DIR__ . '/includes/header.php';
             <?php else: ?>
                 <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
                     <?php foreach ($historicalPrescriptions as $hrx): ?>
-                        <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1">
-                            <div class="flex items-center justify-between">
-                                <span class="font-bold text-slate-800"><?= htmlspecialchars($hrx['medication_name']) ?> (<?= htmlspecialchars($hrx['dosage']) ?>)</span>
+                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1.5">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="font-bold text-slate-800"><?= htmlspecialchars($hrx['medication_name']) ?> <span class="text-primary font-mono">(<?= htmlspecialchars($hrx['dosage']) ?>)</span></span>
                                 <span class="text-[10px] text-slate-400 font-mono"><?= date('M d, Y', strtotime($hrx['created_at'])) ?></span>
                             </div>
                             <p class="text-[11px] text-slate-600"><?= htmlspecialchars($hrx['frequency']) ?> • <?= htmlspecialchars($hrx['duration']) ?></p>
                             <?php if (!empty($hrx['instructions'])): ?>
                                 <p class="text-[10px] text-slate-500 italic"><?= htmlspecialchars($hrx['instructions']) ?></p>
                             <?php endif; ?>
+
+                            <div class="pt-1.5 border-t border-slate-200/60 flex items-center justify-between">
+                                <a href="actions/encounter_save.php?action=copy_rx&rx_id=<?= htmlspecialchars($hrx['id']) ?>&patient_id=<?= htmlspecialchars($patient['id']) ?>&visit_id=<?= htmlspecialchars($visitId) ?>" class="text-[11px] font-bold text-primary hover:underline flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-sm">content_copy</span>
+                                    <span>Copy to Current Encounter</span>
+                                </a>
+
+                                <a href="actions/encounter_save.php?action=delete_rx&rx_id=<?= htmlspecialchars($hrx['id']) ?>&patient_id=<?= htmlspecialchars($patient['id']) ?>&visit_id=<?= htmlspecialchars($visitId) ?>" onclick="return confirm('Permanently delete this historical prescription record?')" class="text-rose-500 hover:text-rose-700" title="Delete Historical Record">
+                                    <span class="material-symbols-outlined text-sm">delete</span>
+                                </a>
+                            </div>
                         </div>
                     <?php endforeach; ?>
                 </div>
@@ -259,6 +272,80 @@ include __DIR__ . '/includes/header.php';
         </div>
     </div>
 </form>
+
+<!-- Modal: Edit Medication Line -->
+<div id="editRxModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-base">edit_note</span>
+                <span>Edit Prescription Line</span>
+            </h3>
+            <button type="button" onclick="closeEditRxModal()" class="text-slate-400 hover:text-slate-700">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <form action="actions/encounter_save.php" method="POST" class="space-y-3 text-xs">
+            <input type="hidden" name="action" value="edit_rx">
+            <input type="hidden" name="rx_id" id="edit_rx_id">
+            <input type="hidden" name="patient_id" value="<?= htmlspecialchars($patient['id']) ?>">
+            <input type="hidden" name="visit_id" value="<?= htmlspecialchars($visitId) ?>">
+
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Medication Name</label>
+                <input type="text" name="medication_name" id="edit_rx_name" required class="w-full bg-slate-50 px-3 py-2 rounded-xl border border-slate-300 font-bold">
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Dosage</label>
+                    <input type="text" name="dosage" id="edit_rx_dosage" class="w-full bg-slate-50 px-3 py-2 rounded-xl border border-slate-300 font-medium">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Frequency</label>
+                    <input type="text" name="frequency" id="edit_rx_frequency" class="w-full bg-slate-50 px-3 py-2 rounded-xl border border-slate-300 font-medium">
+                </div>
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Duration</label>
+                <input type="text" name="duration" id="edit_rx_duration" class="w-full bg-slate-50 px-3 py-2 rounded-xl border border-slate-300 font-medium">
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Instructions</label>
+                <input type="text" name="instructions" id="edit_rx_instructions" class="w-full bg-slate-50 px-3 py-2 rounded-xl border border-slate-300 font-medium">
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                <button type="button" onclick="closeEditRxModal()" class="px-4 py-2 bg-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-300 transition">
+                    Cancel
+                </button>
+                <button type="submit" class="px-5 py-2 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition shadow-sm flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-sm">save</span>
+                    <span>Update Line</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openEditRxModal(rx) {
+    document.getElementById('edit_rx_id').value = rx.id || '';
+    document.getElementById('edit_rx_name').value = rx.medication_name || '';
+    document.getElementById('edit_rx_dosage').value = rx.dosage || '';
+    document.getElementById('edit_rx_frequency').value = rx.frequency || '';
+    document.getElementById('edit_rx_duration').value = rx.duration || '';
+    document.getElementById('edit_rx_instructions').value = rx.instructions || '';
+    document.getElementById('editRxModal').classList.remove('hidden');
+}
+
+function closeEditRxModal() {
+    document.getElementById('editRxModal').classList.add('hidden');
+}
+</script>
 
 <!-- Modal: Issue Medical Certificate in Clinical Visit -->
 <?php
