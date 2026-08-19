@@ -219,7 +219,7 @@ CREATE TABLE IF NOT EXISTS medical_certificates (
 CREATE INDEX IF NOT EXISTS idx_medcert_patient ON medical_certificates(patient_id);
 
 CREATE TABLE IF NOT EXISTS audit_logs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     user_id VARCHAR(50),
     user_name VARCHAR(100),
     user_role VARCHAR(50),
