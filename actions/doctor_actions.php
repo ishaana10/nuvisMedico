@@ -1,6 +1,6 @@
 <?php
 /**
- * Action Handler: Doctor Management (Add/Edit/Delete Doctor, Signatures & Stamps)
+ * Action Handler: User / Doctor Management (Add/Edit/Delete/Toggle User, Signatures & Stamps)
  */
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -13,10 +13,10 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
 }
 
 // Ensure Admin or Developer role
-$currentUserRole = $_SESSION['user']['role'] ?? '';
+$currentUserRole = $_SESSION['user_role'] ?? $_SESSION['user']['role'] ?? '';
 if (!in_array($currentUserRole, ['Developer', 'Administrator', 'Admin', 'Doctor'])) {
-    setToast("Access Denied", "Only Administrators and Developers can manage doctors.", "error");
-    header("Location: ../admin.php");
+    setToast("Access Denied", "Only Administrators and Developers can manage user accounts.", "error");
+    header("Location: ../admin.php?tab=users");
     exit;
 }
 
@@ -24,7 +24,7 @@ $pdo = getDB();
 $action = $_POST['action'] ?? $_GET['action'] ?? 'save';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($action === 'save' || $action === 'save_doctor')) {
-    $docId = !empty($_POST['doctor_id']) ? trim($_POST['doctor_id']) : ('doc-' . time());
+    $docId = !empty($_POST['doctor_id']) ? trim($_POST['doctor_id']) : ('usr-' . time());
     $isEdit = !empty($_POST['doctor_id']);
 
     $name = trim($_POST['name'] ?? '');
@@ -32,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($action === 'save' || $action === 
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
     $role = $_POST['role'] ?? 'Doctor';
+    $isActive = isset($_POST['is_active']) ? (int)$_POST['is_active'] : 1;
     $color = $_POST['color'] ?? '#10B981';
     $dotColorClass = $_POST['dot_color_class'] ?? 'bg-emerald-500';
     $prcNumber = trim($_POST['prc_number'] ?? '');
@@ -39,8 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($action === 'save' || $action === 
     $avatar = trim($_POST['avatar'] ?? '');
 
     if (empty($name) || empty($email)) {
-        setToast("Missing Data", "Doctor name and email are required.", "error");
-        header("Location: ../admin.php?tab=doctors");
+        setToast("Missing Data", "User name and email are required.", "error");
+        header("Location: ../admin.php?tab=users");
         exit;
     }
 
@@ -73,8 +74,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($action === 'save' || $action === 
         $existingDoc = $stmt->fetch();
 
         if (!$existingDoc) {
-            setToast("Error", "Doctor record not found.", "error");
-            header("Location: ../admin.php?tab=doctors");
+            setToast("Error", "User record not found.", "error");
+            header("Location: ../admin.php?tab=users");
             exit;
         }
 
@@ -83,20 +84,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($action === 'save' || $action === 
             $passwordHash = password_hash($password, PASSWORD_DEFAULT);
         }
 
-        $updateStmt = $pdo->prepare("UPDATE doctors SET name = ?, specialty = ?, email = ?, password_hash = ?, role = ?, color = ?, dot_color_class = ?, avatar = ?, prc_number = ?, ptr_number = ?, esignature = ?, digital_stamp = ? WHERE id = ?");
-        $updateStmt->execute([$name, $specialty, $email, $passwordHash, $role, $color, $dotColorClass, $avatar, $prcNumber, $ptrNumber, $esignature, $digitalStamp, $docId]);
+        $updateStmt = $pdo->prepare("UPDATE doctors SET name = ?, specialty = ?, email = ?, password_hash = ?, role = ?, is_active = ?, color = ?, dot_color_class = ?, avatar = ?, prc_number = ?, ptr_number = ?, esignature = ?, digital_stamp = ? WHERE id = ?");
+        $updateStmt->execute([$name, $specialty, $email, $passwordHash, $role, $isActive, $color, $dotColorClass, $avatar, $prcNumber, $ptrNumber, $esignature, $digitalStamp, $docId]);
 
-        setToast("Doctor Updated", "Doctor information and credentials updated successfully.");
+        setToast("User Updated", "User information and credentials updated successfully.");
     } else {
         $passwordHash = password_hash(!empty($password) ? $password : 'password', PASSWORD_DEFAULT);
 
-        $insertStmt = $pdo->prepare("INSERT INTO doctors (id, name, specialty, email, password_hash, role, color, dot_color_class, avatar, prc_number, ptr_number, esignature, digital_stamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $insertStmt->execute([$docId, $name, $specialty, $email, $passwordHash, $role, $color, $dotColorClass, $avatar, $prcNumber, $ptrNumber, $esignature, $digitalStamp]);
+        $insertStmt = $pdo->prepare("INSERT INTO doctors (id, name, specialty, email, password_hash, role, is_active, color, dot_color_class, avatar, prc_number, ptr_number, esignature, digital_stamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $insertStmt->execute([$docId, $name, $specialty, $email, $passwordHash, $role, $isActive, $color, $dotColorClass, $avatar, $prcNumber, $ptrNumber, $esignature, $digitalStamp]);
 
-        setToast("Doctor Added", "New physician added successfully with e-signature and digital stamp credentials.");
+        setToast("User Added", "New user account created successfully.");
     }
 
-    header("Location: ../admin.php?tab=doctors");
+    header("Location: ../admin.php?tab=users");
+    exit;
+}
+
+if ($action === 'toggle_status') {
+    $userId = $_POST['user_id'] ?? '';
+    $status = isset($_POST['status']) ? (int)$_POST['status'] : 1;
+
+    if (!empty($userId)) {
+        $stmt = $pdo->prepare("UPDATE doctors SET is_active = ? WHERE id = ?");
+        $stmt->execute([$status, $userId]);
+        $statusMsg = $status === 1 ? "User account activated." : "User account deactivated.";
+        setToast("Status Changed", $statusMsg);
+    }
+    header("Location: ../admin.php?tab=users");
     exit;
 }
 
@@ -105,11 +120,11 @@ if ($action === 'delete') {
     if (!empty($docId)) {
         $stmt = $pdo->prepare("DELETE FROM doctors WHERE id = ?");
         $stmt->execute([$docId]);
-        setToast("Doctor Removed", "Doctor record deleted successfully.");
+        setToast("User Removed", "User account deleted successfully.");
     }
-    header("Location: ../admin.php?tab=doctors");
+    header("Location: ../admin.php?tab=users");
     exit;
 }
 
-header("Location: ../admin.php");
+header("Location: ../admin.php?tab=users");
 exit;

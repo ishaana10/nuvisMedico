@@ -108,7 +108,8 @@ function ensureDoctorColumnsExist(PDO $pdo): void {
             'prc_number' => 'VARCHAR(100)',
             'ptr_number' => 'VARCHAR(100)',
             'esignature' => 'TEXT',
-            'digital_stamp' => 'TEXT'
+            'digital_stamp' => 'TEXT',
+            'is_active' => 'INTEGER DEFAULT 1'
         ];
 
         foreach ($newCols as $colName => $colDef) {
