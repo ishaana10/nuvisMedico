@@ -144,7 +144,7 @@ $currentDoctor = reset($currentDoctor) ?: ($doctors[0] ?? ['id' => 'doc-1', 'nam
                 <span class="material-symbols-outlined text-2xl font-bold">menu</span>
             </button>
             <a href="index.php" class="flex items-center gap-2">
-                <img src="assets/images/nuvis_medico_logo.png" alt="Nuvis Medico" class="h-7 sm:h-10 object-contain max-w-[120px] sm:max-w-none">
+                <img src="assets/images/NuvisMedcareX_logo.jpg" alt="Nuvis Medcare X" class="h-7 sm:h-10 object-contain max-w-[120px] sm:max-w-none rounded-md">
             </a>
         </div>
 
