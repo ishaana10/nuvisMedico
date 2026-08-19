@@ -1,4 +1,4 @@
--- ClinicFlow MySQL Database Schema
+-- ClinicFlow Unified Database Schema (MySQL & SQLite Compatible)
 
 CREATE TABLE IF NOT EXISTS doctors (
     id VARCHAR(50) PRIMARY KEY,
@@ -13,13 +13,16 @@ CREATE TABLE IF NOT EXISTS doctors (
     prc_number VARCHAR(100),
     ptr_number VARCHAR(100),
     esignature TEXT,
-    digital_stamp TEXT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    digital_stamp TEXT,
+    is_active TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 CREATE TABLE IF NOT EXISTS clinic_settings (
     setting_key VARCHAR(100) PRIMARY KEY,
     setting_value TEXT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+);
 
 CREATE TABLE IF NOT EXISTS patients (
     id VARCHAR(50) PRIMARY KEY,
@@ -28,7 +31,7 @@ CREATE TABLE IF NOT EXISTS patients (
     last_name VARCHAR(100) NOT NULL,
     dob DATE NOT NULL,
     age INT NOT NULL,
-    gender ENUM('Female', 'Male', 'Other') NOT NULL,
+    gender VARCHAR(20) NOT NULL,
     phone VARCHAR(50),
     email VARCHAR(255),
     address TEXT,
@@ -44,8 +47,11 @@ CREATE TABLE IF NOT EXISTS patients (
     clinical_notes TEXT,
     avatar TEXT,
     initials VARCHAR(10),
-    registration_date DATE NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    registration_date DATE NOT NULL,
+    is_active TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 CREATE TABLE IF NOT EXISTS appointments (
     id VARCHAR(50) PRIMARY KEY,
@@ -65,9 +71,16 @@ CREATE TABLE IF NOT EXISTS appointments (
     room VARCHAR(50),
     notes TEXT,
     is_urgent TINYINT(1) DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE,
     FOREIGN KEY (doctor_id) REFERENCES doctors(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+);
+
+CREATE INDEX IF NOT EXISTS idx_appointments_date ON appointments(appointment_date);
+CREATE INDEX IF NOT EXISTS idx_appointments_patient ON appointments(patient_id);
+CREATE INDEX IF NOT EXISTS idx_appointments_doctor ON appointments(doctor_id);
+CREATE INDEX IF NOT EXISTS idx_appointments_status ON appointments(status);
 
 CREATE TABLE IF NOT EXISTS queue (
     id VARCHAR(50) PRIMARY KEY,
@@ -79,8 +92,12 @@ CREATE TABLE IF NOT EXISTS queue (
     status VARCHAR(50) NOT NULL DEFAULT 'Waiting',
     room VARCHAR(50),
     check_in_time VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+);
+
+CREATE INDEX IF NOT EXISTS idx_queue_status ON queue(status);
+CREATE INDEX IF NOT EXISTS idx_queue_patient ON queue(patient_id);
 
 CREATE TABLE IF NOT EXISTS vitals (
     id VARCHAR(50) PRIMARY KEY,
@@ -92,20 +109,24 @@ CREATE TABLE IF NOT EXISTS vitals (
     height INT DEFAULT 66,
     bmi DECIMAL(4,1) DEFAULT 23.4,
     oxygen_sat INT DEFAULT 99,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+);
+
+CREATE INDEX IF NOT EXISTS idx_vitals_patient ON vitals(patient_id);
 
 CREATE TABLE IF NOT EXISTS soap_notes (
     id VARCHAR(50) PRIMARY KEY,
     patient_id VARCHAR(50) NOT NULL,
     subjective TEXT,
     objective TEXT,
-    assessment_codes JSON,
+    assessment_codes TEXT,
     plan TEXT,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+);
+
+CREATE INDEX IF NOT EXISTS idx_soap_patient ON soap_notes(patient_id);
 
 CREATE TABLE IF NOT EXISTS prescriptions (
     id VARCHAR(50) PRIMARY KEY,
@@ -117,7 +138,9 @@ CREATE TABLE IF NOT EXISTS prescriptions (
     instructions TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+);
+
+CREATE INDEX IF NOT EXISTS idx_prescriptions_patient ON prescriptions(patient_id);
 
 CREATE TABLE IF NOT EXISTS past_visits (
     id VARCHAR(50) PRIMARY KEY,
@@ -126,11 +149,13 @@ CREATE TABLE IF NOT EXISTS past_visits (
     title VARCHAR(255) NOT NULL,
     summary TEXT,
     doctor_name VARCHAR(255) NOT NULL,
-    vitals JSON,
-    prescriptions JSON,
+    vitals TEXT,
+    prescriptions TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+);
+
+CREATE INDEX IF NOT EXISTS idx_past_visits_patient ON past_visits(patient_id);
 
 CREATE TABLE IF NOT EXISTS activities (
     id VARCHAR(50) PRIMARY KEY,
@@ -140,7 +165,7 @@ CREATE TABLE IF NOT EXISTS activities (
     timestamp VARCHAR(50) NOT NULL,
     badge_type VARCHAR(20) DEFAULT 'blue',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+);
 
 CREATE TABLE IF NOT EXISTS invoices (
     id VARCHAR(50) PRIMARY KEY,
@@ -153,8 +178,12 @@ CREATE TABLE IF NOT EXISTS invoices (
     status VARCHAR(20) NOT NULL DEFAULT 'Pending',
     insurance_covered DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     patient_owed DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-    services JSON
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    services TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_invoices_mrn ON invoices(patient_mrn);
+CREATE INDEX IF NOT EXISTS idx_invoices_status ON invoices(status);
 
 CREATE TABLE IF NOT EXISTS inventory (
     id VARCHAR(50) PRIMARY KEY,
@@ -166,7 +195,9 @@ CREATE TABLE IF NOT EXISTS inventory (
     unit VARCHAR(50) NOT NULL,
     status VARCHAR(50) NOT NULL DEFAULT 'In Stock',
     last_restocked DATE NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+);
+
+CREATE INDEX IF NOT EXISTS idx_inventory_sku ON inventory(sku);
 
 CREATE TABLE IF NOT EXISTS medical_certificates (
     id VARCHAR(50) PRIMARY KEY,
@@ -183,4 +214,17 @@ CREATE TABLE IF NOT EXISTS medical_certificates (
     ptr_number VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+);
+
+CREATE INDEX IF NOT EXISTS idx_medcert_patient ON medical_certificates(patient_id);
+
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id VARCHAR(50),
+    user_name VARCHAR(100),
+    user_role VARCHAR(50),
+    action VARCHAR(100),
+    details TEXT,
+    ip_address VARCHAR(45),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
