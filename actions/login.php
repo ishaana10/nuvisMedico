@@ -3,16 +3,27 @@
  * ClinicFlow Login Action Handler
  */
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/security.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header("Location: ../login.php");
     exit;
 }
 
+$clientIp = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+if (!checkLoginRateLimit($clientIp)) {
+    setToast('Too Many Attempts', 'Too many failed login attempts. Please wait 5 minutes before trying again.', 'error');
+    header("Location: ../login.php");
+    exit;
+}
+
+validateCsrfRequest();
+
 $email = trim($_POST['email'] ?? '');
 $password = $_POST['password'] ?? '';
 
 if ($email === '' || $password === '') {
+    recordLoginAttempt();
     setToast('Login Error', 'Please enter both email and password.', 'error');
     header("Location: ../login.php");
     exit;
@@ -29,7 +40,25 @@ if ($user && isset($user['is_active']) && (int)$user['is_active'] === 0) {
     exit;
 }
 
-if ($user && (!empty($user['password_hash']) ? password_verify($password, $user['password_hash']) : $password === 'password')) {
+$valid = false;
+if ($user) {
+    if (!empty($user['password_hash'])) {
+        $valid = password_verify($password, $user['password_hash']);
+    } else {
+        // Migration mode: if password equals 'password' for seeded users, verify and upgrade to hash
+        if ($password === 'password') {
+            $valid = true;
+            $newHash = password_hash($password, PASSWORD_BCRYPT);
+            $updateStmt = $pdo->prepare("UPDATE doctors SET password_hash = ? WHERE id = ?");
+            $updateStmt->execute([$newHash, $user['id']]);
+        }
+    }
+}
+
+if ($valid && $user) {
+    clearLoginAttempts();
+    session_regenerate_id(true);
+
     $_SESSION['authenticated'] = true;
     $_SESSION['user_id'] = $user['id'];
     $_SESSION['user_name'] = $user['name'];
@@ -41,6 +70,7 @@ if ($user && (!empty($user['password_hash']) ? password_verify($password, $user[
     header("Location: ../index.php");
     exit;
 } else {
+    recordLoginAttempt();
     setToast('Authentication Failed', 'Invalid email address or password.', 'error');
     header("Location: ../login.php");
     exit;

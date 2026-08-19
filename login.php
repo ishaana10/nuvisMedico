@@ -6,6 +6,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/includes/security.php';
 
 if (isset($_SESSION['authenticated']) && $_SESSION['authenticated'] === true) {
     header("Location: index.php");
@@ -13,6 +14,7 @@ if (isset($_SESSION['authenticated']) && $_SESSION['authenticated'] === true) {
 }
 
 $toast = getToast();
+$csrfToken = generateCsrfToken();
 ?>
 <!DOCTYPE html>
 <html class="light h-full bg-[#f8f9ff]" lang="en">
@@ -57,6 +59,7 @@ $toast = getToast();
         <!-- Login Form -->
         <div class="p-8">
             <form action="actions/login.php" method="POST" class="space-y-5 text-xs">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
                 <div>
                     <label class="block font-bold text-slate-700 mb-1.5">Email Address</label>
                     <div class="relative">
