@@ -11,8 +11,12 @@ class PatientRepository {
     }
 
     public function findAll(int $limit = 50, int $offset = 0, ?string $search = null): array {
+        $concatExpr = ($this->db->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql')
+            ? "CONCAT(first_name, ' ', last_name)"
+            : "(first_name || ' ' || last_name)";
+
         if ($search) {
-            $stmt = $this->db->prepare("SELECT *, (first_name || ' ' || last_name) AS full_name FROM patients WHERE first_name LIKE ? OR last_name LIKE ? OR mrn LIKE ? OR phone LIKE ? ORDER BY id DESC LIMIT ? OFFSET ?");
+            $stmt = $this->db->prepare("SELECT *, {$concatExpr} AS full_name FROM patients WHERE first_name LIKE ? OR last_name LIKE ? OR mrn LIKE ? OR phone LIKE ? ORDER BY id DESC LIMIT ? OFFSET ?");
             $searchTerm = "%{$search}%";
             $stmt->bindValue(1, $searchTerm, PDO::PARAM_STR);
             $stmt->bindValue(2, $searchTerm, PDO::PARAM_STR);
@@ -22,7 +26,7 @@ class PatientRepository {
             $stmt->bindValue(6, $offset, PDO::PARAM_INT);
             $stmt->execute();
         } else {
-            $stmt = $this->db->prepare("SELECT *, (first_name || ' ' || last_name) AS full_name FROM patients ORDER BY id DESC LIMIT ? OFFSET ?");
+            $stmt = $this->db->prepare("SELECT *, {$concatExpr} AS full_name FROM patients ORDER BY id DESC LIMIT ? OFFSET ?");
             $stmt->bindValue(1, $limit, PDO::PARAM_INT);
             $stmt->bindValue(2, $offset, PDO::PARAM_INT);
             $stmt->execute();
@@ -31,14 +35,22 @@ class PatientRepository {
     }
 
     public function findById(string $id): ?array {
-        $stmt = $this->db->prepare("SELECT *, (first_name || ' ' || last_name) AS full_name FROM patients WHERE id = ? LIMIT 1");
+        $concatExpr = ($this->db->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql')
+            ? "CONCAT(first_name, ' ', last_name)"
+            : "(first_name || ' ' || last_name)";
+
+        $stmt = $this->db->prepare("SELECT *, {$concatExpr} AS full_name FROM patients WHERE id = ? LIMIT 1");
         $stmt->execute([$id]);
         $row = $stmt->fetch();
         return $row ?: null;
     }
 
     public function findByMrn(string $mrn): ?array {
-        $stmt = $this->db->prepare("SELECT *, (first_name || ' ' || last_name) AS full_name FROM patients WHERE mrn = ? LIMIT 1");
+        $concatExpr = ($this->db->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql')
+            ? "CONCAT(first_name, ' ', last_name)"
+            : "(first_name || ' ' || last_name)";
+
+        $stmt = $this->db->prepare("SELECT *, {$concatExpr} AS full_name FROM patients WHERE mrn = ? LIMIT 1");
         $stmt->execute([$mrn]);
         $row = $stmt->fetch();
         return $row ?: null;

@@ -1,16 +1,18 @@
 <?php
 session_start();
+require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/includes/security.php';
+
 if (empty($_SESSION['authenticated'])) {
     header('Location: login.php');
     exit;
 }
 
 $patientId = $_GET['patient_id'] ?? 'pat-1';
-
-require_once __DIR__ . '/config/database.php';
+$csrfToken = generateCsrfToken();
 $pdo = getDB();
 
-// Fetch Clinic Settings for custom prescription customization
+// Fetch Clinic Settings
 $settingsRows = $pdo->query("SELECT * FROM clinic_settings")->fetchAll();
 $settings = [];
 foreach ($settingsRows as $r) {
@@ -44,11 +46,11 @@ if (!$patient) {
 }
 
 $rxStmt = $pdo->prepare("SELECT * FROM prescriptions WHERE patient_id = ? ORDER BY created_at ASC");
-$rxStmt->execute([$patientId]);
+$rxStmt->execute([$patient['id']]);
 $prescriptions = $rxStmt->fetchAll();
 
 $soapStmt = $pdo->prepare("SELECT * FROM soap_notes WHERE patient_id = ? ORDER BY updated_at DESC LIMIT 1");
-$soapStmt->execute([$patientId]);
+$soapStmt->execute([$patient['id']]);
 $soap = $soapStmt->fetch();
 $assessmentCodes = json_decode($soap['assessment_codes'] ?? '[]', true) ?: [];
 
@@ -76,11 +78,17 @@ $attendingDoc = $docStmt->fetch() ?: ['name' => 'Dr. Sarah Jenkins', 'specialty'
 
 <div class="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-lg border border-slate-200">
     <!-- Action buttons -->
-    <div class="no-print mb-6 flex justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-200">
+    <div class="no-print mb-6 flex flex-wrap justify-between items-center gap-2 bg-slate-50 p-4 rounded-xl border border-slate-200">
         <a href="clinical_visit.php?patient_id=<?= htmlspecialchars($patient['id']) ?>" class="text-xs font-semibold text-slate-600 hover:text-slate-900">&larr; Back to Encounter</a>
-        <div class="flex gap-2">
-            <a href="admin.php" class="px-3 py-2 bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-300 transition">Customize Template</a>
-            <button onclick="window.print()" class="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition">Print Official Prescription</button>
+        <div class="flex gap-2 items-center">
+            <form action="actions/send_email.php" method="POST" class="inline-flex items-center gap-1">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                <input type="hidden" name="document_type" value="prescription">
+                <input type="hidden" name="document_id" value="RX-<?= htmlspecialchars($patient['mrn']) ?>">
+                <input type="email" name="email" value="<?= htmlspecialchars($patient['email'] ?? '') ?>" placeholder="patient@example.com" required class="px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none">
+                <button type="submit" class="px-3 py-2 bg-emerald-600 text-white text-xs font-semibold rounded-lg hover:bg-emerald-700 transition">Email Rx</button>
+            </form>
+            <button onclick="window.print()" class="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition">Print Rx</button>
         </div>
     </div>
 
