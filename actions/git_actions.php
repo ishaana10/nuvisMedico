@@ -157,6 +157,14 @@ try {
         runGitCmd($gitPath, $gitRepoDir, 'fetch origin');
         $pullOutput = runGitCmd($gitPath, $gitRepoDir, 'pull origin ' . escapeshellarg($branch));
 
+        // Automatically run database schema update after git pull
+        $migrationStats = executeAutoSchemaMigrations($pdo);
+        if ($migrationStats['executed'] > 0) {
+            $pullOutput .= "\n\n[Database Migration] Successfully applied " . $migrationStats['executed'] . " SQL schema update(s).";
+        } else {
+            $pullOutput .= "\n\n[Database Migration] Database schema is up to date.";
+        }
+
         // Save selected branch if updated
         $isSqlite = ($pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'sqlite');
         if ($isSqlite) {

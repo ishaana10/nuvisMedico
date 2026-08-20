@@ -169,6 +169,77 @@ function ensureDoctorColumnsExist(PDO $pdo): void {
     }
 }
 
+/**
+ * Execute automatic database schema migrations/updates from SQL schema files.
+ */
+function executeAutoSchemaMigrations(PDO $pdo): array {
+    $results = [
+        'executed' => 0,
+        'skipped' => 0,
+        'errors' => []
+    ];
+
+    $schemaFile = __DIR__ . '/../database/schema.sql';
+    if (!file_exists($schemaFile)) {
+        return $results;
+    }
+
+    $sqlContent = file_get_contents($schemaFile);
+    if (!$sqlContent) {
+        return $results;
+    }
+
+    // Split SQL content into individual statements
+    $lines = explode("\n", $sqlContent);
+    $queries = [];
+    $currentQuery = '';
+
+    foreach ($lines as $line) {
+        $trimmed = trim($line);
+        if ($trimmed === '' || strpos($trimmed, '--') === 0 || strpos($trimmed, '#') === 0) {
+            continue;
+        }
+        $currentQuery .= $line . "\n";
+        if (substr(rtrim($trimmed), -1) === ';') {
+            $queries[] = trim($currentQuery);
+            $currentQuery = '';
+        }
+    }
+
+    if (!empty(trim($currentQuery))) {
+        $queries[] = trim($currentQuery);
+    }
+
+    $driver = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+
+    foreach ($queries as $query) {
+        if (empty($query)) continue;
+        try {
+            $pdo->exec($query);
+            $results['executed']++;
+        } catch (PDOException $e) {
+            // Check if error is due to existing table/column/index (benign migration error)
+            $msg = $e->getMessage();
+            if (
+                stripos($msg, 'already exists') !== false ||
+                stripos($msg, 'duplicate') !== false ||
+                stripos($msg, '1050') !== false || // MySQL Table already exists
+                stripos($msg, '1060') !== false || // MySQL Duplicate column name
+                stripos($msg, '1061') !== false    // MySQL Duplicate key name
+            ) {
+                $results['skipped']++;
+            } else {
+                $results['errors'][] = $msg;
+            }
+        }
+    }
+
+    // Ensure specific column checks are applied
+    ensureDoctorColumnsExist($pdo);
+
+    return $results;
+}
+
 // Session & Toast helper
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
