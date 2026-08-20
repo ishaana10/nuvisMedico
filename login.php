@@ -48,7 +48,7 @@ $csrfToken = generateCsrfToken();
     <div class="flex flex-col justify-between">
         <!-- Brand Header with Nuvis Medcare X logo & assets -->
         <div class="bg-white p-6 border-b border-slate-100 text-center flex flex-col items-center justify-center">
-            <img src="assets/images/NuvisMedcareX_logo.jpg" alt="Nuvis Medcare X" class="h-16 object-contain mb-2 rounded-lg">
+            <img src="assets/images/NuvisMedcareX_banner.jfif" alt="Nuvis Medcare X" class="h-16 object-contain mb-2 rounded-lg">
             <div class="flex items-center gap-3 mt-1">
                 <img src="assets/images/stethoscope_heart.png" alt="Stethoscope" class="h-6 object-contain">
                 <span class="text-xs font-semibold text-slate-500 uppercase tracking-widest">Nuvis Medcare X EHR Platform</span>
@@ -94,7 +94,7 @@ $csrfToken = generateCsrfToken();
 
     <!-- Right Column: Hero Image Attachment -->
     <div class="hidden md:block relative bg-blue-900 overflow-hidden min-h-[450px]">
-        <img src="assets/images/login_hero.jfif" alt="Nuvis Medcare X" class="w-full h-full object-cover">
+        <img src="assets/images/NuvisMedcareX_login_sidepanel.jpg" alt="Nuvis Medcare X" class="w-full h-full object-cover">
         <div class="absolute inset-0 bg-gradient-to-t from-blue-950/80 via-blue-950/20 to-transparent flex items-end p-8">
             <div class="text-white">
                 <h3 class="text-xl font-bold">Nuvis Medcare X</h3>
