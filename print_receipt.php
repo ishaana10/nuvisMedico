@@ -5,7 +5,7 @@ if (empty($_SESSION['authenticated'])) {
     exit;
 }
 
-$invoiceId = $_GET['id'] ?? 'inv-1';
+$invoiceId = $_GET['id'] ?? '';
 
 require_once __DIR__ . '/config/database.php';
 $pdo = getDB();
@@ -17,11 +17,10 @@ foreach ($settingsRows as $r) {
     $settings[$r['setting_key']] = $r['setting_value'];
 }
 
-$clinicName = $settings['clinic_name'] ?? 'ClinicFlow Medical Center';
-$clinicSubtitle = $settings['clinic_subtitle'] ?? 'Integrated Primary & Specialist Healthcare';
+$sellerTin = $settings['vms_seller_tin'] ?? '502579006';
+$clinicName = $settings['clinic_name'] ?? 'Nuvis Medico Healthcare';
 $clinicAddress = $settings['clinic_address'] ?? '100 Healthcare Way, Suite 400, Springfield, OR 97477';
 $clinicPhone = $settings['clinic_phone'] ?? '(555) 019-2831';
-$clinicEmail = $settings['clinic_email'] ?? 'contact@clinicflow.com';
 
 $receiptHeaderTitle = $settings['receipt_header_title'] ?? 'OFFICIAL PAYMENT RECEIPT';
 $receiptThankYouMsg = $settings['receipt_thank_you_msg'] ?? 'Thank you for your payment. Your account balance for this invoice is cleared.';
@@ -32,7 +31,6 @@ $stmt->execute([$invoiceId, $invoiceId]);
 $invoice = $stmt->fetch();
 
 if (!$invoice) {
-    // Fallback if integer ID or missing ID is passed
     $stmt = $pdo->query("SELECT * FROM invoices ORDER BY created_at DESC LIMIT 1");
     $invoice = $stmt->fetch();
 }
@@ -42,6 +40,9 @@ if (!$invoice) {
 }
 
 $services = json_decode($invoice['services'] ?? '[]', true) ?: ['Medical Services'];
+$payments = json_decode($invoice['payment_methods'] ?? '[]', true) ?: [['type' => 'Cash', 'amount' => (float)$invoice['amount']]];
+$verificationUrl = $invoice['verification_url'] ?? "https://tap.sandbox.vms.frcs.org.fj/verify?id=" . ($invoice['sdc_invoice_no'] ?? '7AF234D9-E377B30A-150493');
+$qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=" . urlencode($verificationUrl);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -65,7 +66,6 @@ $services = json_decode($invoice['services'] ?? '[]', true) ?: ['Medical Service
     <div class="no-print mb-6 flex justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-200">
         <a href="billing.php" class="text-xs font-semibold text-slate-600 hover:text-slate-900">&larr; Back to Billing</a>
         <div class="flex gap-2">
-            <a href="admin.php" class="px-3 py-2 bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-300 transition">Customize Template</a>
             <button onclick="window.print()" class="px-4 py-2 bg-emerald-600 text-white text-xs font-semibold rounded-lg hover:bg-emerald-700 transition">Print Official Receipt</button>
         </div>
     </div>
@@ -74,7 +74,7 @@ $services = json_decode($invoice['services'] ?? '[]', true) ?: ['Medical Service
     <div class="border-b-2 border-emerald-800 pb-4 mb-6 flex justify-between items-start">
         <div>
             <h1 class="text-2xl font-bold text-emerald-900 uppercase tracking-tight"><?= htmlspecialchars($clinicName) ?></h1>
-            <p class="text-xs text-emerald-700 font-medium"><?= htmlspecialchars($clinicSubtitle) ?></p>
+            <p class="text-xs text-emerald-700 font-medium">TIN: <?= htmlspecialchars($sellerTin) ?></p>
             <p class="text-xs text-slate-500 mt-1"><?= htmlspecialchars($clinicAddress) ?> • Phone: <?= htmlspecialchars($clinicPhone) ?></p>
         </div>
         <div class="text-right">
@@ -89,7 +89,7 @@ $services = json_decode($invoice['services'] ?? '[]', true) ?: ['Medical Service
         <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xl">✓</div>
             <div>
-                <p class="font-bold text-emerald-900 text-sm">Payment Confirmed & Paid in Full</p>
+                <p class="font-bold text-emerald-900 text-sm">Payment Confirmed & Settled</p>
                 <p class="text-emerald-700 text-[11px]"><?= htmlspecialchars($receiptThankYouMsg) ?></p>
             </div>
         </div>
@@ -107,10 +107,10 @@ $services = json_decode($invoice['services'] ?? '[]', true) ?: ['Medical Service
             <p class="text-slate-500 mt-1">MRN: <span class="font-mono font-bold text-slate-800"><?= htmlspecialchars($invoice['patient_mrn']) ?></span></p>
         </div>
         <div class="text-right">
-            <p class="text-slate-500 font-semibold uppercase text-[10px]">Reference Details</p>
-            <p class="text-slate-700 mt-1"><strong>Invoice Ref:</strong> <?= htmlspecialchars($invoice['invoice_number']) ?></p>
-            <p class="text-slate-700"><strong>Service Date:</strong> <?= htmlspecialchars($invoice['service_date']) ?></p>
-            <p class="text-slate-700"><strong>Payment Method:</strong> Clinic Checkout / Insurance Direct</p>
+            <p class="text-slate-500 font-semibold uppercase text-[10px]">VMS Fiscal Reference</p>
+            <p class="text-slate-700 mt-1"><strong>SDC No:</strong> <?= htmlspecialchars($invoice['sdc_invoice_no'] ?? 'N/A') ?></p>
+            <p class="text-slate-700"><strong>SDC Time:</strong> <?= htmlspecialchars($invoice['sdc_time'] ?? date('Y-m-d H:i:s')) ?></p>
+            <p class="text-slate-700"><strong>Invoice Ref:</strong> <?= htmlspecialchars($invoice['invoice_number']) ?></p>
         </div>
     </div>
 
@@ -134,6 +134,16 @@ $services = json_decode($invoice['services'] ?? '[]', true) ?: ['Medical Service
         </table>
     </div>
 
+    <!-- Verification QR Code -->
+    <div class="mb-6 flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+        <div>
+            <p class="font-bold text-slate-900">FRCS VMS Verification</p>
+            <p class="text-slate-500 text-[11px] mt-0.5">Scan to verify fiscal receipt authenticity on FRCS Portal</p>
+            <p class="font-mono text-[10px] text-blue-600 mt-1 break-all"><?= htmlspecialchars($verificationUrl) ?></p>
+        </div>
+        <img src="<?= htmlspecialchars($qrCodeUrl) ?>" alt="QR Code" class="w-24 h-24 border border-slate-300 p-1 rounded-lg bg-white">
+    </div>
+
     <!-- Authorized Signoff -->
     <div class="pt-6 border-t border-slate-300 flex justify-between items-end text-xs">
         <div>
@@ -142,8 +152,8 @@ $services = json_decode($invoice['services'] ?? '[]', true) ?: ['Medical Service
             <p class="text-slate-500 text-[10px]"><?= htmlspecialchars($clinicPhone) ?></p>
         </div>
         <div class="text-right">
-            <div class="border-b border-slate-400 mb-1 pb-2 font-serif text-base font-bold text-emerald-900 italic">ClinicFlow Billing Office</div>
-            <p class="font-bold text-slate-800">Authorized Billing Representative</p>
+            <div class="border-b border-slate-400 mb-1 pb-2 font-serif text-base font-bold text-emerald-900 italic">Nuvis Medico Billing</div>
+            <p class="font-bold text-slate-800">Authorized Cashier: <?= htmlspecialchars($invoice['cashier'] ?? 'Admin') ?></p>
         </div>
     </div>
 </div>
