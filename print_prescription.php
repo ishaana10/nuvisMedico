@@ -45,8 +45,15 @@ if (!$patient) {
     die("Patient file not found.");
 }
 
-$rxStmt = $pdo->prepare("SELECT * FROM prescriptions WHERE patient_id = ? ORDER BY created_at ASC");
-$rxStmt->execute([$patient['id']]);
+$visitId = $_GET['visit_id'] ?? '';
+
+if (!empty($visitId)) {
+    $rxStmt = $pdo->prepare("SELECT * FROM prescriptions WHERE patient_id = ? AND visit_id = ? ORDER BY created_at ASC");
+    $rxStmt->execute([$patient['id'], $visitId]);
+} else {
+    $rxStmt = $pdo->prepare("SELECT * FROM prescriptions WHERE patient_id = ? ORDER BY created_at ASC");
+    $rxStmt->execute([$patient['id']]);
+}
 $prescriptions = $rxStmt->fetchAll();
 
 $soapStmt = $pdo->prepare("SELECT * FROM soap_notes WHERE patient_id = ? ORDER BY updated_at DESC LIMIT 1");

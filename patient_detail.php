@@ -217,10 +217,16 @@ foreach ($settingsRows as $sr) {
                             <p class="text-xs text-on-surface-variant mb-2"><?= htmlspecialchars($pv['summary']) ?></p>
                             <div class="flex items-center justify-between text-[11px] text-outline pt-2 border-t border-outline-variant/20">
                                 <span>Attending: <strong class="text-slate-700"><?= htmlspecialchars($pv['doctor_name']) ?></strong></span>
-                                <button type="button" onclick='openPastVisitModal(<?= htmlspecialchars(json_encode($pv), ENT_QUOTES, "UTF-8") ?>)' class="px-3 py-1 bg-primary text-white font-bold text-xs rounded-lg hover:bg-primary/90 transition flex items-center gap-1 shadow-xs">
-                                    <span class="material-symbols-outlined text-sm">visibility</span>
-                                    <span>View Details</span>
-                                </button>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" onclick='openCreateInvoiceForVisit(<?= htmlspecialchars(json_encode($pv), ENT_QUOTES, "UTF-8") ?>)' class="px-3 py-1 bg-blue-700 text-white font-bold text-xs rounded-lg hover:bg-blue-800 transition flex items-center gap-1 shadow-xs">
+                                        <span class="material-symbols-outlined text-sm">receipt_long</span>
+                                        <span>Create Invoice</span>
+                                    </button>
+                                    <button type="button" onclick='openPastVisitModal(<?= htmlspecialchars(json_encode($pv), ENT_QUOTES, "UTF-8") ?>)' class="px-3 py-1 bg-primary text-white font-bold text-xs rounded-lg hover:bg-primary/90 transition flex items-center gap-1 shadow-xs">
+                                        <span class="material-symbols-outlined text-sm">visibility</span>
+                                        <span>View Details</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -428,7 +434,11 @@ foreach ($settingsRows as $sr) {
                 </div>
             </div>
 
-            <div class="flex items-center justify-end pt-3 border-t border-slate-200">
+            <div class="flex items-center justify-between pt-3 border-t border-slate-200">
+                <button type="button" id="pv_create_invoice_btn" onclick="" class="px-4 py-2 bg-blue-700 text-white font-bold text-xs rounded-xl hover:bg-blue-800 transition flex items-center gap-1.5 shadow-xs">
+                    <span class="material-symbols-outlined text-sm">receipt_long</span>
+                    <span>Create Invoice for Visit</span>
+                </button>
                 <button type="button" onclick="closePastVisitModal()" class="px-5 py-2 bg-slate-200 text-slate-800 font-bold rounded-xl hover:bg-slate-300 transition">
                     Close Record
                 </button>
@@ -499,11 +509,111 @@ function openPastVisitModal(pv) {
     }
     document.getElementById('pv_prescriptions_list').innerHTML = rxHtml;
 
+    const invBtn = document.getElementById('pv_create_invoice_btn');
+    if (invBtn) {
+        invBtn.onclick = function() {
+            closePastVisitModal();
+            openCreateInvoiceForVisit(pv);
+        };
+    }
+
     document.getElementById('viewPastVisitModal').classList.remove('hidden');
 }
 
 function closePastVisitModal() {
     document.getElementById('viewPastVisitModal').classList.add('hidden');
+}
+</script>
+
+<!-- Modal: Create Invoice for Finalized Visit -->
+<div id="createInvoiceModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-surface-container-lowest rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-outline-variant/30">
+        <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/20">
+            <h3 class="text-base font-bold text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-blue-600">receipt_long</span>
+                <span>Create Invoice for Visit</span>
+            </h3>
+            <button type="button" onclick="document.getElementById('createInvoiceModal').classList.add('hidden')" class="text-outline hover:text-on-surface">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <form action="actions/encounter_save.php" method="POST" class="space-y-4 text-xs">
+            <input type="hidden" name="action" value="create_invoice">
+            <input type="hidden" name="patient_id" value="<?= htmlspecialchars($patient['id']) ?>">
+            <input type="hidden" name="visit_id" id="inv_visit_id" value="">
+            <input type="hidden" name="redirect_to" value="patient_detail.php">
+
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Patient Name & MRN</label>
+                <input type="text" readonly value="<?= htmlspecialchars($patient['first_name'] . ' ' . $patient['last_name'] . ' (' . $patient['mrn'] . ')') ?>" class="w-full bg-slate-100 px-3 py-2 rounded-xl border border-slate-300 font-bold text-slate-700">
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Service Description <span class="text-red-500">*</span></label>
+                <input type="text" name="service_description" id="inv_service_desc" value="Clinical Consultation & Examination" required class="w-full bg-surface-container-low px-3 py-2 rounded-xl border border-outline-variant/40 font-medium">
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Total Amount ($)</label>
+                    <input type="number" step="0.01" min="0" name="amount" id="inv_amount" value="150.00" oninput="calculateInvoiceOwed()" required class="w-full bg-surface-container-low px-3 py-2 rounded-xl border border-outline-variant/40 font-mono font-bold text-on-surface">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Insurance ($)</label>
+                    <input type="number" step="0.01" min="0" name="insurance_covered" id="inv_insurance" value="100.00" oninput="calculateInvoiceOwed()" class="w-full bg-surface-container-low px-3 py-2 rounded-xl border border-outline-variant/40 font-mono font-bold text-on-surface">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Patient Owed ($)</label>
+                    <input type="number" step="0.01" min="0" name="patient_owed" id="inv_patient_owed" value="50.00" readonly class="w-full bg-slate-100 px-3 py-2 rounded-xl border border-slate-300 font-mono font-bold text-blue-700">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Service Date</label>
+                    <input type="date" name="service_date" id="inv_service_date" value="<?= date('Y-m-d') ?>" class="w-full bg-surface-container-low px-3 py-2 rounded-xl border border-outline-variant/40 font-medium" required>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Due Date</label>
+                    <input type="date" name="due_date" value="<?= date('Y-m-d', strtotime('+30 days')) ?>" class="w-full bg-surface-container-low px-3 py-2 rounded-xl border border-outline-variant/40 font-medium" required>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-outline-variant/20">
+                <button type="button" onclick="document.getElementById('createInvoiceModal').classList.add('hidden')" class="px-4 py-2 bg-surface-container-high text-on-surface font-semibold rounded-xl hover:bg-surface-variant transition">
+                    Cancel
+                </button>
+                <button type="submit" class="px-5 py-2 bg-blue-700 text-white font-bold rounded-xl hover:bg-blue-800 transition shadow-xs flex items-center gap-2">
+                    <span class="material-symbols-outlined text-base">receipt_long</span>
+                    <span>Generate Invoice</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function calculateInvoiceOwed() {
+    const amount = parseFloat(document.getElementById('inv_amount').value) || 0;
+    const ins = parseFloat(document.getElementById('inv_insurance').value) || 0;
+    const owed = Math.max(0, amount - ins);
+    document.getElementById('inv_patient_owed').value = owed.toFixed(2);
+}
+
+function openCreateInvoiceForVisit(pv) {
+    document.getElementById('inv_visit_id').value = pv.visit_id || '';
+    if (pv.title) {
+        document.getElementById('inv_service_desc').value = pv.title;
+    }
+    if (pv.visit_date) {
+        // try to parse date if YYYY-MM-DD, else keep current date
+        const d = new Date(pv.visit_date);
+        if (!isNaN(d.getTime())) {
+            document.getElementById('inv_service_date').value = d.toISOString().split('T')[0];
+        }
+    }
+    document.getElementById('createInvoiceModal').classList.remove('hidden');
 }
 </script>
 

@@ -94,7 +94,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             setToast("Invoice Created", "Invoice $invNum generated for " . $patient['first_name'] . ' ' . $patient['last_name'] . " ($" . number_format($patientOwed, 2) . " owed).");
         }
 
-        header("Location: ../clinical_visit.php?patient_id=$patientId&visit_id=$visitId");
+        $redirect = !empty($_POST['redirect_to']) ? $_POST['redirect_to'] : "../clinical_visit.php?patient_id=$patientId&visit_id=$visitId";
+        if (!empty($_GET['redirect_to'])) {
+            $redirect = $_GET['redirect_to'];
+        }
+        if (stristr($redirect, 'patient_detail.php') !== false) {
+            header("Location: ../patient_detail.php?id=$patientId");
+        } else {
+            header("Location: ../clinical_visit.php?patient_id=$patientId&visit_id=$visitId");
+        }
         exit;
     }
 
@@ -181,7 +189,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ];
 
             // Fetch prescriptions for current visit_id
-            $rxStmt = $pdo->prepare("SELECT medication_name, dosage, frequency, duration, instructions FROM prescriptions WHERE patient_id = ? AND (visit_id = ? OR visit_id IS NULL)");
+            $rxStmt = $pdo->prepare("SELECT medication_name, dosage, frequency, duration, instructions FROM prescriptions WHERE patient_id = ? AND visit_id = ?");
             $rxStmt->execute([$patientId, $visitId]);
             $prescriptionsData = $rxStmt->fetchAll();
 
@@ -219,7 +227,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 "blue"
             ]);
 
-            setToast("Visit Finalized!", "Encounter for " . $patient['first_name'] . ' ' . $patient['last_name'] . " has been finalized.");
+            // Handle invoice creation on finalize if checked
+            if (!empty($_POST['create_invoice_on_finalize'])) {
+                $invId = "inv-" . time();
+                $invNum = "INV-" . date('Y') . "-" . rand(1000, 9999);
+                $serviceDesc = trim($_POST['service_description'] ?? 'Clinical Consultation & Examination');
+                $amount = (float)($_POST['amount'] ?? 150.00);
+                $insuranceCovered = (float)($_POST['insurance_covered'] ?? 0.00);
+                $patientOwed = max(0.00, $amount - $insuranceCovered);
+                $serviceDate = date('Y-m-d');
+                $dueDate = date('Y-m-d', strtotime('+30 days'));
+
+                $servicesJson = json_encode([$serviceDesc]);
+
+                $invInsert = $pdo->prepare("INSERT INTO invoices (id, invoice_number, patient_name, patient_mrn, service_date, due_date, amount, status, insurance_covered, patient_owed, services) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                $invInsert->execute([
+                    $invId,
+                    $invNum,
+                    $patient['first_name'] . ' ' . $patient['last_name'],
+                    $patient['mrn'],
+                    $serviceDate,
+                    $dueDate,
+                    $amount,
+                    'Pending',
+                    $insuranceCovered,
+                    $patientOwed,
+                    $servicesJson
+                ]);
+
+                setToast("Visit Finalized & Invoice Created!", "Encounter finalized and Invoice $invNum created ($" . number_format($patientOwed, 2) . " owed).");
+            } else {
+                setToast("Visit Finalized!", "Encounter for " . $patient['first_name'] . ' ' . $patient['last_name'] . " has been finalized.");
+            }
+
             header("Location: ../patient_detail.php?id=$patientId");
             exit;
         } else {
