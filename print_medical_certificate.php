@@ -103,7 +103,7 @@ $digitalStamp = $doctor['digital_stamp'] ?? '';
             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
             <input type="hidden" name="document_type" value="Medical Certificate">
             <input type="hidden" name="document_id" value="<?= htmlspecialchars($cert['certificate_number']) ?>">
-            <input type="email" name="recipient_email" required value="<?= htmlspecialchars($patient['email'] ?? '') ?>" placeholder="patient@example.com" class="flex-1 px-3 py-1.5 border border-slate-300 rounded-lg text-xs">
+            <input type="email" name="email" required value="<?= htmlspecialchars($patient['email'] ?? '') ?>" placeholder="patient@example.com" class="flex-1 px-3 py-1.5 border border-slate-300 rounded-lg text-xs">
             <button type="submit" class="px-3 py-1.5 bg-blue-600 text-white font-semibold text-xs rounded-lg hover:bg-blue-700 transition flex items-center gap-1">
                 <span class="material-symbols-outlined text-sm">mail</span> Email Certificate
             </button>
