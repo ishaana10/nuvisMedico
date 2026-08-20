@@ -41,7 +41,7 @@ $soap = $soapStmt->fetch() ?: [
 $assessmentCodes = json_decode($soap['assessment_codes'] ?? '[]', true) ?: [];
 
 // Fetch Prescriptions for THIS encounter only (visit_id)
-$rxStmt = $pdo->prepare("SELECT * FROM prescriptions WHERE patient_id = ? AND (visit_id = ? OR visit_id IS NULL AND datetime(created_at) >= datetime('now', '-10 minutes')) ORDER BY created_at ASC");
+$rxStmt = $pdo->prepare("SELECT * FROM prescriptions WHERE patient_id = ? AND visit_id = ? ORDER BY created_at ASC");
 $rxStmt->execute([$patientId, $visitId]);
 $prescriptions = $rxStmt->fetchAll();
 
@@ -88,15 +88,10 @@ include __DIR__ . '/includes/header.php';
                 <span class="material-symbols-outlined text-base">print</span>
                 <span>Print Rx</span>
             </a>
-            <form action="actions/encounter_save.php" method="POST">
-                <input type="hidden" name="patient_id" value="<?= htmlspecialchars($patient['id']) ?>">
-                <input type="hidden" name="visit_id" value="<?= htmlspecialchars($visitId) ?>">
-                <input type="hidden" name="action" value="finish">
-                <button type="submit" class="px-4 py-2 bg-emerald-600 text-white font-semibold text-xs rounded-xl hover:bg-emerald-700 transition shadow-xs flex items-center gap-1.5">
-                    <span class="material-symbols-outlined text-base">task_alt</span>
-                    <span>Finalize Visit</span>
-                </button>
-            </form>
+            <button type="button" onclick="document.getElementById('finalizeModal').classList.remove('hidden')" class="px-4 py-2 bg-emerald-600 text-white font-semibold text-xs rounded-xl hover:bg-emerald-700 transition shadow-xs flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-base">task_alt</span>
+                <span>Finalize Visit</span>
+            </button>
         </div>
     </div>
 </div>
@@ -276,6 +271,76 @@ include __DIR__ . '/includes/header.php';
         </div>
     </div>
 </form>
+
+<!-- Modal: Finalize Encounter Options -->
+<div id="finalizeModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-surface-container-lowest rounded-2xl max-w-md w-full p-6 shadow-2xl border border-outline-variant/30 space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-outline-variant/20">
+            <h3 class="text-base font-bold text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-emerald-600">task_alt</span>
+                <span>Finalize Clinical Encounter</span>
+            </h3>
+            <button type="button" onclick="document.getElementById('finalizeModal').classList.add('hidden')" class="text-outline hover:text-on-surface">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <p class="text-xs text-on-surface-variant">
+            You are about to finalize the encounter for <strong><?= htmlspecialchars($patient['first_name'] . ' ' . $patient['last_name']) ?></strong>. This will archive the visit record and remove the patient from the active queue.
+        </p>
+
+        <form action="actions/encounter_save.php" method="POST" class="space-y-4 text-xs">
+            <input type="hidden" name="patient_id" value="<?= htmlspecialchars($patient['id']) ?>">
+            <input type="hidden" name="visit_id" value="<?= htmlspecialchars($visitId) ?>">
+            <input type="hidden" name="action" value="finish">
+
+            <div class="p-3 bg-surface-container-low rounded-xl border border-outline-variant/30 space-y-2">
+                <label class="flex items-center gap-2 font-bold text-slate-800 cursor-pointer">
+                    <input type="checkbox" name="create_invoice_on_finalize" value="1" id="create_inv_chk" onchange="toggleFinalizeInvoiceFields()" checked class="rounded border-slate-300 text-primary focus:ring-primary">
+                    <span>Generate Invoice Now</span>
+                </label>
+                <div id="finalize_invoice_fields" class="space-y-2 pt-1 border-t border-slate-200">
+                    <div>
+                        <label class="block font-semibold text-slate-600 mb-0.5">Service Description</label>
+                        <input type="text" name="service_description" value="Clinical Consultation & Examination" class="w-full bg-white px-2.5 py-1.5 rounded-lg border border-slate-300 font-medium">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block font-semibold text-slate-600 mb-0.5">Total Amount ($)</label>
+                            <input type="number" step="0.01" min="0" name="amount" value="150.00" class="w-full bg-white px-2.5 py-1.5 rounded-lg border border-slate-300 font-mono font-bold">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-600 mb-0.5">Insurance ($)</label>
+                            <input type="number" step="0.01" min="0" name="insurance_covered" value="100.00" class="w-full bg-white px-2.5 py-1.5 rounded-lg border border-slate-300 font-mono font-bold">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-2">
+                <button type="button" onclick="document.getElementById('finalizeModal').classList.add('hidden')" class="px-4 py-2 bg-surface-container-high text-on-surface font-semibold rounded-xl hover:bg-surface-variant transition">
+                    Cancel
+                </button>
+                <button type="submit" class="px-5 py-2 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition shadow-xs flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-base">task_alt</span>
+                    <span>Finalize Visit</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function toggleFinalizeInvoiceFields() {
+    const chk = document.getElementById('create_inv_chk');
+    const fields = document.getElementById('finalize_invoice_fields');
+    if (chk.checked) {
+        fields.classList.remove('hidden');
+    } else {
+        fields.classList.add('hidden');
+    }
+}
+</script>
 
 <!-- Modal: Edit Medication Line -->
 <div id="editRxModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
