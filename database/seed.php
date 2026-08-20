@@ -141,6 +141,7 @@ if ($isSqlite) {
         "CREATE TABLE IF NOT EXISTS invoices (
             id TEXT PRIMARY KEY,
             invoice_number TEXT UNIQUE NOT NULL,
+            patient_id TEXT,
             patient_name TEXT NOT NULL,
             patient_mrn TEXT NOT NULL,
             service_date TEXT NOT NULL,
@@ -149,7 +150,50 @@ if ($isSqlite) {
             status TEXT NOT NULL DEFAULT 'Pending',
             insurance_covered REAL NOT NULL DEFAULT 0.00,
             patient_owed REAL NOT NULL DEFAULT 0.00,
-            services TEXT
+            services TEXT,
+            invoice_type TEXT NOT NULL DEFAULT 'Normal',
+            transaction_type TEXT NOT NULL DEFAULT 'Sale',
+            seller_tin TEXT DEFAULT '502579006',
+            business_location TEXT DEFAULT 'Suva Central Clinic, 2 Woodstand Road, Suva',
+            cashier TEXT DEFAULT 'Admin',
+            buyer_tin TEXT,
+            buyer_cost_center TEXT,
+            pos_number TEXT DEFAULT 'CF-POS-V3/1.0',
+            pos_time TEXT,
+            ref_no TEXT,
+            ref_time TEXT,
+            is_fiscalized INTEGER DEFAULT 0,
+            sdc_invoice_no TEXT,
+            sdc_time TEXT,
+            invoice_counter TEXT,
+            verification_url TEXT,
+            digital_signature TEXT,
+            total_tax REAL DEFAULT 0.00,
+            payment_methods TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );",
+        "CREATE TABLE IF NOT EXISTS invoice_items (
+            id TEXT PRIMARY KEY,
+            invoice_id TEXT NOT NULL,
+            name TEXT NOT NULL,
+            gtin TEXT,
+            unit_price REAL NOT NULL,
+            quantity REAL NOT NULL DEFAULT 1.00,
+            total_price REAL NOT NULL,
+            tax_label TEXT NOT NULL DEFAULT 'A',
+            tax_rate REAL NOT NULL DEFAULT 15.00,
+            tax_amount REAL NOT NULL DEFAULT 0.00,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );",
+        "CREATE TABLE IF NOT EXISTS vms_logs (
+            id TEXT PRIMARY KEY,
+            invoice_id TEXT,
+            event_type TEXT NOT NULL,
+            request_payload TEXT,
+            response_payload TEXT,
+            status_code INTEGER DEFAULT 200,
+            error_message TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );",
         "CREATE TABLE IF NOT EXISTS inventory (
             id TEXT PRIMARY KEY,
@@ -190,7 +234,7 @@ if ($isSqlite) {
 echo "Seeding default data...\n";
 
 // Clear existing tables
-$tables = ['doctors', 'clinic_settings', 'patients', 'appointments', 'queue', 'vitals', 'soap_notes', 'prescriptions', 'past_visits', 'activities', 'invoices', 'inventory', 'medical_certificates'];
+$tables = ['doctors', 'clinic_settings', 'patients', 'appointments', 'queue', 'vitals', 'soap_notes', 'prescriptions', 'past_visits', 'activities', 'invoices', 'invoice_items', 'vms_logs', 'inventory', 'medical_certificates'];
 foreach ($tables as $t) {
     $pdo->exec("DELETE FROM $t");
 }
@@ -307,14 +351,41 @@ foreach ($prescriptions as $rx) {
     $stmt->execute($rx);
 }
 
+// VMS Settings
+$vmsSettings = [
+    'vms_enabled' => '1',
+    'vms_seller_tin' => '502579006',
+    'vms_business_location' => 'Suva Central Clinic, 2 Woodstand Road, Suva',
+    'vms_pos_number' => 'ASDF238/1.2',
+    'vms_sdc_url' => 'https://tap.sandbox.vms.frcs.org.fj',
+    'vms_tax_rate_a' => '15.00',
+    'vms_tax_rate_e' => '0.00',
+    'vms_tax_rate_f' => '0.00',
+    'vms_tax_rate_p' => '0.25'
+];
+$stmt = $pdo->prepare("INSERT INTO clinic_settings (setting_key, setting_value) VALUES (?, ?)");
+foreach ($vmsSettings as $key => $val) {
+    $stmt->execute([$key, $val]);
+}
+
 // Invoices
 $invoices = [
-    ['inv-1', 'INV-2023-8821', 'Robert Johnson', '#48291', '2023-10-24', '2023-11-24', 250.00, 'Pending', 200.00, 50.00, json_encode(['Follow-up Consultation'])],
-    ['inv-2', 'INV-2023-8819', 'Elena Rodriguez', '#55102', '2023-10-24', '2023-11-24', 320.00, 'Pending', 270.00, 50.00, json_encode(['Specialist Consultation'])]
+    ['inv-1', 'INV-2023-8821', 'pat-2', 'Robert Johnson', '#48291', '2023-10-24', '2023-11-24', 250.00, 'Pending', 200.00, 50.00, json_encode(['Follow-up Consultation']), 'Normal', 'Sale', '502579006', 'Suva Central Clinic, 2 Woodstand Road, Suva', 'Admin', null, null, 'ASDF238/1.2', '2023-10-24 09:15:00', null, null, 1, '7AF234D9-E377B30A-150493', '2023-10-24 09:15:02', '143027/150493NS', 'https://tap.sandbox.vms.frcs.org.fj/verify?id=7AF234D9-E377B30A-150493', 'MEYCIQDx812...SIG', 32.61, json_encode([['type' => 'Cash', 'amount' => 50.00]])],
+    ['inv-2', 'INV-2023-8819', 'pat-3', 'Elena Rodriguez', '#55102', '2023-10-24', '2023-11-24', 320.00, 'Pending', 270.00, 50.00, json_encode(['Specialist Consultation']), 'Normal', 'Sale', '502579006', 'Suva Central Clinic, 2 Woodstand Road, Suva', 'Admin', null, null, 'ASDF238/1.2', '2023-10-24 09:45:00', null, null, 1, '7AF234D9-E377B30A-150494', '2023-10-24 09:45:02', '143028/150494NS', 'https://tap.sandbox.vms.frcs.org.fj/verify?id=7AF234D9-E377B30A-150494', 'MEYCIQDx813...SIG', 41.74, json_encode([['type' => 'Card', 'amount' => 50.00]])]
 ];
-$stmt = $pdo->prepare("INSERT INTO invoices (id, invoice_number, patient_name, patient_mrn, service_date, due_date, amount, status, insurance_covered, patient_owed, services) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+$stmt = $pdo->prepare("INSERT INTO invoices (id, invoice_number, patient_id, patient_name, patient_mrn, service_date, due_date, amount, status, insurance_covered, patient_owed, services, invoice_type, transaction_type, seller_tin, business_location, cashier, buyer_tin, buyer_cost_center, pos_number, pos_time, ref_no, ref_time, is_fiscalized, sdc_invoice_no, sdc_time, invoice_counter, verification_url, digital_signature, total_tax, payment_methods) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 foreach ($invoices as $inv) {
     $stmt->execute($inv);
+}
+
+// Sample Invoice Items
+$items = [
+    ['item-1', 'inv-1', 'Follow-up Consultation', '10009812', 250.00, 1.00, 250.00, 'A', 15.00, 32.61],
+    ['item-2', 'inv-2', 'Specialist Consultation', '10009815', 320.00, 1.00, 320.00, 'A', 15.00, 41.74]
+];
+$stmt = $pdo->prepare("INSERT INTO invoice_items (id, invoice_id, name, gtin, unit_price, quantity, total_price, tax_label, tax_rate, tax_amount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+foreach ($items as $item) {
+    $stmt->execute($item);
 }
 
 // Inventory

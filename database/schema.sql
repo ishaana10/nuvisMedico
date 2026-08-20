@@ -170,6 +170,7 @@ CREATE TABLE IF NOT EXISTS activities (
 CREATE TABLE IF NOT EXISTS invoices (
     id VARCHAR(50) PRIMARY KEY,
     invoice_number VARCHAR(50) UNIQUE NOT NULL,
+    patient_id VARCHAR(50),
     patient_name VARCHAR(255) NOT NULL,
     patient_mrn VARCHAR(50) NOT NULL,
     service_date DATE NOT NULL,
@@ -179,11 +180,67 @@ CREATE TABLE IF NOT EXISTS invoices (
     insurance_covered DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     patient_owed DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     services TEXT,
+
+    -- VMS Phase 3 Specification Fields
+    invoice_type VARCHAR(20) NOT NULL DEFAULT 'Normal', -- Normal, Advance, Proforma, Copy, Training
+    transaction_type VARCHAR(20) NOT NULL DEFAULT 'Sale', -- Sale, Refund
+    seller_tin VARCHAR(50) DEFAULT '502579006',
+    business_location VARCHAR(255) DEFAULT 'Suva Central Clinic, 2 Woodstand Road, Suva',
+    cashier VARCHAR(100) DEFAULT 'Admin',
+    buyer_tin VARCHAR(50),
+    buyer_cost_center VARCHAR(100),
+    pos_number VARCHAR(50) DEFAULT 'CF-POS-V3/1.0',
+    pos_time VARCHAR(50),
+    ref_no VARCHAR(100),
+    ref_time VARCHAR(50),
+
+    -- SDC Fiscalization Response Data
+    is_fiscalized TINYINT(1) DEFAULT 0,
+    sdc_invoice_no VARCHAR(100),
+    sdc_time VARCHAR(50),
+    invoice_counter VARCHAR(100),
+    verification_url TEXT,
+    digital_signature TEXT,
+    total_tax DECIMAL(10,2) DEFAULT 0.00,
+    payment_methods TEXT, -- JSON array of payment types and amounts e.g. [{"type":"Cash","amount":100}]
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_invoices_mrn ON invoices(patient_mrn);
 CREATE INDEX IF NOT EXISTS idx_invoices_status ON invoices(status);
+CREATE INDEX IF NOT EXISTS idx_invoices_fiscalized ON invoices(is_fiscalized);
+CREATE INDEX IF NOT EXISTS idx_invoices_type ON invoices(invoice_type, transaction_type);
+
+CREATE TABLE IF NOT EXISTS invoice_items (
+    id VARCHAR(50) PRIMARY KEY,
+    invoice_id VARCHAR(50) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    gtin VARCHAR(50),
+    unit_price DECIMAL(10,2) NOT NULL,
+    quantity DECIMAL(10,2) NOT NULL DEFAULT 1.00,
+    total_price DECIMAL(10,2) NOT NULL,
+    tax_label VARCHAR(10) NOT NULL DEFAULT 'A', -- A = 15% VAT, E = Exempt 0%, F = 0%, P = 0.25%
+    tax_rate DECIMAL(5,2) NOT NULL DEFAULT 15.00,
+    tax_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_invoice_items_inv ON invoice_items(invoice_id);
+
+CREATE TABLE IF NOT EXISTS vms_logs (
+    id VARCHAR(50) PRIMARY KEY,
+    invoice_id VARCHAR(50),
+    event_type VARCHAR(50) NOT NULL, -- FISCALIZATION_REQ, FISCALIZATION_RESP, AUDIT_PACKAGE, POA, ERROR
+    request_payload TEXT,
+    response_payload TEXT,
+    status_code INT DEFAULT 200,
+    error_message TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_vms_logs_invoice ON vms_logs(invoice_id);
 
 CREATE TABLE IF NOT EXISTS inventory (
     id VARCHAR(50) PRIMARY KEY,
