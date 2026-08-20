@@ -40,6 +40,10 @@ function verifyCsrfToken(?string $token): bool {
     return hash_equals($_SESSION['csrf_token'], $token);
 }
 
+function validateCsrfToken(?string $token): bool {
+    return verifyCsrfToken($token);
+}
+
 /**
  * Check CSRF token on POST/PUT/DELETE requests or terminate
  */
