@@ -59,6 +59,45 @@ if ($action === 'copy_rx') {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if ($action === 'create_invoice') {
+        $stmt = $pdo->prepare("SELECT * FROM patients WHERE id = ?");
+        $stmt->execute([$patientId]);
+        $patient = $stmt->fetch();
+
+        if ($patient) {
+            $invId = "inv-" . time();
+            $invNum = "INV-" . date('Y') . "-" . rand(1000, 9999);
+            $serviceDesc = trim($_POST['service_description'] ?? 'Clinical Consultation & Examination');
+            $amount = (float)($_POST['amount'] ?? 150.00);
+            $insuranceCovered = (float)($_POST['insurance_covered'] ?? 0.00);
+            $patientOwed = max(0.00, $amount - $insuranceCovered);
+            $serviceDate = trim($_POST['service_date'] ?? date('Y-m-d'));
+            $dueDate = trim($_POST['due_date'] ?? date('Y-m-d', strtotime('+30 days')));
+
+            $servicesJson = json_encode([$serviceDesc]);
+
+            $invInsert = $pdo->prepare("INSERT INTO invoices (id, invoice_number, patient_name, patient_mrn, service_date, due_date, amount, status, insurance_covered, patient_owed, services) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $invInsert->execute([
+                $invId,
+                $invNum,
+                $patient['first_name'] . ' ' . $patient['last_name'],
+                $patient['mrn'],
+                $serviceDate,
+                $dueDate,
+                $amount,
+                'Pending',
+                $insuranceCovered,
+                $patientOwed,
+                $servicesJson
+            ]);
+
+            setToast("Invoice Created", "Invoice $invNum generated for " . $patient['first_name'] . ' ' . $patient['last_name'] . " ($" . number_format($patientOwed, 2) . " owed).");
+        }
+
+        header("Location: ../clinical_visit.php?patient_id=$patientId&visit_id=$visitId");
+        exit;
+    }
+
     if ($action === 'edit_rx') {
         $rxId = trim($_POST['rx_id'] ?? '');
         $medName = trim($_POST['medication_name'] ?? '');
@@ -125,16 +164,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pStmt->execute([$patientId]);
             $patient = $pStmt->fetch();
 
-            // Insert into past_visits
+            // Fetch current vitals
+            $vitalsData = [
+                'blood_pressure' => $bp,
+                'heart_rate' => $hr,
+                'temperature' => $temp,
+                'oxygen_sat' => $spo2
+            ];
+
+            // Fetch current SOAP notes
+            $soapData = [
+                'subjective' => $subjective,
+                'objective' => $objective,
+                'assessment_code' => $icdCode,
+                'plan' => $plan
+            ];
+
+            // Fetch prescriptions for current visit_id
+            $rxStmt = $pdo->prepare("SELECT medication_name, dosage, frequency, duration, instructions FROM prescriptions WHERE patient_id = ? AND (visit_id = ? OR visit_id IS NULL)");
+            $rxStmt->execute([$patientId, $visitId]);
+            $prescriptionsData = $rxStmt->fetchAll();
+
+            // Doctor name
+            $doctorName = $_SESSION['user_name'] ?? 'Dr. Sarah Jenkins';
+
+            // Insert into past_visits with complete records saved as JSON
             $pvId = "pv-" . time();
-            $pvInsert = $pdo->prepare("INSERT INTO past_visits (id, patient_id, visit_date, title, summary, doctor_name) VALUES (?, ?, ?, ?, ?, ?)");
+            $pvInsert = $pdo->prepare("INSERT INTO past_visits (id, patient_id, visit_id, visit_date, title, summary, doctor_name, vitals, soap_notes, prescriptions) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             $pvInsert->execute([
                 $pvId,
                 $patientId,
+                $visitId,
                 date('M d, Y'),
                 "Clinical Encounter ($icdCode)",
-                substr($plan, 0, 100) . "...",
-                "Dr. Sarah Jenkins"
+                !empty($plan) ? (substr($plan, 0, 120) . (strlen($plan) > 120 ? '...' : '')) : "Clinical encounter completed.",
+                $doctorName,
+                json_encode($vitalsData),
+                json_encode($soapData),
+                json_encode($prescriptionsData)
             ]);
 
             // Clear from queue

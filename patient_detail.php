@@ -217,7 +217,10 @@ foreach ($settingsRows as $sr) {
                             <p class="text-xs text-on-surface-variant mb-2"><?= htmlspecialchars($pv['summary']) ?></p>
                             <div class="flex items-center justify-between text-[11px] text-outline pt-2 border-t border-outline-variant/20">
                                 <span>Attending: <strong class="text-slate-700"><?= htmlspecialchars($pv['doctor_name']) ?></strong></span>
-                                <span class="text-primary font-semibold">Archived File</span>
+                                <button type="button" onclick='openPastVisitModal(<?= htmlspecialchars(json_encode($pv), ENT_QUOTES, "UTF-8") ?>)' class="px-3 py-1 bg-primary text-white font-bold text-xs rounded-lg hover:bg-primary/90 transition flex items-center gap-1 shadow-xs">
+                                    <span class="material-symbols-outlined text-sm">visibility</span>
+                                    <span>View Details</span>
+                                </button>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -350,6 +353,159 @@ foreach ($settingsRows as $sr) {
         </form>
     </div>
 </div>
+
+<!-- Modal: View Past Encounter Record -->
+<div id="viewPastVisitModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden overflow-y-auto">
+    <div class="bg-surface-container-lowest rounded-3xl max-w-2xl w-full shadow-2xl border border-outline-variant/30 overflow-hidden my-8">
+        <div class="px-6 py-4 bg-primary text-white flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-lg">history_edu</span>
+                <h3 class="font-bold text-sm" id="pv_modal_title">Past Clinical Encounter Details</h3>
+            </div>
+            <button type="button" onclick="closePastVisitModal()" class="text-white/80 hover:text-white">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <div class="p-6 space-y-5 text-xs">
+            <!-- Header Meta -->
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+                <div>
+                    <span class="text-slate-500 font-semibold block text-[11px]">Encounter Date</span>
+                    <span class="font-bold text-slate-800 text-sm" id="pv_modal_date">-</span>
+                </div>
+                <div class="text-right">
+                    <span class="text-slate-500 font-semibold block text-[11px]">Attending Physician</span>
+                    <span class="font-bold text-primary text-sm" id="pv_modal_doctor">-</span>
+                </div>
+            </div>
+
+            <!-- Vitals Record -->
+            <div id="pv_vitals_section" class="bg-surface-container-low p-4 rounded-2xl border border-outline-variant/30 space-y-2">
+                <h4 class="font-bold text-slate-700 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-primary text-base">vital_signs</span>
+                    <span>Vitals Summary</span>
+                </h4>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono font-medium text-slate-800" id="pv_vitals_content">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- SOAP Documentation -->
+            <div class="bg-surface-container-low p-4 rounded-2xl border border-outline-variant/30 space-y-3">
+                <h4 class="font-bold text-slate-700 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-primary text-base">edit_note</span>
+                    <span>Clinical Notes & SOAP</span>
+                </h4>
+                <div class="space-y-2 text-slate-800">
+                    <div>
+                        <span class="font-bold text-slate-600 block">Subjective (Chief Complaint & History):</span>
+                        <p class="mt-0.5 font-medium" id="pv_soap_subjective">None recorded.</p>
+                    </div>
+                    <div>
+                        <span class="font-bold text-slate-600 block">Objective (Physical Exam):</span>
+                        <p class="mt-0.5 font-medium" id="pv_soap_objective">None recorded.</p>
+                    </div>
+                    <div>
+                        <span class="font-bold text-slate-600 block">Assessment / ICD Diagnosis:</span>
+                        <span class="inline-block mt-0.5 px-2.5 py-0.5 rounded bg-primary-fixed text-on-primary-fixed font-bold font-mono text-[11px]" id="pv_soap_assessment">J01.90</span>
+                    </div>
+                    <div>
+                        <span class="font-bold text-slate-600 block">Plan & Recommendations:</span>
+                        <p class="mt-0.5 font-medium" id="pv_soap_plan">None recorded.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Prescriptions Issued -->
+            <div class="bg-surface-container-low p-4 rounded-2xl border border-outline-variant/30 space-y-3">
+                <h4 class="font-bold text-slate-700 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-primary text-base">prescriptions</span>
+                    <span>Prescriptions Issued</span>
+                </h4>
+                <div class="space-y-2" id="pv_prescriptions_list">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end pt-3 border-t border-slate-200">
+                <button type="button" onclick="closePastVisitModal()" class="px-5 py-2 bg-slate-200 text-slate-800 font-bold rounded-xl hover:bg-slate-300 transition">
+                    Close Record
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function openPastVisitModal(pv) {
+    document.getElementById('pv_modal_title').innerText = pv.title || 'Past Clinical Encounter';
+    document.getElementById('pv_modal_date').innerText = pv.visit_date || 'N/A';
+    document.getElementById('pv_modal_doctor').innerText = pv.doctor_name || 'N/A';
+
+    // Parse Vitals
+    let vitalsHtml = '';
+    let vitals = null;
+    try {
+        if (pv.vitals) {
+            vitals = typeof pv.vitals === 'string' ? JSON.parse(pv.vitals) : pv.vitals;
+        }
+    } catch(e) {}
+
+    if (vitals && Object.keys(vitals).length > 0) {
+        if (vitals.blood_pressure) vitalsHtml += `<div><span class="text-[10px] text-slate-400 block font-sans font-semibold">BP</span><span>${vitals.blood_pressure}</span></div>`;
+        if (vitals.heart_rate) vitalsHtml += `<div><span class="text-[10px] text-slate-400 block font-sans font-semibold">HR</span><span>${vitals.heart_rate} bpm</span></div>`;
+        if (vitals.temperature) vitalsHtml += `<div><span class="text-[10px] text-slate-400 block font-sans font-semibold">Temp</span><span>${vitals.temperature} °F</span></div>`;
+        if (vitals.oxygen_sat) vitalsHtml += `<div><span class="text-[10px] text-slate-400 block font-sans font-semibold">SpO2</span><span>${vitals.oxygen_sat}%</span></div>`;
+    } else {
+        vitalsHtml = '<p class="col-span-4 text-slate-400 font-sans italic text-xs">No vitals saved for this visit record.</p>';
+    }
+    document.getElementById('pv_vitals_content').innerHTML = vitalsHtml;
+
+    // Parse SOAP Notes
+    let soap = null;
+    try {
+        if (pv.soap_notes) {
+            soap = typeof pv.soap_notes === 'string' ? JSON.parse(pv.soap_notes) : pv.soap_notes;
+        }
+    } catch(e) {}
+
+    document.getElementById('pv_soap_subjective').innerText = (soap && soap.subjective) ? soap.subjective : (pv.summary || 'N/A');
+    document.getElementById('pv_soap_objective').innerText = (soap && soap.objective) ? soap.objective : 'N/A';
+    document.getElementById('pv_soap_assessment').innerText = (soap && soap.assessment_code) ? soap.assessment_code : (pv.title || 'Clinical Encounter');
+    document.getElementById('pv_soap_plan').innerText = (soap && soap.plan) ? soap.plan : (pv.summary || 'N/A');
+
+    // Parse Prescriptions
+    let prescriptions = null;
+    try {
+        if (pv.prescriptions) {
+            prescriptions = typeof pv.prescriptions === 'string' ? JSON.parse(pv.prescriptions) : pv.prescriptions;
+        }
+    } catch(e) {}
+
+    let rxHtml = '';
+    if (prescriptions && prescriptions.length > 0) {
+        prescriptions.forEach(rx => {
+            rxHtml += `
+                <div class="p-2.5 rounded-xl bg-white border border-slate-200">
+                    <p class="font-bold text-slate-800">${rx.medication_name || ''} <span class="text-primary font-mono">${rx.dosage || ''}</span></p>
+                    <p class="text-[11px] text-slate-500 mt-0.5">${rx.frequency || ''} • ${rx.duration || ''}</p>
+                    ${rx.instructions ? `<p class="text-[10px] text-slate-600 italic mt-0.5">${rx.instructions}</p>` : ''}
+                </div>
+            `;
+        });
+    } else {
+        rxHtml = '<p class="text-slate-400 italic text-xs">No prescriptions associated with this encounter.</p>';
+    }
+    document.getElementById('pv_prescriptions_list').innerHTML = rxHtml;
+
+    document.getElementById('viewPastVisitModal').classList.remove('hidden');
+}
+
+function closePastVisitModal() {
+    document.getElementById('viewPastVisitModal').classList.add('hidden');
+}
+</script>
 
 <!-- Modal: Issue Medical Certificate -->
 <div id="issueMedCertModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
