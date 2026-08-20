@@ -48,7 +48,7 @@ $csrfToken = generateCsrfToken();
     <div class="flex flex-col justify-between">
         <!-- Brand Header with Nuvis Medcare X logo & assets -->
         <div class="bg-white p-6 border-b border-slate-100 text-center flex flex-col items-center justify-center">
-            <img src="assets/images/NuvisMedcareX_banner.jfif" alt="Nuvis Medcare X" class="h-16 object-contain mb-2 rounded-lg">
+            <img src="assets/images/NuvisMedcareX_banner (1).jpg" alt="Nuvis Medcare X" class="h-16 object-contain mb-2 rounded-lg">
             <div class="flex items-center gap-3 mt-1">
                 <img src="assets/images/stethoscope_heart.png" alt="Stethoscope" class="h-6 object-contain">
                 <span class="text-xs font-semibold text-slate-500 uppercase tracking-widest">Nuvis Medcare X EHR Platform</span>
