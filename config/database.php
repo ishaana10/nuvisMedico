@@ -4,9 +4,7 @@
  * Dynamically loads credentials from config/config.php or environment variables
  */
 
-if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
-    require_once __DIR__ . '/../vendor/autoload.php';
-}
+require_once __DIR__ . '/../includes/autoloader.php';
 
 function getAppConfig(): array {
     static $config = null;
