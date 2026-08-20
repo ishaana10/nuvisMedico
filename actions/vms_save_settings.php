@@ -2,11 +2,7 @@
 require_once __DIR__ . '/../includes/security.php';
 require_once __DIR__ . '/../config/database.php';
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !validateCsrfToken($_POST['csrf_token'] ?? '')) {
-    $_SESSION['flash_error'] = "Invalid CSRF token.";
-    header("Location: ../billing.php");
-    exit;
-}
+validateCsrfRequest();
 
 $pdo = getDB();
 

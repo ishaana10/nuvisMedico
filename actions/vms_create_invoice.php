@@ -6,11 +6,7 @@ require_once __DIR__ . '/../config/database.php';
 use ClinicFlow\Services\VMSService;
 
 // CSRF check
-if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !validateCsrfToken($_POST['csrf_token'] ?? '')) {
-    $_SESSION['flash_error'] = "Invalid CSRF token.";
-    header("Location: ../billing.php");
-    exit;
-}
+validateCsrfRequest();
 
 $pdo = getDB();
 $vmsService = new VMSService($pdo);
