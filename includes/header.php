@@ -181,6 +181,9 @@ $currentDoctor = reset($currentDoctor) ?: ($doctors[0] ?? ['id' => 'doc-1', 'nam
                         </select>
                     </div>
                 </form>
+                <button type="button" onclick="openChangePasswordModal()" title="Change My Password" class="p-1.5 text-slate-500 hover:text-primary rounded-lg hover:bg-slate-100 transition flex items-center">
+                    <span class="material-symbols-outlined text-lg">key</span>
+                </button>
                 <a href="actions/logout.php" title="Sign Out" class="p-1.5 text-slate-500 hover:text-red-600 rounded-lg hover:bg-slate-100 transition flex items-center">
                     <span class="material-symbols-outlined text-lg">logout</span>
                 </a>
@@ -188,6 +191,57 @@ $currentDoctor = reset($currentDoctor) ?: ($doctors[0] ?? ['id' => 'doc-1', 'nam
         </div>
     </div>
 </header>
+
+<!-- Change Password Global Modal -->
+<div id="modal-change-password-global" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center hidden p-4">
+    <div class="bg-surface-container-lowest rounded-3xl border border-outline-variant/30 shadow-2xl max-w-md w-full overflow-hidden">
+        <div class="p-5 bg-slate-900 text-white flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-xl">key</span>
+                <h3 class="font-bold text-sm">Change Account Password</h3>
+            </div>
+            <button type="button" onclick="closeChangePasswordModal()" class="text-slate-400 hover:text-white">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <form action="actions/change_password.php" method="POST" class="p-6 space-y-4 text-xs">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
+            <input type="hidden" name="redirect_url" value="<?= htmlspecialchars($_SERVER['REQUEST_URI'] ?? '../index.php') ?>">
+
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Current Password *</label>
+                <input type="password" name="current_password" required placeholder="••••••••" class="w-full bg-surface-container-low px-3.5 py-2.5 rounded-xl border border-outline-variant/40 font-medium text-on-surface focus:outline-none focus:border-primary">
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">New Password *</label>
+                <input type="password" name="new_password" required minlength="6" placeholder="At least 6 characters" class="w-full bg-surface-container-low px-3.5 py-2.5 rounded-xl border border-outline-variant/40 font-medium text-on-surface focus:outline-none focus:border-primary">
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Confirm New Password *</label>
+                <input type="password" name="confirm_password" required minlength="6" placeholder="Repeat new password" class="w-full bg-surface-container-low px-3.5 py-2.5 rounded-xl border border-outline-variant/40 font-medium text-on-surface focus:outline-none focus:border-primary">
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-3 border-t border-outline-variant/20">
+                <button type="button" onclick="closeChangePasswordModal()" class="px-4 py-2 bg-surface-container hover:bg-surface-container-high rounded-xl font-semibold text-on-surface">Cancel</button>
+                <button type="submit" class="px-5 py-2 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 shadow-xs flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-base">lock_reset</span>
+                    <span>Update Password</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openChangePasswordModal() {
+    document.getElementById('modal-change-password-global').classList.remove('hidden');
+}
+function closeChangePasswordModal() {
+    document.getElementById('modal-change-password-global').classList.add('hidden');
+}
+</script>
 
 <div class="flex flex-1 overflow-hidden relative">
 <?php include __DIR__ . '/sidebar.php'; ?>

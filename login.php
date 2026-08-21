@@ -6,6 +6,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/config/version.php';
 require_once __DIR__ . '/includes/security.php';
 
 if (isset($_SESSION['authenticated']) && $_SESSION['authenticated'] === true) {
@@ -51,7 +52,7 @@ $csrfToken = generateCsrfToken();
             <img src="assets/images/NuvisMedcareX_banner (1).jpg" alt="Nuvis Medcare X" class="h-16 object-contain mb-2 rounded-lg">
             <div class="flex items-center gap-3 mt-1">
                 <img src="assets/images/stethoscope_heart.png" alt="Stethoscope" class="h-6 object-contain">
-                <span class="text-xs font-semibold text-slate-500 uppercase tracking-widest">Nuvis Medcare X EHR Platform</span>
+                <span class="text-xs font-semibold text-slate-500 uppercase tracking-widest">Nuvis Medcare X EHR Platform <span class="font-mono text-[10px] text-blue-700 font-bold bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200"><?= defined('APP_VERSION') ? APP_VERSION : 'v2.1.0' ?></span></span>
                 <img src="assets/images/caduceus_logo.png" alt="Caduceus" class="h-6 object-contain">
             </div>
         </div>
