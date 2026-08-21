@@ -164,6 +164,67 @@ function ensureDoctorColumnsExist(PDO $pdo): void {
                 $pdo->exec("ALTER TABLE past_visits ADD COLUMN {$colName} {$colDef}");
             }
         }
+
+        // Auto-migrate inventory table
+        $invCols = [];
+        if ($driver === 'sqlite') {
+            $stmt = $pdo->query("PRAGMA table_info(inventory)");
+            while ($row = $stmt->fetch()) {
+                $invCols[] = strtolower($row['name']);
+            }
+        } else {
+            $stmt = $pdo->query("DESCRIBE inventory");
+            while ($row = $stmt->fetch()) {
+                $invCols[] = strtolower($row['Field']);
+            }
+        }
+
+        $newInvCols = [
+            'cost_price' => 'DECIMAL(10,2) DEFAULT 0.00',
+            'unit_price' => 'DECIMAL(10,2) DEFAULT 0.00',
+            'batch_number' => 'VARCHAR(100)',
+            'expiry_date' => 'DATE',
+            'is_active' => 'INTEGER DEFAULT 1',
+            'vms_tax_code' => "VARCHAR(10) DEFAULT 'A'",
+            'custom_fields' => 'TEXT'
+        ];
+
+        foreach ($newInvCols as $colName => $colDef) {
+            if (!in_array($colName, $invCols)) {
+                $pdo->exec("ALTER TABLE inventory ADD COLUMN {$colName} {$colDef}");
+            }
+        }
+
+        // Auto-create inventory_logs if missing
+        if ($driver === 'sqlite') {
+            $pdo->exec("CREATE TABLE IF NOT EXISTS inventory_logs (
+                id TEXT PRIMARY KEY,
+                inventory_id TEXT NOT NULL,
+                change_amount INTEGER NOT NULL,
+                previous_stock INTEGER NOT NULL,
+                new_stock INTEGER NOT NULL,
+                type TEXT NOT NULL,
+                supplier TEXT,
+                unit_cost REAL DEFAULT 0.00,
+                notes TEXT,
+                created_by TEXT DEFAULT 'System',
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            );");
+        } else {
+            $pdo->exec("CREATE TABLE IF NOT EXISTS inventory_logs (
+                id VARCHAR(50) PRIMARY KEY,
+                inventory_id VARCHAR(50) NOT NULL,
+                change_amount INT NOT NULL,
+                previous_stock INT NOT NULL,
+                new_stock INT NOT NULL,
+                type VARCHAR(50) NOT NULL,
+                supplier VARCHAR(255),
+                unit_cost DECIMAL(10,2) DEFAULT 0.00,
+                notes TEXT,
+                created_by VARCHAR(255) DEFAULT 'System',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );");
+        }
     } catch (Exception $e) {
         // Table might not exist yet during fresh install
     }

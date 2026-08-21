@@ -37,6 +37,10 @@ $activeTab = $_GET['tab'] ?? 'users';
             <span class="material-symbols-outlined text-base">point_of_sale</span>
             <span>VMS Fiscal Settings</span>
         </button>
+        <button type="button" onclick="switchAdminTab('inventory')" id="tab-btn-inventory" class="px-4 py-2 rounded-xl transition flex items-center gap-1.5 <?= $activeTab === 'inventory' ? 'bg-primary text-white shadow-xs' : 'text-on-surface-variant hover:bg-surface-container-high' ?>">
+            <span class="material-symbols-outlined text-base">inventory_2</span>
+            <span>Inventory Settings</span>
+        </button>
         <button type="button" onclick="switchAdminTab('git')" id="tab-btn-git" class="px-4 py-2 rounded-xl transition flex items-center gap-1.5 <?= $activeTab === 'git' ? 'bg-primary text-white shadow-xs' : 'text-on-surface-variant hover:bg-surface-container-high' ?>">
             <span class="material-symbols-outlined text-base">update</span>
             <span>System Updates</span>
@@ -360,6 +364,44 @@ $activeTab = $_GET['tab'] ?? 'users';
     </form>
 </div>
 
+<!-- ================= TAB: INVENTORY DEVELOPER SETTINGS ================= -->
+<div id="admin-tab-inventory" class="<?= $activeTab === 'inventory' ? '' : 'hidden' ?> space-y-6">
+    <form action="actions/admin_save_settings.php" method="POST" class="bg-surface-container-lowest rounded-2xl border border-outline-variant/30 p-6 shadow-xs space-y-5">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
+        <h2 class="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-2">
+            <span class="material-symbols-outlined text-base">inventory_2</span>
+            <span>Developer & Administrator Inventory Customization</span>
+        </h2>
+
+        <div class="space-y-4 text-xs">
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Custom Inventory Categories (Comma-Separated)</label>
+                <input type="text" name="inventory_categories" value="<?= htmlspecialchars($settings['inventory_categories'] ?? 'Pharmaceuticals, Surgical Supplies, Medical Equipment, Diagnostics, Consumables') ?>" required class="w-full bg-surface-container-low px-3.5 py-2.5 rounded-xl border border-outline-variant/40 font-medium text-on-surface">
+                <p class="text-[11px] text-outline mt-1">Specify custom categories for the clinic. These will be available in search filters and add/edit modals.</p>
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Default Low Stock Alert Threshold</label>
+                <input type="number" name="inventory_default_min_threshold" value="<?= (int)($settings['inventory_default_min_threshold'] ?? 10) ?>" min="1" required class="w-full bg-surface-container-low px-3.5 py-2.5 rounded-xl border border-outline-variant/40 font-mono font-bold text-on-surface">
+                <p class="text-[11px] text-outline mt-1">Default minimum reorder threshold applied to newly created inventory items.</p>
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Developer Dynamic Custom Fields JSON Definition</label>
+                <textarea name="inventory_custom_fields_def" rows="5" class="w-full bg-surface-container-low p-3 rounded-xl border border-outline-variant/40 font-mono text-xs text-on-surface"><?= htmlspecialchars($settings['inventory_custom_fields_def'] ?? "[\n  {\"name\": \"manufacturer\", \"label\": \"Manufacturer / Brand\", \"type\": \"text\", \"placeholder\": \"e.g. Pfizer, GSK\"},\n  {\"name\": \"storage_temp\", \"label\": \"Storage Temperature\", \"type\": \"text\", \"placeholder\": \"e.g. 2°C - 8°C\"}\n]") ?></textarea>
+                <p class="text-[11px] text-outline mt-1">Define JSON array of custom attributes dynamically injected into inventory forms and displays. Example keys: name, label, type, placeholder.</p>
+            </div>
+        </div>
+
+        <div class="flex justify-end pt-3 border-t border-outline-variant/20">
+            <button type="submit" class="px-6 py-2.5 bg-primary text-white text-xs font-semibold rounded-xl hover:bg-primary/90 transition shadow-sm flex items-center gap-2">
+                <span class="material-symbols-outlined text-base">save</span>
+                <span>Save Inventory Customization Settings</span>
+            </button>
+        </div>
+    </form>
+</div>
+
 <!-- ================= TAB 3: GIT UPDATES ================= -->
 <div id="admin-tab-git" class="<?= $activeTab === 'git' ? '' : 'hidden' ?> space-y-6">
     <div class="bg-surface-container-lowest rounded-2xl border border-outline-variant/30 p-6 shadow-xs space-y-5">
@@ -567,11 +609,13 @@ function switchAdminTab(tab) {
     document.getElementById('admin-tab-users').classList.add('hidden');
     document.getElementById('admin-tab-clinic').classList.add('hidden');
     if (document.getElementById('admin-tab-vms')) document.getElementById('admin-tab-vms').classList.add('hidden');
+    if (document.getElementById('admin-tab-inventory')) document.getElementById('admin-tab-inventory').classList.add('hidden');
     document.getElementById('admin-tab-git').classList.add('hidden');
 
     document.getElementById('tab-btn-users').className = 'px-4 py-2 rounded-xl transition flex items-center gap-1.5 text-on-surface-variant hover:bg-surface-container-high';
     document.getElementById('tab-btn-clinic').className = 'px-4 py-2 rounded-xl transition flex items-center gap-1.5 text-on-surface-variant hover:bg-surface-container-high';
     if (document.getElementById('tab-btn-vms')) document.getElementById('tab-btn-vms').className = 'px-4 py-2 rounded-xl transition flex items-center gap-1.5 text-on-surface-variant hover:bg-surface-container-high';
+    if (document.getElementById('tab-btn-inventory')) document.getElementById('tab-btn-inventory').className = 'px-4 py-2 rounded-xl transition flex items-center gap-1.5 text-on-surface-variant hover:bg-surface-container-high';
     document.getElementById('tab-btn-git').className = 'px-4 py-2 rounded-xl transition flex items-center gap-1.5 text-on-surface-variant hover:bg-surface-container-high';
 
     if (tab === 'users') {
@@ -583,6 +627,9 @@ function switchAdminTab(tab) {
     } else if (tab === 'vms') {
         if (document.getElementById('admin-tab-vms')) document.getElementById('admin-tab-vms').classList.remove('hidden');
         if (document.getElementById('tab-btn-vms')) document.getElementById('tab-btn-vms').className = 'px-4 py-2 rounded-xl transition flex items-center gap-1.5 bg-primary text-white shadow-xs';
+    } else if (tab === 'inventory') {
+        if (document.getElementById('admin-tab-inventory')) document.getElementById('admin-tab-inventory').classList.remove('hidden');
+        if (document.getElementById('tab-btn-inventory')) document.getElementById('tab-btn-inventory').className = 'px-4 py-2 rounded-xl transition flex items-center gap-1.5 bg-primary text-white shadow-xs';
     } else if (tab === 'git') {
         document.getElementById('admin-tab-git').classList.remove('hidden');
         document.getElementById('tab-btn-git').className = 'px-4 py-2 rounded-xl transition flex items-center gap-1.5 bg-primary text-white shadow-xs';
