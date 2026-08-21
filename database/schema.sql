@@ -251,10 +251,35 @@ CREATE TABLE IF NOT EXISTS inventory (
     min_threshold INT NOT NULL DEFAULT 10,
     unit VARCHAR(50) NOT NULL,
     status VARCHAR(50) NOT NULL DEFAULT 'In Stock',
-    last_restocked DATE NOT NULL
+    last_restocked DATE NOT NULL,
+    cost_price DECIMAL(10,2) DEFAULT 0.00,
+    unit_price DECIMAL(10,2) DEFAULT 0.00,
+    batch_number VARCHAR(100),
+    expiry_date DATE,
+    is_active TINYINT(1) DEFAULT 1,
+    vms_tax_code VARCHAR(10) DEFAULT 'A',
+    custom_fields TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_inventory_sku ON inventory(sku);
+CREATE INDEX IF NOT EXISTS idx_inventory_active ON inventory(is_active);
+
+CREATE TABLE IF NOT EXISTS inventory_logs (
+    id VARCHAR(50) PRIMARY KEY,
+    inventory_id VARCHAR(50) NOT NULL,
+    change_amount INT NOT NULL,
+    previous_stock INT NOT NULL,
+    new_stock INT NOT NULL,
+    type VARCHAR(50) NOT NULL, -- quick_restock, detailed_restock, sale, adjustment, initial
+    supplier VARCHAR(255),
+    unit_cost DECIMAL(10,2) DEFAULT 0.00,
+    notes TEXT,
+    created_by VARCHAR(255) DEFAULT 'System',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (inventory_id) REFERENCES inventory(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_inventory_logs_item ON inventory_logs(inventory_id);
 
 CREATE TABLE IF NOT EXISTS medical_certificates (
     id VARCHAR(50) PRIMARY KEY,

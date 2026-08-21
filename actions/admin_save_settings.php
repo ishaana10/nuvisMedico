@@ -50,6 +50,13 @@ if (isset($_POST['vms_seller_tin'])) {
     $settings['vms_tax_rate_p']        = trim($_POST['vms_tax_rate_p'] ?? '0.25');
 }
 
+// Inventory Developer Settings (if submitted)
+if (isset($_POST['inventory_categories'])) {
+    $settings['inventory_categories']            = trim($_POST['inventory_categories']);
+    $settings['inventory_default_min_threshold'] = (int)($_POST['inventory_default_min_threshold'] ?? 10);
+    $settings['inventory_custom_fields_def']     = trim($_POST['inventory_custom_fields_def'] ?? '[]');
+}
+
 $isSqlite = ($pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'sqlite');
 if ($isSqlite) {
     $stmt = $pdo->prepare("INSERT INTO clinic_settings (setting_key, setting_value) VALUES (?, ?) ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value");
