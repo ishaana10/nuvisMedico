@@ -5,11 +5,7 @@ require_once __DIR__ . '/../config/database.php';
 
 use ClinicFlow\Services\VMSService;
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !validateCsrfToken($_POST['csrf_token'] ?? '')) {
-    $_SESSION['flash_error'] = "Invalid CSRF token.";
-    header("Location: ../billing.php");
-    exit;
-}
+validateCsrfRequest();
 
 $invoiceId = trim($_POST['invoice_id'] ?? '');
 if (empty($invoiceId)) {
