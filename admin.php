@@ -33,6 +33,10 @@ $activeTab = $_GET['tab'] ?? 'users';
             <span class="material-symbols-outlined text-base">domain</span>
             <span>Clinic & Branding Settings</span>
         </button>
+        <button type="button" onclick="switchAdminTab('vms')" id="tab-btn-vms" class="px-4 py-2 rounded-xl transition flex items-center gap-1.5 <?= $activeTab === 'vms' ? 'bg-primary text-white shadow-xs' : 'text-on-surface-variant hover:bg-surface-container-high' ?>">
+            <span class="material-symbols-outlined text-base">point_of_sale</span>
+            <span>VMS Fiscal Settings</span>
+        </button>
         <button type="button" onclick="switchAdminTab('git')" id="tab-btn-git" class="px-4 py-2 rounded-xl transition flex items-center gap-1.5 <?= $activeTab === 'git' ? 'bg-primary text-white shadow-xs' : 'text-on-surface-variant hover:bg-surface-container-high' ?>">
             <span class="material-symbols-outlined text-base">update</span>
             <span>System Updates</span>
@@ -289,6 +293,73 @@ $activeTab = $_GET['tab'] ?? 'users';
     </form>
 </div>
 
+<!-- ================= TAB: VMS FISCAL SETTINGS ================= -->
+<div id="admin-tab-vms" class="<?= $activeTab === 'vms' ? '' : 'hidden' ?> space-y-6">
+    <form action="actions/admin_save_settings.php" method="POST" class="bg-surface-container-lowest rounded-2xl border border-outline-variant/30 p-6 shadow-xs space-y-5">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
+        <h2 class="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-2">
+            <span class="material-symbols-outlined text-base">point_of_sale</span>
+            <span>FRCS VAT Monitoring System (VMS Phase 3) Configuration</span>
+        </h2>
+
+        <div class="flex items-center gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+            <input type="checkbox" id="vms_enabled_admin" name="vms_enabled" value="1" <?= ($settings['vms_enabled'] ?? '1') === '1' ? 'checked' : '' ?> class="w-4 h-4 text-primary rounded focus:ring-primary">
+            <label for="vms_enabled_admin" class="font-bold text-on-surface text-xs">Enable FRCS VMS Fiscalization for all created invoices</label>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Taxpayer Seller TIN <span class="text-red-500">*</span></label>
+                <input type="text" name="vms_seller_tin" value="<?= htmlspecialchars($settings['vms_seller_tin'] ?? '502579006') ?>" required class="w-full bg-surface-container-low px-3.5 py-2.5 rounded-xl border border-outline-variant/40 font-mono font-bold">
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Accredited POS Number <span class="text-red-500">*</span></label>
+                <input type="text" name="vms_pos_number" value="<?= htmlspecialchars($settings['vms_pos_number'] ?? 'ASDF238/1.2') ?>" required class="w-full bg-surface-container-low px-3.5 py-2.5 rounded-xl border border-outline-variant/40 font-mono font-bold">
+            </div>
+
+            <div class="md:col-span-2">
+                <label class="block font-bold text-slate-700 mb-1">Business Location Address <span class="text-red-500">*</span></label>
+                <input type="text" name="vms_business_location" value="<?= htmlspecialchars($settings['vms_business_location'] ?? 'Suva Central Clinic, 2 Woodstand Road, Suva') ?>" required class="w-full bg-surface-container-low px-3.5 py-2.5 rounded-xl border border-outline-variant/40 font-medium">
+            </div>
+
+            <div class="md:col-span-2">
+                <label class="block font-bold text-slate-700 mb-1">SDC / VMS Sandbox API Base URL <span class="text-red-500">*</span></label>
+                <input type="url" name="vms_sdc_url" value="<?= htmlspecialchars($settings['vms_sdc_url'] ?? 'https://tap.sandbox.vms.frcs.org.fj') ?>" required class="w-full bg-surface-container-low px-3.5 py-2.5 rounded-xl border border-outline-variant/40 font-mono font-medium">
+            </div>
+        </div>
+
+        <hr class="border-outline-variant/20">
+
+        <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">VMS Tax Label Rates (%)</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Label A (Standard VAT %)</label>
+                <input type="number" step="0.01" name="vms_tax_rate_a" value="<?= htmlspecialchars($settings['vms_tax_rate_a'] ?? '15.00') ?>" class="w-full bg-surface-container-low px-3.5 py-2.5 rounded-xl border border-outline-variant/40 font-mono font-bold">
+            </div>
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Label E (Exempt %)</label>
+                <input type="number" step="0.01" name="vms_tax_rate_e" value="<?= htmlspecialchars($settings['vms_tax_rate_e'] ?? '0.00') ?>" class="w-full bg-surface-container-low px-3.5 py-2.5 rounded-xl border border-outline-variant/40 font-mono font-bold">
+            </div>
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Label F (Zero-Rated %)</label>
+                <input type="number" step="0.01" name="vms_tax_rate_f" value="<?= htmlspecialchars($settings['vms_tax_rate_f'] ?? '0.00') ?>" class="w-full bg-surface-container-low px-3.5 py-2.5 rounded-xl border border-outline-variant/40 font-mono font-bold">
+            </div>
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Label P (Special Tax %)</label>
+                <input type="number" step="0.01" name="vms_tax_rate_p" value="<?= htmlspecialchars($settings['vms_tax_rate_p'] ?? '0.25') ?>" class="w-full bg-surface-container-low px-3.5 py-2.5 rounded-xl border border-outline-variant/40 font-mono font-bold">
+            </div>
+        </div>
+
+        <div class="flex justify-end pt-3 border-t border-outline-variant/20">
+            <button type="submit" class="px-6 py-2.5 bg-primary text-white text-xs font-semibold rounded-xl hover:bg-primary/90 transition shadow-sm flex items-center gap-2">
+                <span class="material-symbols-outlined text-base">save</span>
+                <span>Save VMS Fiscal Configuration</span>
+            </button>
+        </div>
+    </form>
+</div>
+
 <!-- ================= TAB 3: GIT UPDATES ================= -->
 <div id="admin-tab-git" class="<?= $activeTab === 'git' ? '' : 'hidden' ?> space-y-6">
     <div class="bg-surface-container-lowest rounded-2xl border border-outline-variant/30 p-6 shadow-xs space-y-5">
@@ -495,10 +566,12 @@ $activeTab = $_GET['tab'] ?? 'users';
 function switchAdminTab(tab) {
     document.getElementById('admin-tab-users').classList.add('hidden');
     document.getElementById('admin-tab-clinic').classList.add('hidden');
+    if (document.getElementById('admin-tab-vms')) document.getElementById('admin-tab-vms').classList.add('hidden');
     document.getElementById('admin-tab-git').classList.add('hidden');
 
     document.getElementById('tab-btn-users').className = 'px-4 py-2 rounded-xl transition flex items-center gap-1.5 text-on-surface-variant hover:bg-surface-container-high';
     document.getElementById('tab-btn-clinic').className = 'px-4 py-2 rounded-xl transition flex items-center gap-1.5 text-on-surface-variant hover:bg-surface-container-high';
+    if (document.getElementById('tab-btn-vms')) document.getElementById('tab-btn-vms').className = 'px-4 py-2 rounded-xl transition flex items-center gap-1.5 text-on-surface-variant hover:bg-surface-container-high';
     document.getElementById('tab-btn-git').className = 'px-4 py-2 rounded-xl transition flex items-center gap-1.5 text-on-surface-variant hover:bg-surface-container-high';
 
     if (tab === 'users') {
@@ -507,6 +580,9 @@ function switchAdminTab(tab) {
     } else if (tab === 'clinic') {
         document.getElementById('admin-tab-clinic').classList.remove('hidden');
         document.getElementById('tab-btn-clinic').className = 'px-4 py-2 rounded-xl transition flex items-center gap-1.5 bg-primary text-white shadow-xs';
+    } else if (tab === 'vms') {
+        if (document.getElementById('admin-tab-vms')) document.getElementById('admin-tab-vms').classList.remove('hidden');
+        if (document.getElementById('tab-btn-vms')) document.getElementById('tab-btn-vms').className = 'px-4 py-2 rounded-xl transition flex items-center gap-1.5 bg-primary text-white shadow-xs';
     } else if (tab === 'git') {
         document.getElementById('admin-tab-git').classList.remove('hidden');
         document.getElementById('tab-btn-git').className = 'px-4 py-2 rounded-xl transition flex items-center gap-1.5 bg-primary text-white shadow-xs';
