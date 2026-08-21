@@ -37,6 +37,19 @@ $settings = [
     'doc_ptr_no'            => trim($_POST['doc_ptr_no'] ?? '')
 ];
 
+// VMS Fiscal Settings (if submitted)
+if (isset($_POST['vms_seller_tin'])) {
+    $settings['vms_enabled']           = isset($_POST['vms_enabled']) ? '1' : '0';
+    $settings['vms_seller_tin']        = trim($_POST['vms_seller_tin']);
+    $settings['vms_pos_number']        = trim($_POST['vms_pos_number']);
+    $settings['vms_business_location'] = trim($_POST['vms_business_location']);
+    $settings['vms_sdc_url']           = trim($_POST['vms_sdc_url']);
+    $settings['vms_tax_rate_a']        = trim($_POST['vms_tax_rate_a'] ?? '15.00');
+    $settings['vms_tax_rate_e']        = trim($_POST['vms_tax_rate_e'] ?? '0.00');
+    $settings['vms_tax_rate_f']        = trim($_POST['vms_tax_rate_f'] ?? '0.00');
+    $settings['vms_tax_rate_p']        = trim($_POST['vms_tax_rate_p'] ?? '0.25');
+}
+
 $isSqlite = ($pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'sqlite');
 if ($isSqlite) {
     $stmt = $pdo->prepare("INSERT INTO clinic_settings (setting_key, setting_value) VALUES (?, ?) ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value");
