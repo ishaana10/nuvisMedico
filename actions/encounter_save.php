@@ -2,12 +2,11 @@
 /**
  * Clinical Encounter Save / Prescriptions / Finalize Handler
  */
-session_start();
-if (empty($_SESSION['authenticated'])) {
-    header('Location: ../login.php');
-    exit;
-}
+require_once __DIR__ . '/../includes/security.php';
 require_once __DIR__ . '/../config/database.php';
+
+requireAuth();
+validateCsrfRequest();
 
 $pdo = getDB();
 
@@ -194,7 +193,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $prescriptionsData = $rxStmt->fetchAll();
 
             // Doctor name
-            $doctorName = $_SESSION['user_name'] ?? 'Dr. Sarah Jenkins';
+            $doctorName = $_SESSION['user_name'] ?? 'Attending Physician';
 
             // Insert into past_visits with complete records saved as JSON
             $pvId = "pv-" . time();
@@ -222,7 +221,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 "act-" . time(),
                 "visit_completed",
                 "Visit Completed: " . $patient['first_name'] . ' ' . $patient['last_name'],
-                "Just now • Dr. Jenkins",
+                "Just now • " . ($_SESSION['user_name'] ?? 'Attending Physician'),
                 "Just now",
                 "blue"
             ]);

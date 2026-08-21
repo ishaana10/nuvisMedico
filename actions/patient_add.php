@@ -2,12 +2,11 @@
 /**
  * Patient Registration Form POST Handler
  */
-session_start();
-if (empty($_SESSION['authenticated'])) {
-    header('Location: ../login.php');
-    exit;
-}
+require_once __DIR__ . '/../includes/security.php';
 require_once __DIR__ . '/../config/database.php';
+
+requireAuth();
+validateCsrfRequest();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header("Location: ../patients.php");
@@ -46,7 +45,7 @@ $age = max(0, (int)date('Y') - $birthYear);
 
 $mrnNum = rand(10000, 99999);
 $mrn = "#" . $mrnNum;
-$patientId = "pat-" . time();
+$patientId = \ClinicFlow\Utils\Uuid::uuidv7();
 $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
 $regDate = date('Y-m-d');
 
@@ -64,7 +63,7 @@ $stmt->execute([
 // Add to activity log
 $actStmt = $pdo->prepare("INSERT INTO activities (id, type, title, detail, timestamp, badge_type) VALUES (?, ?, ?, ?, ?, ?)");
 $actStmt->execute([
-    "act-" . time(),
+    \ClinicFlow\Utils\Uuid::uuidv7(),
     "patient_registered",
     "New Patient Registered: $firstName $lastName",
     "Just now • via Portal",

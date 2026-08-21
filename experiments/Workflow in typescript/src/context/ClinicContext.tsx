@@ -147,7 +147,43 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   // Toasts
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
-  // Local storage persistence
+  // Fetch initial data from PHP JSON APIs
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [pRes, aRes, iRes, invRes] = await Promise.all([
+          fetch('/api/patients.php'),
+          fetch('/api/appointments.php'),
+          fetch('/api/inventory.php'),
+          fetch('/api/billing.php')
+        ]);
+
+        if (pRes.ok) {
+          const pData = await pRes.json();
+          if (pData.success && Array.isArray(pData.data) && pData.data.length > 0) {
+            setPatients(pData.data);
+          }
+        }
+        if (iRes.ok) {
+          const iData = await iRes.json();
+          if (iData.success && Array.isArray(iData.data) && iData.data.length > 0) {
+            setInventory(iData.data);
+          }
+        }
+        if (invRes.ok) {
+          const invData = await invRes.json();
+          if (invData.success && Array.isArray(invData.data) && invData.data.length > 0) {
+            setInvoices(invData.data);
+          }
+        }
+      } catch (err) {
+        // Fallback to local storage or mock data
+      }
+    };
+    fetchData();
+  }, []);
+
+  // Local storage persistence fallback
   useEffect(() => {
     localStorage.setItem('clinicflow_patients', JSON.stringify(patients));
   }, [patients]);
@@ -206,6 +242,22 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
 
     setPatients((prev) => [newPatient, ...prev]);
+
+    // Send to backend API
+    fetch('/api/patients.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        first_name: patientData.firstName,
+        last_name: patientData.lastName,
+        dob: patientData.dob,
+        gender: patientData.gender,
+        phone: patientData.phone,
+        email: patientData.email,
+        address: patientData.address,
+      }),
+    }).catch(() => {});
+
     addActivity(`New Patient Registered: ${newPatient.firstName} ${newPatient.lastName}`, 'Just now • via Portal', 'patient_registered', 'emerald');
     showToast('Patient Registered', `${newPatient.firstName} ${newPatient.lastName} (${newPatient.mrn}) was registered successfully.`);
     return newPatient;
@@ -224,6 +276,13 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         return p;
       })
     );
+
+    fetch('/api/patients.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, ...updates }),
+    }).catch(() => {});
+
     showToast('Patient Updated', 'Patient records successfully updated.');
   };
 
@@ -234,7 +293,6 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
     setAppointments((prev) => [newAppt, ...prev]);
 
-    // Also add to queue if scheduled for today
     const newQueueItem: QueueItem = {
       id: `q-${Date.now()}`,
       patientId: newAppt.patientId,
@@ -246,6 +304,19 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       checkInTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
     setQueue((prev) => [newQueueItem, ...prev]);
+
+    fetch('/api/appointments.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        patient_id: newAppt.patientId,
+        doctor_id: 'doc-1',
+        patient_name: newAppt.patientName,
+        appointment_date: newAppt.date,
+        time: newAppt.time,
+        type: newAppt.type,
+      }),
+    }).catch(() => {});
 
     addActivity(
       `Appointment Booked: ${newAppt.patientName}`,
@@ -260,6 +331,13 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setAppointments((prev) =>
       prev.map((apt) => (apt.id === id ? { ...apt, status, room: room || apt.room } : apt))
     );
+
+    fetch('/api/appointments.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'update_status', id, status }),
+    }).catch(() => {});
+
     showToast('Status Updated', `Appointment status changed to "${status}".`, 'info');
   };
 
@@ -320,7 +398,6 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const startEncounterForPatient = (patient: Patient) => {
     setActivePatient(patient);
-    // customize mock vitals slightly for realism
     setVitals({
       bloodPressure: patient.id === 'pat-1' ? '120/80' : '118/76',
       heartRate: 72,
@@ -330,9 +407,8 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       bmi: 23.4,
       oxygenSat: 99,
     });
-    // set initial SOAP if patient has known condition
     setSoapNotes({
-      subjective: `Patient reports for clinical evaluation. Chief concern: ${patient.clinicalOverview.chronicConditions || 'General checkup and consultation'}.`,
+      subjective: `Patient reports for clinical evaluation. Chief concern: ${patient.clinicalOverview?.chronicConditions || 'General checkup and consultation'}.`,
       objective: `Physical exam: Vitals stable. Alert and oriented x4. Heart regular rate and rhythm. Lungs clear to auscultation bilaterally.`,
       assessmentCodes: patient.id === 'pat-1' 
         ? [{ code: 'J01.90', label: 'Acute sinusitis, unspecified' }]
@@ -343,7 +419,6 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const finishVisit = () => {
-    // Record visit in past visits
     const newPastVisit: PastVisit = {
       id: `pv-${Date.now()}`,
       date: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
@@ -355,11 +430,21 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
 
     setPastVisits((prev) => [newPastVisit, ...prev]);
-    addActivity(`Visit Completed: ${activePatient.firstName} ${activePatient.lastName}`, `Just now • ${currentDoctor.name}`, 'visit_completed', 'blue');
-    
-    // Complete in queue if exists
-    setQueue((prev) => prev.filter((q) => q.patientId !== activePatient.id && q.patientName !== `${activePatient.firstName} ${activePatient.lastName}`));
 
+    fetch('/api/encounters.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        patient_id: activePatient.id,
+        vitals,
+        soap: soapNotes,
+        prescriptions,
+        finalize: true,
+      }),
+    }).catch(() => {});
+
+    addActivity(`Visit Completed: ${activePatient.firstName} ${activePatient.lastName}`, `Just now • ${currentDoctor.name}`, 'visit_completed', 'blue');
+    setQueue((prev) => prev.filter((q) => q.patientId !== activePatient.id && q.patientName !== `${activePatient.firstName} ${activePatient.lastName}`));
     showToast('Visit Completed!', `Encounter for ${activePatient.firstName} ${activePatient.lastName} has been finalized and archived.`);
   };
 
@@ -367,6 +452,13 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setInvoices((prev) =>
       prev.map((inv) => (inv.id === id ? { ...inv, status: 'Paid', patientOwed: 0 } : inv))
     );
+
+    fetch('/api/billing.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'pay', id, amount_paid: 1000, payment_method: 'Cash' }),
+    }).catch(() => {});
+
     showToast('Invoice Paid', 'Payment confirmed and receipt generated.');
   };
 
@@ -378,6 +470,18 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       invoiceNumber: invNumber,
     };
     setInvoices((prev) => [newInv, ...prev]);
+
+    fetch('/api/billing.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        patient_name: inv.patientName,
+        amount: inv.totalAmount,
+        service_date: inv.serviceDate,
+        due_date: inv.dueDate,
+      }),
+    }).catch(() => {});
+
     showToast('Invoice Created', `Invoice ${invNumber} generated for ${newInv.patientName}.`);
   };
 
@@ -396,6 +500,13 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         return item;
       })
     );
+
+    fetch('/api/inventory.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'restock', id, change_amount: amount }),
+    }).catch(() => {});
+
     showToast('Inventory Restocked', `Added ${amount} units to stock.`);
   };
 

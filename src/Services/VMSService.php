@@ -141,32 +141,81 @@ class VMSService
         $invoice['payment_methods'] = $paymentMethods;
         $sdcRequest = $this->buildSDCRequest($invoice, $items);
 
-        // Fetch SDC Endpoint URL from settings
-        $stmtSet = $this->pdo->query("SELECT setting_value FROM clinic_settings WHERE setting_key = 'vms_sdc_url'");
-        $sdcUrl = $stmtSet->fetchColumn() ?: 'https://tap.sandbox.vms.frcs.org.fj';
+        // Fetch SDC Endpoint URL and live settings
+        $stmtSet = $this->pdo->query("SELECT setting_key, setting_value FROM clinic_settings WHERE setting_key LIKE 'vms_%'");
+        $vmsSettings = $stmtSet ? $stmtSet->fetchAll(PDO::FETCH_KEY_PAIR) : [];
+        $sdcUrl = $vmsSettings['vms_sdc_url'] ?? 'https://tap.sandbox.vms.frcs.org.fj';
 
         // Log Fiscalization Request
         $logId = 'vlog-' . uniqid();
         $stmtLog = $this->pdo->prepare("INSERT INTO vms_logs (id, invoice_id, event_type, request_payload) VALUES (?, ?, 'FISCALIZATION_REQ', ?)");
         $stmtLog->execute([$logId, $invoiceId, json_encode($sdcRequest)]);
 
-        // Mock/Sandbox response generation adhering to FRCS SDC response structure
-        $requestedBy = strtoupper(substr(md5($invoice['seller_tin'] ?? '502579006'), 0, 8));
-        $signedBy = strtoupper(substr(md5($invoice['pos_number'] ?? 'ASDF238/1.2'), 0, 8));
-        $ordinalNo = rand(100000, 999999);
-        $sdcInvoiceNo = "{$requestedBy}-{$signedBy}-{$ordinalNo}";
+        // Try Live HTTP Request if Live Mode is enabled
+        $isLiveMode = !empty($vmsSettings['vms_live_mode']) && $vmsSettings['vms_live_mode'] === '1';
+        $remoteSuccess = false;
 
-        $typeSuffix = match($sdcRequest['invoiceType']) {
-            'Advance' => ($sdcRequest['transactionType'] === 'Refund' ? 'AR' : 'AS'),
-            'Proforma' => 'P',
-            'Copy' => 'C',
-            'Training' => 'T',
-            default => ($sdcRequest['transactionType'] === 'Refund' ? 'NR' : 'NS')
-        };
-        $invoiceCounter = rand(1000, 9999) . "/{$ordinalNo}{$typeSuffix}";
-        $sdcTime = date('Y-m-d H:i:s');
-        $verificationUrl = rtrim($sdcUrl, '/') . "/verify?id=" . urlencode($sdcInvoiceNo);
-        $digitalSig = base64_encode(hash_hmac('sha256', $sdcInvoiceNo . $sdcTime . $invoice['amount'], 'FRCS_VMS_SECRET_KEY', true));
+        if ($isLiveMode && function_exists('curl_init')) {
+            try {
+                $ch = curl_init(rtrim($sdcUrl, '/') . '/api/v3/invoices');
+                $payload = json_encode($sdcRequest);
+
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                    'Content-Type: application/json',
+                    'Content-Length: ' . strlen($payload),
+                    'Accept: application/json'
+                ]);
+
+                if (!empty($vmsSettings['vms_client_cert_path']) && file_exists($vmsSettings['vms_client_cert_path'])) {
+                    curl_setopt($ch, CURLOPT_SSLCERT, $vmsSettings['vms_client_cert_path']);
+                }
+                if (!empty($vmsSettings['vms_client_key_path']) && file_exists($vmsSettings['vms_client_key_path'])) {
+                    curl_setopt($ch, CURLOPT_SSLKEY, $vmsSettings['vms_client_key_path']);
+                }
+
+                $responseBody = curl_exec($ch);
+                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                curl_close($ch);
+
+                if ($httpCode >= 200 && $httpCode < 300 && $responseBody) {
+                    $remoteResp = json_decode($responseBody, true);
+                    if (is_array($remoteResp) && !empty($remoteResp['sdcInvoiceNo'])) {
+                        $sdcInvoiceNo = $remoteResp['sdcInvoiceNo'];
+                        $sdcTime = $remoteResp['sdcTime'] ?? date('Y-m-d H:i:s');
+                        $invoiceCounter = $remoteResp['invoiceCounter'] ?? '1/1NS';
+                        $verificationUrl = $remoteResp['verificationUrl'] ?? ($sdcUrl . '/verify?id=' . $sdcInvoiceNo);
+                        $digitalSig = $remoteResp['digitalSignature'] ?? '';
+                        $remoteSuccess = true;
+                    }
+                }
+            } catch (Throwable $e) {
+                // Remote failure falls back to sandbox generation
+            }
+        }
+
+        // Sandbox / Fallback response generation adhering to FRCS SDC response structure
+        if (!$remoteSuccess) {
+            $requestedBy = strtoupper(substr(md5($invoice['seller_tin'] ?? '502579006'), 0, 8));
+            $signedBy = strtoupper(substr(md5($invoice['pos_number'] ?? 'ASDF238/1.2'), 0, 8));
+            $ordinalNo = rand(100000, 999999);
+            $sdcInvoiceNo = "{$requestedBy}-{$signedBy}-{$ordinalNo}";
+
+            $typeSuffix = match($sdcRequest['invoiceType']) {
+                'Advance' => ($sdcRequest['transactionType'] === 'Refund' ? 'AR' : 'AS'),
+                'Proforma' => 'P',
+                'Copy' => 'C',
+                'Training' => 'T',
+                default => ($sdcRequest['transactionType'] === 'Refund' ? 'NR' : 'NS')
+            };
+            $invoiceCounter = rand(1000, 9999) . "/{$ordinalNo}{$typeSuffix}";
+            $sdcTime = date('Y-m-d H:i:s');
+            $verificationUrl = rtrim($sdcUrl, '/') . "/verify?id=" . urlencode($sdcInvoiceNo);
+            $digitalSig = base64_encode(hash_hmac('sha256', $sdcInvoiceNo . $sdcTime . $invoice['amount'], 'FRCS_VMS_SECRET_KEY', true));
+        }
 
         // Calculate total tax
         $totalTax = 0.00;

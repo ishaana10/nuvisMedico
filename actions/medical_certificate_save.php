@@ -3,12 +3,11 @@
  * Action: Medical Certificate Save / Issue
  */
 
+require_once __DIR__ . '/../includes/security.php';
 require_once __DIR__ . '/../config/database.php';
 
-if (!isset($_SESSION['user_id'])) {
-    header('Location: ../login.php');
-    exit();
-}
+requireAuth();
+validateCsrfRequest();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: ../patients.php');
@@ -22,7 +21,7 @@ $diagnosis = trim($_POST['diagnosis'] ?? '');
 $fitnessStatus = trim($_POST['fitness_status'] ?? 'Fit for Work / School');
 $fitStatusDetails = trim($_POST['fit_status_details'] ?? '');
 $recommendations = trim($_POST['recommendations'] ?? '');
-$doctorName = trim($_POST['doctor_name'] ?? $_SESSION['user_name'] ?? 'Dr. Sarah Jenkins');
+$doctorName = trim($_POST['doctor_name'] ?? $_SESSION['user_name'] ?? 'Attending Physician');
 $prcNumber = trim($_POST['prc_number'] ?? '');
 $ptrNumber = trim($_POST['ptr_number'] ?? '');
 
