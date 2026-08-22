@@ -54,8 +54,10 @@ function getDB(): PDO {
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 PDO::ATTR_EMULATE_PREPARES => false,
             ]);
+            executeAutoSchemaMigrations($pdo);
             ensureDoctorColumnsExist($pdo);
             runDatabaseMigrations($pdo);
+            seedDefaultUsersIfEmpty($pdo);
             return $pdo;
         } catch (PDOException $e) {
             // Fallback to SQLite if MySQL is unavailable locally in dev mode
@@ -77,8 +79,10 @@ function getDB(): PDO {
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         ]);
         $pdo->exec("PRAGMA foreign_keys = ON;");
+        executeAutoSchemaMigrations($pdo);
         ensureDoctorColumnsExist($pdo);
         runDatabaseMigrations($pdo);
+        seedDefaultUsersIfEmpty($pdo);
         return $pdo;
     }
 
@@ -88,6 +92,29 @@ function getDB(): PDO {
 /**
  * Auto-migrate columns for doctor signatures & stamps if missing
  */
+function seedDefaultUsersIfEmpty(PDO $pdo): void {
+    static $checked = false;
+    if ($checked) return;
+    $checked = true;
+
+    try {
+        $stmt = $pdo->query("SELECT COUNT(*) FROM doctors");
+        if ($stmt && (int)$stmt->fetchColumn() === 0) {
+            $defaultPasswordHash = password_hash('password', PASSWORD_DEFAULT);
+            $doctors = [
+                ['doc-1', 'default-clinic', 'System Developer', 'Developer / IT Administrator', 'medico@nuvistechnologies.com.fj', $defaultPasswordHash, 'Developer', '#10B981', 'bg-emerald-500', 'assets/images/nuvis_medico_logo.png', 'PRC-DEV-001', 'PTR-DEV-001', null, null, 1],
+                ['doc-2', 'default-clinic', 'Dr. Sarah Jenkins', 'Internal Medicine', 'sjenkins@clinicflow.com', $defaultPasswordHash, 'Doctor', '#10B981', 'bg-emerald-500', 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=200', 'PRC-0098412', 'PTR-8842109', null, null, 1]
+            ];
+            $stmtIns = $pdo->prepare("INSERT INTO doctors (id, clinic_id, name, specialty, email, password_hash, role, color, dot_color_class, avatar, prc_number, ptr_number, esignature, digital_stamp, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            foreach ($doctors as $doc) {
+                $stmtIns->execute($doc);
+            }
+        }
+    } catch (Throwable $e) {
+        // Table might not exist yet
+    }
+}
+
 function runDatabaseMigrations(PDO $pdo): void {
     static $run = false;
     if ($run) return;
