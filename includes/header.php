@@ -170,6 +170,7 @@ $currentDoctor = reset($currentDoctor) ?: ($doctors[0] ?? ['id' => 'doc-1', 'nam
             <!-- Doctor Selector & Logout -->
             <div class="flex items-center gap-1.5 sm:gap-3 pl-1.5 sm:pl-3 border-l border-outline-variant/40">
                 <form action="actions/set_doctor.php" method="POST" class="flex items-center gap-1 sm:gap-2">
+                    <input type="hidden" name="csrf_token" value="<?= getCsrfToken() ?>">
                     <div class="flex items-center gap-1 sm:gap-2">
                         <img src="<?= htmlspecialchars($currentDoctor['avatar'] ?? '') ?>" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-primary/20" alt="Doctor">
                         <select name="doctor_id" onchange="this.form.submit()" class="bg-surface-container-low border border-outline-variant/50 text-[11px] sm:text-xs font-semibold text-on-surface rounded-lg px-1.5 py-1 sm:px-2 sm:py-1.5 focus:outline-none max-w-[90px] sm:max-w-none truncate">

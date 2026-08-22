@@ -19,6 +19,7 @@ include __DIR__ . '/includes/header.php';
 
     <!-- Registration Form Card -->
     <form action="actions/patient_add.php" method="POST" class="bg-surface-container-lowest rounded-2xl border border-outline-variant/30 p-6 shadow-xs space-y-6">
+        <input type="hidden" name="csrf_token" value="<?= getCsrfToken() ?>">
 
         <!-- Section 1: Demographics -->
         <div>

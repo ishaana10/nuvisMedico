@@ -42,6 +42,7 @@ $selectedPatientId = $_GET['patient_id'] ?? '';
         </div>
 
         <form action="actions/appointment_add.php" method="POST" class="space-y-4 text-xs">
+            <input type="hidden" name="csrf_token" value="<?= getCsrfToken() ?>">
             <div>
                 <label class="block font-bold text-slate-700 mb-1">Select Patient <span class="text-red-500">*</span></label>
                 <select name="patient_id" required class="w-full bg-surface-container-low px-3 py-2 rounded-xl border border-outline-variant/40 focus:border-primary focus:bg-white focus:outline-none font-medium">

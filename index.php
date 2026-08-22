@@ -173,6 +173,7 @@ $activities = $pdo->query("SELECT * FROM activities ORDER BY id DESC LIMIT 5")->
                             <td class="py-3 px-3 text-right space-x-1">
                                 <?php if ($q['status'] === 'Waiting'): ?>
                                     <form action="actions/queue_update.php" method="POST" class="inline">
+                                        <input type="hidden" name="csrf_token" value="<?= getCsrfToken() ?>">
                                         <input type="hidden" name="queue_id" value="<?= htmlspecialchars($q['id']) ?>">
                                         <input type="hidden" name="action" value="check_in">
                                         <button type="submit" class="px-2.5 py-1 bg-emerald-600 text-white rounded-lg text-[11px] font-semibold hover:bg-emerald-700 transition">
@@ -185,6 +186,7 @@ $activities = $pdo->query("SELECT * FROM activities ORDER BY id DESC LIMIT 5")->
                                     </a>
                                 <?php endif; ?>
                                 <form action="actions/queue_update.php" method="POST" class="inline">
+                                    <input type="hidden" name="csrf_token" value="<?= getCsrfToken() ?>">
                                     <input type="hidden" name="queue_id" value="<?= htmlspecialchars($q['id']) ?>">
                                     <input type="hidden" name="action" value="complete">
                                     <button type="submit" class="px-2.5 py-1 bg-slate-200 text-slate-700 rounded-lg text-[11px] font-semibold hover:bg-slate-300 transition">
