@@ -27,6 +27,10 @@ function generateCsrfToken(): string {
     return $_SESSION['csrf_token'];
 }
 
+function getCsrfToken(): string {
+    return generateCsrfToken();
+}
+
 // Auto-initialize CSRF token in session
 generateCsrfToken();
 
