@@ -148,6 +148,7 @@ $activeTab = $_GET['tab'] ?? 'users';
                             </button>
 
                             <form action="actions/doctor_actions.php" method="POST" class="inline">
+                                <input type="hidden" name="csrf_token" value="<?= getCsrfToken() ?>">
                                 <input type="hidden" name="action" value="toggle_status">
                                 <input type="hidden" name="user_id" value="<?= htmlspecialchars($usr['id']) ?>">
                                 <input type="hidden" name="status" value="<?= $isActive ? 0 : 1 ?>">
@@ -171,6 +172,7 @@ $activeTab = $_GET['tab'] ?? 'users';
 <!-- ================= TAB 2: CLINIC & BRANDING SETTINGS ================= -->
 <div id="admin-tab-clinic" class="<?= $activeTab === 'clinic' ? '' : 'hidden' ?> space-y-6">
     <form action="actions/admin_save_settings.php" method="POST" class="bg-surface-container-lowest rounded-2xl border border-outline-variant/30 p-6 shadow-xs space-y-5">
+        <input type="hidden" name="csrf_token" value="<?= getCsrfToken() ?>">
         <h2 class="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-2">
             <span class="material-symbols-outlined text-base">domain</span>
             <span>1. Clinic Branding & General Info</span>
@@ -499,6 +501,7 @@ $activeTab = $_GET['tab'] ?? 'users';
         </div>
 
         <form action="actions/doctor_actions.php" method="POST" enctype="multipart/form-data" class="p-6 space-y-4 text-xs">
+            <input type="hidden" name="csrf_token" value="<?= getCsrfToken() ?>">
             <input type="hidden" name="action" value="save">
             <input type="hidden" name="doctor_id" id="usr_id">
             <input type="hidden" name="existing_esignature" id="usr_existing_esignature">

@@ -97,6 +97,7 @@ include __DIR__ . '/includes/header.php';
 </div>
 
 <form action="actions/encounter_save.php" method="POST" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <input type="hidden" name="csrf_token" value="<?= getCsrfToken() ?>">
     <input type="hidden" name="patient_id" value="<?= htmlspecialchars($patient['id']) ?>">
     <input type="hidden" name="visit_id" value="<?= htmlspecialchars($visitId) ?>">
     <input type="hidden" name="action" value="save">
@@ -290,6 +291,7 @@ include __DIR__ . '/includes/header.php';
         </p>
 
         <form action="actions/encounter_save.php" method="POST" class="space-y-4 text-xs">
+            <input type="hidden" name="csrf_token" value="<?= getCsrfToken() ?>">
             <input type="hidden" name="patient_id" value="<?= htmlspecialchars($patient['id']) ?>">
             <input type="hidden" name="visit_id" value="<?= htmlspecialchars($visitId) ?>">
             <input type="hidden" name="action" value="finish">
@@ -356,6 +358,7 @@ function toggleFinalizeInvoiceFields() {
         </div>
 
         <form action="actions/encounter_save.php" method="POST" class="space-y-3 text-xs">
+            <input type="hidden" name="csrf_token" value="<?= getCsrfToken() ?>">
             <input type="hidden" name="action" value="edit_rx">
             <input type="hidden" name="rx_id" id="edit_rx_id">
             <input type="hidden" name="patient_id" value="<?= htmlspecialchars($patient['id']) ?>">
@@ -414,6 +417,7 @@ function toggleFinalizeInvoiceFields() {
         </div>
 
         <form action="actions/encounter_save.php" method="POST" class="space-y-4 text-xs">
+            <input type="hidden" name="csrf_token" value="<?= getCsrfToken() ?>">
             <input type="hidden" name="action" value="create_invoice">
             <input type="hidden" name="patient_id" value="<?= htmlspecialchars($patient['id']) ?>">
             <input type="hidden" name="visit_id" value="<?= htmlspecialchars($visitId) ?>">
@@ -511,6 +515,7 @@ foreach ($settingsRows as $sr) {
         </div>
 
         <form action="actions/medical_certificate_save.php" method="POST" class="space-y-4 text-xs">
+            <input type="hidden" name="csrf_token" value="<?= getCsrfToken() ?>">
             <input type="hidden" name="patient_id" value="<?= htmlspecialchars($patient['id']) ?>">
             <input type="hidden" name="print_immediately" value="1">
 

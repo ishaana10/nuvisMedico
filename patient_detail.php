@@ -250,6 +250,7 @@ foreach ($settingsRows as $sr) {
         </div>
 
         <form action="actions/patient_update.php" method="POST" class="p-6 space-y-4 text-xs">
+            <input type="hidden" name="csrf_token" value="<?= getCsrfToken() ?>">
             <input type="hidden" name="patient_id" value="<?= htmlspecialchars($patient['id']) ?>">
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -539,6 +540,7 @@ function closePastVisitModal() {
         </div>
 
         <form action="actions/encounter_save.php" method="POST" class="space-y-4 text-xs">
+            <input type="hidden" name="csrf_token" value="<?= getCsrfToken() ?>">
             <input type="hidden" name="action" value="create_invoice">
             <input type="hidden" name="patient_id" value="<?= htmlspecialchars($patient['id']) ?>">
             <input type="hidden" name="visit_id" id="inv_visit_id" value="">
@@ -631,6 +633,7 @@ function openCreateInvoiceForVisit(pv) {
         </div>
 
         <form action="actions/medical_certificate_save.php" method="POST" class="space-y-4 text-xs">
+            <input type="hidden" name="csrf_token" value="<?= getCsrfToken() ?>">
             <input type="hidden" name="patient_id" value="<?= htmlspecialchars($patient['id']) ?>">
             <input type="hidden" name="print_immediately" value="1">
 
