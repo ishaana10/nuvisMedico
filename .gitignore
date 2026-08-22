@@ -1,1 +1,8 @@
 vendor/
+node_modules/
+config/config.php
+*.sqlite
+uploads/
+.env
+logs/
+dist/

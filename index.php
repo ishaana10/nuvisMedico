@@ -1,4 +1,24 @@
 <?php
+// Serve dist static assets if requested
+$uri = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
+if (str_starts_with($uri, '/assets/')) {
+    $assetFile = __DIR__ . '/dist' . $uri;
+    if (file_exists($assetFile)) {
+        $mime = str_ends_with($assetFile, '.css') ? 'text/css' : (str_ends_with($assetFile, '.js') ? 'application/javascript' : 'text/plain');
+        header("Content-Type: $mime");
+        readfile($assetFile);
+        exit;
+    }
+}
+
+// Serve React single-page app if dist/index.html exists and classic view is not explicitly requested
+$viewMode = $_GET['view'] ?? 'react';
+if ($viewMode === 'react' && file_exists(__DIR__ . '/dist/index.html')) {
+    header('Content-Type: text/html; charset=UTF-8');
+    readfile(__DIR__ . '/dist/index.html');
+    exit;
+}
+
 $pageTitle = "Dashboard - ClinicFlow";
 $activePage = "dashboard";
 include __DIR__ . '/includes/header.php';

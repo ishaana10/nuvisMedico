@@ -94,18 +94,37 @@ function requireRole(array $allowedRoles): void {
 }
 
 /**
- * Rate Limiter for Login Attempts
+ * Rate Limiter for Login Attempts (DB-backed with Session Fallback)
  */
-function checkLoginRateLimit(string $ip): bool {
+function checkLoginRateLimit(string $ip, string $email = '', ?PDO $pdo = null): bool {
     $maxAttempts = 5;
     $lockoutSeconds = 300; // 5 minutes
+
+    if ($pdo === null && function_exists('getDB')) {
+        try {
+            $pdo = getDB();
+        } catch (Throwable $e) {
+            $pdo = null;
+        }
+    }
+
+    if ($pdo !== null) {
+        try {
+            $cutoff = date('Y-m-d H:i:s', time() - $lockoutSeconds);
+            $stmt = $pdo->prepare("SELECT COUNT(*) FROM login_attempts WHERE (ip_address = :ip OR (email != '' AND email = :email)) AND attempted_at > :cutoff");
+            $stmt->execute(['ip' => $ip, 'email' => $email, 'cutoff' => $cutoff]);
+            $count = (int)$stmt->fetchColumn();
+            return $count < $maxAttempts;
+        } catch (Throwable $e) {
+            // Fallback to session rate limit
+        }
+    }
 
     if (!isset($_SESSION['login_attempts'])) {
         $_SESSION['login_attempts'] = [];
     }
 
     $now = time();
-    // Clean old attempts
     $_SESSION['login_attempts'] = array_filter($_SESSION['login_attempts'], function($timestamp) use ($now, $lockoutSeconds) {
         return ($now - $timestamp) < $lockoutSeconds;
     });
@@ -113,14 +132,55 @@ function checkLoginRateLimit(string $ip): bool {
     return count($_SESSION['login_attempts']) < $maxAttempts;
 }
 
-function recordLoginAttempt(): void {
+function recordLoginAttempt(string $ip, string $email = '', ?PDO $pdo = null): void {
+    if ($pdo === null && function_exists('getDB')) {
+        try {
+            $pdo = getDB();
+        } catch (Throwable $e) {
+            $pdo = null;
+        }
+    }
+
+    if ($pdo !== null) {
+        try {
+            $id = \ClinicFlow\Utils\Uuid::uuidv7();
+            $stmt = $pdo->prepare("INSERT INTO login_attempts (id, ip_address, email, attempted_at) VALUES (:id, :ip, :email, :at)");
+            $stmt->execute([
+                'id' => $id,
+                'ip' => $ip,
+                'email' => $email,
+                'at' => date('Y-m-d H:i:s')
+            ]);
+            return;
+        } catch (Throwable $e) {
+            // Fallback
+        }
+    }
+
     if (!isset($_SESSION['login_attempts'])) {
         $_SESSION['login_attempts'] = [];
     }
     $_SESSION['login_attempts'][] = time();
 }
 
-function clearLoginAttempts(): void {
+function clearLoginAttempts(string $ip = '', string $email = '', ?PDO $pdo = null): void {
+    if ($pdo === null && function_exists('getDB')) {
+        try {
+            $pdo = getDB();
+        } catch (Throwable $e) {
+            $pdo = null;
+        }
+    }
+
+    if ($pdo !== null && ($ip !== '' || $email !== '')) {
+        try {
+            $stmt = $pdo->prepare("DELETE FROM login_attempts WHERE ip_address = :ip OR (email != '' AND email = :email)");
+            $stmt->execute(['ip' => $ip, 'email' => $email]);
+        } catch (Throwable $e) {
+            // Fallback
+        }
+    }
+
     unset($_SESSION['login_attempts']);
 }
 

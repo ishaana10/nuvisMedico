@@ -55,6 +55,7 @@ function getDB(): PDO {
                 PDO::ATTR_EMULATE_PREPARES => false,
             ]);
             ensureDoctorColumnsExist($pdo);
+            runDatabaseMigrations($pdo);
             return $pdo;
         } catch (PDOException $e) {
             // Fallback to SQLite if MySQL is unavailable locally in dev mode
@@ -77,6 +78,7 @@ function getDB(): PDO {
         ]);
         $pdo->exec("PRAGMA foreign_keys = ON;");
         ensureDoctorColumnsExist($pdo);
+        runDatabaseMigrations($pdo);
         return $pdo;
     }
 
@@ -86,6 +88,18 @@ function getDB(): PDO {
 /**
  * Auto-migrate columns for doctor signatures & stamps if missing
  */
+function runDatabaseMigrations(PDO $pdo): void {
+    static $run = false;
+    if ($run) return;
+    $run = true;
+    try {
+        $runner = new \ClinicFlow\Services\MigrationRunner($pdo);
+        $runner->run();
+    } catch (Throwable $e) {
+        // Migration logging or suppression if tables are being initialized
+    }
+}
+
 function ensureDoctorColumnsExist(PDO $pdo): void {
     static $checked = false;
     if ($checked) return;

@@ -2,15 +2,11 @@
 /**
  * Action Handler: Update Patient Details (Editable by Doctors & Administrators)
  */
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once __DIR__ . '/../includes/security.php';
 require_once __DIR__ . '/../config/database.php';
 
-if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
-    header("Location: ../login.php");
-    exit;
-}
+requireAuth();
+validateCsrfRequest();
 
 $userRole = $_SESSION['user']['role'] ?? '';
 if (!in_array($userRole, ['Doctor', 'Administrator', 'Developer', 'Admin'])) {
