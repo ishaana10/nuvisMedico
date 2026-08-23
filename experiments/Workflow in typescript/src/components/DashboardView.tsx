@@ -29,11 +29,12 @@ export const DashboardView: React.FC = () => {
   } = useClinic();
 
   const handlePatientRowClick = (apt: Appointment) => {
-    const patientObj = patients.find((p) => p.id === apt.patientId) || {
-      id: apt.patientId,
-      mrn: apt.patientMrn,
-      firstName: apt.patientName.split(' ')[0] || 'Patient',
-      lastName: apt.patientName.split(' ')[1] || '',
+    if (!apt) return;
+    const patientObj = (patients || []).find((p) => p.id === apt.patientId) || {
+      id: apt.patientId || 'pat-1',
+      mrn: apt.patientMrn || '#10001',
+      firstName: apt.patientName?.split(' ')?.[0] || 'Patient',
+      lastName: apt.patientName?.split(' ')?.[1] || '',
       dob: '1985-04-12',
       age: 38,
       gender: 'Female' as const,
@@ -43,7 +44,7 @@ export const DashboardView: React.FC = () => {
       emergencyContact: { name: 'Contact', relationship: 'Spouse', phone: '(555) 987-6543' },
       insurance: { provider: 'Blue Cross Blue Shield', policyNumber: 'BCBS-9842109', groupNumber: 'GRP-44120' },
       clinicalOverview: { knownAllergies: 'Penicillin Allergy', bloodGroup: 'O+' },
-      initials: apt.patientInitials,
+      initials: apt.patientInitials || 'P',
       registrationDate: '2023-01-15',
     };
     startEncounterForPatient(patientObj);
@@ -136,7 +137,7 @@ export const DashboardView: React.FC = () => {
             Consultation Matrix & Overview
           </h2>
           <p className="text-xs text-[#666] tracking-wide mt-2">
-            Welcome, <span className="font-semibold text-black">{currentDoctor.name}</span> ({currentDoctor.specialty}). All triage queues and laboratory telemetry are synchronized.
+            Welcome, <span className="font-semibold text-black">{currentDoctor?.name || 'Dr. Sarah Jenkins'}</span> ({currentDoctor?.specialty || 'General Practice'}). All triage queues and laboratory telemetry are synchronized.
           </p>
         </div>
 
@@ -301,7 +302,7 @@ export const DashboardView: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-black/10 text-xs">
-                {appointments.slice(0, 5).map((apt) => (
+                {(appointments || []).slice(0, 5).map((apt) => (
                   <tr
                     key={apt.id}
                     onClick={() => handlePatientRowClick(apt)}
@@ -407,7 +408,7 @@ export const DashboardView: React.FC = () => {
             </div>
 
             <div className="space-y-3">
-              {activities.slice(0, 4).map((act) => (
+              {(activities || []).slice(0, 4).map((act) => (
                 <div key={act.id} className="flex items-start gap-3 text-xs p-2.5 bg-[#FDFCFB] border border-black/10">
                   {getActivityIcon(act.type)}
                   <div className="flex-1 min-w-0">

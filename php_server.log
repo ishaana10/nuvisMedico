@@ -1,0 +1,37 @@
+[Sun Aug 23 06:08:49 2026] PHP 8.3.6 Development Server (http://localhost:8000) started
+[Sun Aug 23 06:08:51 2026] [::1]:44412 Accepted
+[Sun Aug 23 06:08:51 2026] [::1]:44412 [200]: HEAD /
+[Sun Aug 23 06:08:51 2026] [::1]:44412 Closing
+[Sun Aug 23 06:10:03 2026] [::1]:33956 Accepted
+[Sun Aug 23 06:10:03 2026] [::1]:33956 [200]: GET /
+[Sun Aug 23 06:10:03 2026] [::1]:33956 Closing
+[Sun Aug 23 06:10:03 2026] [::1]:33962 Accepted
+[Sun Aug 23 06:10:03 2026] [::1]:33976 Accepted
+[Sun Aug 23 06:10:03 2026] [::1]:33962 [200]: GET /assets/index-CzUTDu0g.css
+[Sun Aug 23 06:10:03 2026] [::1]:33976 [200]: GET /assets/index-Dwd5ZIel.js
+[Sun Aug 23 06:10:03 2026] [::1]:33962 Closing
+[Sun Aug 23 06:10:03 2026] [::1]:33976 Closing
+[Sun Aug 23 06:10:03 2026] [::1]:33986 Accepted
+[Sun Aug 23 06:10:03 2026] [::1]:34000 Accepted
+[Sun Aug 23 06:10:03 2026] [::1]:34016 Accepted
+[Sun Aug 23 06:10:03 2026] [::1]:34032 Accepted
+[Sun Aug 23 06:10:03 2026] [::1]:33986 [302]: GET /api/patients.php
+[Sun Aug 23 06:10:03 2026] [::1]:33986 Closing
+[Sun Aug 23 06:10:03 2026] [::1]:34000 [302]: GET /api/appointments.php
+[Sun Aug 23 06:10:03 2026] [::1]:34000 Closing
+[Sun Aug 23 06:10:03 2026] [::1]:34016 [302]: GET /api/inventory.php
+[Sun Aug 23 06:10:03 2026] [::1]:34016 Closing
+[Sun Aug 23 06:10:03 2026] [::1]:34032 [302]: GET /api/billing.php
+[Sun Aug 23 06:10:03 2026] [::1]:34032 Closing
+[Sun Aug 23 06:10:03 2026] [::1]:34048 Accepted
+[Sun Aug 23 06:10:03 2026] [::1]:34048 [404]: GET /api/login.php - No such file or directory
+[Sun Aug 23 06:10:03 2026] [::1]:34048 Closing
+[Sun Aug 23 06:10:03 2026] [::1]:34052 Accepted
+[Sun Aug 23 06:10:03 2026] [::1]:34052 [404]: GET /api/login.php - No such file or directory
+[Sun Aug 23 06:10:03 2026] [::1]:34052 Closing
+[Sun Aug 23 06:10:03 2026] [::1]:34066 Accepted
+[Sun Aug 23 06:10:03 2026] [::1]:34066 [404]: GET /api/login.php - No such file or directory
+[Sun Aug 23 06:10:03 2026] [::1]:34066 Closing
+[Sun Aug 23 06:10:03 2026] [::1]:34074 Accepted
+[Sun Aug 23 06:10:03 2026] [::1]:34074 [404]: GET /api/login.php - No such file or directory
+[Sun Aug 23 06:10:03 2026] [::1]:34074 Closing
