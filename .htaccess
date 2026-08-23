@@ -1,0 +1,8 @@
+# ClinicFlow Apache Configuration
+AddType application/javascript .js .mjs
+AddType text/css .css
+AddDefaultCharset UTF-8
+
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+</IfModule>

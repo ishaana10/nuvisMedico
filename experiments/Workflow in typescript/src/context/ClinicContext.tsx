@@ -103,40 +103,81 @@ const ClinicContext = createContext<ClinicContextType | undefined>(undefined);
 
 export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
-  const [doctors] = useState<Doctor[]>(DOCTORS);
-  const [currentDoctor, setCurrentDoctor] = useState<Doctor>(DOCTORS[0]);
+  const [doctors] = useState<Doctor[]>(DOCTORS || []);
+  const [currentDoctor, setCurrentDoctor] = useState<Doctor>(DOCTORS?.[0] || {
+    id: 'doc-1',
+    name: 'Dr. Sarah Jenkins',
+    title: 'MD',
+    specialty: 'Internal Medicine',
+    avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150',
+    location: 'Nuvis Medcare Main Clinic',
+    room: 'Consulting Room 2',
+    isAvailable: true,
+  });
 
   // Patients state
   const [patients, setPatients] = useState<Patient[]>(() => {
-    const saved = localStorage.getItem('clinicflow_patients');
-    return saved ? JSON.parse(saved) : INITIAL_PATIENTS;
+    try {
+      const saved = localStorage.getItem('clinicflow_patients');
+      return saved ? JSON.parse(saved) : (INITIAL_PATIENTS || []);
+    } catch {
+      return INITIAL_PATIENTS || [];
+    }
   });
-  const [activePatient, setActivePatient] = useState<Patient>(INITIAL_PATIENTS[0]);
+  const [activePatient, setActivePatient] = useState<Patient>(() => patients?.[0] || INITIAL_PATIENTS?.[0] || {
+    id: 'pat-1',
+    mrn: '#48201',
+    firstName: 'Elena',
+    lastName: 'Rostova',
+    initials: 'ER',
+    age: 34,
+    gender: 'Female',
+    dob: '1989-04-12',
+    phone: '+1 (555) 234-5678',
+    email: 'elena.rostova@example.com',
+    address: '742 Evergreen Terrace, Suite 100, Springfield',
+    bloodType: 'A+',
+    allergies: ['Penicillin', 'Peanuts'],
+    registrationDate: '2023-01-15',
+    clinicalOverview: {
+      chronicConditions: ['Hypertension', 'Mild Asthma'],
+      activeMedications: ['Lisinopril 10mg daily', 'Albuterol HFA inhaler PRN'],
+      riskFlags: ['High BP Risk'],
+    },
+  });
 
   // Appointments state
   const [appointments, setAppointments] = useState<Appointment[]>(() => {
-    const saved = localStorage.getItem('clinicflow_appointments');
-    return saved ? JSON.parse(saved) : INITIAL_APPOINTMENTS;
+    try {
+      const saved = localStorage.getItem('clinicflow_appointments');
+      return saved ? JSON.parse(saved) : (INITIAL_APPOINTMENTS || []);
+    } catch {
+      return INITIAL_APPOINTMENTS || [];
+    }
   });
 
   // Queue state
   const [queue, setQueue] = useState<QueueItem[]>(() => {
-    const saved = localStorage.getItem('clinicflow_queue');
-    return saved ? JSON.parse(saved) : INITIAL_QUEUE;
+    try {
+      const saved = localStorage.getItem('clinicflow_queue');
+      return saved ? JSON.parse(saved) : (INITIAL_QUEUE || []);
+    } catch {
+      return INITIAL_QUEUE || [];
+    }
   });
 
   // Clinical Encounter State
-  const [vitals, setVitals] = useState<Vitals>(INITIAL_VITALS);
-  const [soapNotes, setSoapNotes] = useState<SOAPNotes>(INITIAL_SOAP);
-  const [prescriptions, setPrescriptions] = useState<PrescriptionItem[]>(INITIAL_PRESCRIPTIONS);
-  const [pastVisits, setPastVisits] = useState<PastVisit[]>(INITIAL_PAST_VISITS);
+  const [vitals, setVitals] = useState<Vitals>(INITIAL_VITALS || {});
+  const [soapNotes, setSoapNotes] = useState<SOAPNotes>(INITIAL_SOAP || { subjective: '', objective: '', assessmentCodes: [], plan: '' });
+  const [prescriptions, setPrescriptions] = useState<PrescriptionItem[]>(INITIAL_PRESCRIPTIONS || []);
+  const [pastVisits, setPastVisits] = useState<PastVisit[]>(INITIAL_PAST_VISITS || []);
 
   // Activities state
-  const [activities, setActivities] = useState<ActivityItem[]>(INITIAL_ACTIVITIES);
+  const [activities, setActivities] = useState<ActivityItem[]>(INITIAL_ACTIVITIES || []);
 
   // Billing & Inventory
-  const [invoices, setInvoices] = useState<Invoice[]>(INITIAL_INVOICES);
-  const [inventory, setInventory] = useState<InventoryItem[]>(INITIAL_INVENTORY);
+  const [invoices, setInvoices] = useState<Invoice[]>(INITIAL_INVOICES || []);
+  const [inventory, setInventory] = useState<InventoryItem[]>(INITIAL_INVENTORY || []);
 
   // Modals & Search
   const [isBookModalOpen, setIsBookModalOpen] = useState(false);
@@ -151,33 +192,40 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [pRes, aRes, iRes, invRes] = await Promise.all([
-          fetch('/api/patients.php'),
-          fetch('/api/appointments.php'),
-          fetch('/api/inventory.php'),
-          fetch('/api/billing.php')
+        const [pRes, aRes, iRes, invRes] = await Promise.allSettled([
+          fetch('api/patients.php'),
+          fetch('api/appointments.php'),
+          fetch('api/inventory.php'),
+          fetch('api/billing.php')
         ]);
 
-        if (pRes.ok) {
-          const pData = await pRes.json();
+        if (pRes.status === 'fulfilled' && pRes.value.ok) {
+          const pData = await pRes.value.json();
           if (pData.success && Array.isArray(pData.data) && pData.data.length > 0) {
             setPatients(pData.data);
+            if (pData.data[0]) setActivePatient(pData.data[0]);
           }
         }
-        if (iRes.ok) {
-          const iData = await iRes.json();
+        if (aRes.status === 'fulfilled' && aRes.value.ok) {
+          const aData = await aRes.value.json();
+          if (aData.success && Array.isArray(aData.data) && aData.data.length > 0) {
+            setAppointments(aData.data);
+          }
+        }
+        if (iRes.status === 'fulfilled' && iRes.value.ok) {
+          const iData = await iRes.value.json();
           if (iData.success && Array.isArray(iData.data) && iData.data.length > 0) {
             setInventory(iData.data);
           }
         }
-        if (invRes.ok) {
-          const invData = await invRes.json();
+        if (invRes.status === 'fulfilled' && invRes.value.ok) {
+          const invData = await invRes.value.json();
           if (invData.success && Array.isArray(invData.data) && invData.data.length > 0) {
             setInvoices(invData.data);
           }
         }
       } catch (err) {
-        // Fallback to local storage or mock data
+        console.error("Error fetching Clinic API initial data:", err);
       }
     };
     fetchData();
@@ -185,15 +233,27 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Local storage persistence fallback
   useEffect(() => {
-    localStorage.setItem('clinicflow_patients', JSON.stringify(patients));
+    try {
+      localStorage.setItem('clinicflow_patients', JSON.stringify(patients));
+    } catch (e) {
+      console.error("Failed saving patients to localStorage", e);
+    }
   }, [patients]);
 
   useEffect(() => {
-    localStorage.setItem('clinicflow_appointments', JSON.stringify(appointments));
+    try {
+      localStorage.setItem('clinicflow_appointments', JSON.stringify(appointments));
+    } catch (e) {
+      console.error("Failed saving appointments to localStorage", e);
+    }
   }, [appointments]);
 
   useEffect(() => {
-    localStorage.setItem('clinicflow_queue', JSON.stringify(queue));
+    try {
+      localStorage.setItem('clinicflow_queue', JSON.stringify(queue));
+    } catch (e) {
+      console.error("Failed saving queue to localStorage", e);
+    }
   }, [queue]);
 
   const showToast = (title: string, message: string, type: ToastMessage['type'] = 'success') => {
@@ -230,7 +290,7 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const age = new Date().getFullYear() - birthYear;
     const mrnNumber = Math.floor(10000 + Math.random() * 90000);
     const mrn = `#${mrnNumber}`;
-    const initials = `${patientData.firstName[0] || ''}${patientData.lastName[0] || ''}`.toUpperCase();
+    const initials = `${patientData.firstName?.[0] || ''}${patientData.lastName?.[0] || ''}`.toUpperCase();
 
     const newPatient: Patient = {
       ...patientData,
@@ -239,12 +299,13 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       age: isNaN(age) ? 30 : age,
       initials,
       registrationDate: new Date().toISOString().split('T')[0],
+      clinicalOverview: patientData.clinicalOverview || { chronicConditions: [], activeMedications: [], riskFlags: [] },
     };
 
     setPatients((prev) => [newPatient, ...prev]);
 
     // Send to backend API
-    fetch('/api/patients.php', {
+    fetch('api/patients.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -256,7 +317,7 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         email: patientData.email,
         address: patientData.address,
       }),
-    }).catch(() => {});
+    }).catch((err) => console.error("Error creating patient API:", err));
 
     addActivity(`New Patient Registered: ${newPatient.firstName} ${newPatient.lastName}`, 'Just now • via Portal', 'patient_registered', 'emerald');
     showToast('Patient Registered', `${newPatient.firstName} ${newPatient.lastName} (${newPatient.mrn}) was registered successfully.`);
@@ -268,7 +329,7 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       prev.map((p) => {
         if (p.id === id) {
           const updated = { ...p, ...updates };
-          if (activePatient.id === id) {
+          if (activePatient?.id === id) {
             setActivePatient(updated);
           }
           return updated;
@@ -277,11 +338,11 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       })
     );
 
-    fetch('/api/patients.php', {
+    fetch('api/patients.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, ...updates }),
-    }).catch(() => {});
+    }).catch((err) => console.error("Error updating patient API:", err));
 
     showToast('Patient Updated', 'Patient records successfully updated.');
   };
@@ -305,7 +366,7 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
     setQueue((prev) => [newQueueItem, ...prev]);
 
-    fetch('/api/appointments.php', {
+    fetch('api/appointments.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -316,7 +377,7 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         time: newAppt.time,
         type: newAppt.type,
       }),
-    }).catch(() => {});
+    }).catch((err) => console.error("Error creating appointment API:", err));
 
     addActivity(
       `Appointment Booked: ${newAppt.patientName}`,
@@ -332,11 +393,11 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       prev.map((apt) => (apt.id === id ? { ...apt, status, room: room || apt.room } : apt))
     );
 
-    fetch('/api/appointments.php', {
+    fetch('api/appointments.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'update_status', id, status }),
-    }).catch(() => {});
+    }).catch((err) => console.error("Error updating appt status API:", err));
 
     showToast('Status Updated', `Appointment status changed to "${status}".`, 'info');
   };
@@ -397,6 +458,7 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const startEncounterForPatient = (patient: Patient) => {
+    if (!patient) return;
     setActivePatient(patient);
     setVitals({
       bloodPressure: patient.id === 'pat-1' ? '120/80' : '118/76',
@@ -408,7 +470,7 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       oxygenSat: 99,
     });
     setSoapNotes({
-      subjective: `Patient reports for clinical evaluation. Chief concern: ${patient.clinicalOverview?.chronicConditions || 'General checkup and consultation'}.`,
+      subjective: `Patient reports for clinical evaluation. Chief concern: ${patient.clinicalOverview?.chronicConditions?.join(', ') || 'General checkup and consultation'}.`,
       objective: `Physical exam: Vitals stable. Alert and oriented x4. Heart regular rate and rhythm. Lungs clear to auscultation bilaterally.`,
       assessmentCodes: patient.id === 'pat-1' 
         ? [{ code: 'J01.90', label: 'Acute sinusitis, unspecified' }]
@@ -419,19 +481,20 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const finishVisit = () => {
+    if (!activePatient) return;
     const newPastVisit: PastVisit = {
       id: `pv-${Date.now()}`,
       date: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
-      title: soapNotes.assessmentCodes[0]?.label || 'Clinical Consultation',
-      summary: `${soapNotes.plan.slice(0, 80)}...`,
-      doctorName: currentDoctor.name,
+      title: soapNotes.assessmentCodes?.[0]?.label || 'Clinical Consultation',
+      summary: `${(soapNotes.plan || '').slice(0, 80)}...`,
+      doctorName: currentDoctor?.name || 'Doctor',
       vitals: { ...vitals },
       prescriptions: [...prescriptions],
     };
 
     setPastVisits((prev) => [newPastVisit, ...prev]);
 
-    fetch('/api/encounters.php', {
+    fetch('api/encounters.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -441,9 +504,9 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         prescriptions,
         finalize: true,
       }),
-    }).catch(() => {});
+    }).catch((err) => console.error("Error finalizing encounter API:", err));
 
-    addActivity(`Visit Completed: ${activePatient.firstName} ${activePatient.lastName}`, `Just now • ${currentDoctor.name}`, 'visit_completed', 'blue');
+    addActivity(`Visit Completed: ${activePatient.firstName} ${activePatient.lastName}`, `Just now • ${currentDoctor?.name || 'Doctor'}`, 'visit_completed', 'blue');
     setQueue((prev) => prev.filter((q) => q.patientId !== activePatient.id && q.patientName !== `${activePatient.firstName} ${activePatient.lastName}`));
     showToast('Visit Completed!', `Encounter for ${activePatient.firstName} ${activePatient.lastName} has been finalized and archived.`);
   };
@@ -453,11 +516,11 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       prev.map((inv) => (inv.id === id ? { ...inv, status: 'Paid', patientOwed: 0 } : inv))
     );
 
-    fetch('/api/billing.php', {
+    fetch('api/billing.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'pay', id, amount_paid: 1000, payment_method: 'Cash' }),
-    }).catch(() => {});
+    }).catch((err) => console.error("Error paying invoice API:", err));
 
     showToast('Invoice Paid', 'Payment confirmed and receipt generated.');
   };
@@ -471,7 +534,7 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
     setInvoices((prev) => [newInv, ...prev]);
 
-    fetch('/api/billing.php', {
+    fetch('api/billing.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -480,7 +543,7 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         service_date: inv.serviceDate,
         due_date: inv.dueDate,
       }),
-    }).catch(() => {});
+    }).catch((err) => console.error("Error adding invoice API:", err));
 
     showToast('Invoice Created', `Invoice ${invNumber} generated for ${newInv.patientName}.`);
   };
@@ -501,11 +564,11 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       })
     );
 
-    fetch('/api/inventory.php', {
+    fetch('api/inventory.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'restock', id, change_amount: amount }),
-    }).catch(() => {});
+    }).catch((err) => console.error("Error restocking inventory API:", err));
 
     showToast('Inventory Restocked', `Added ${amount} units to stock.`);
   };
