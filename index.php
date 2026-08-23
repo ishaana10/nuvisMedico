@@ -25,35 +25,73 @@ $pageTitle = "Dashboard - ClinicFlow";
 $activePage = "dashboard";
 include __DIR__ . '/includes/header.php';
 
-// Fetch key dashboard statistics
+// Fetch key dashboard statistics safely
 $todayDate = date('Y-m-d');
+$queueItems = [];
+$todayApptsCount = 0;
+$totalPatientsCount = 0;
+$appointments = [];
+$activities = [];
 
-// 1. Queue Items
-$queueStmt = $pdo->query("SELECT * FROM queue ORDER BY id ASC");
-$queueItems = $queueStmt->fetchAll();
+try {
+    // 1. Queue Items
+    $queueStmt = $pdo->query("SELECT * FROM queue ORDER BY id ASC");
+    if ($queueStmt) {
+        $queueItems = $queueStmt->fetchAll() ?: [];
+    }
+} catch (\Throwable $e) {
+    error_log("Dashboard queue query error: " . $e->getMessage());
+}
 
-// 2. Metrics
-$waitingCount = count(array_filter($queueItems, fn($q) => $q['status'] === 'Waiting'));
-$inRoomCount = count(array_filter($queueItems, fn($q) => $q['status'] === 'In Room'));
+// Metrics calculation
+$waitingCount = count(array_filter($queueItems, fn($q) => ($q['status'] ?? '') === 'Waiting'));
+$inRoomCount = count(array_filter($queueItems, fn($q) => ($q['status'] ?? '') === 'In Room'));
 
-$todayApptsStmt = $pdo->prepare("SELECT COUNT(*) FROM appointments WHERE appointment_date = ? OR appointment_date = '2023-10-24'");
-$todayApptsStmt->execute([$todayDate]);
-$todayApptsCount = $todayApptsStmt->fetchColumn();
-$totalPatientsCount = $pdo->query("SELECT COUNT(*) FROM patients")->fetchColumn();
+try {
+    $todayApptsStmt = $pdo->prepare("SELECT COUNT(*) FROM appointments WHERE appointment_date = ? OR appointment_date = '2023-10-24'");
+    if ($todayApptsStmt) {
+        $todayApptsStmt->execute([$todayDate]);
+        $todayApptsCount = (int) $todayApptsStmt->fetchColumn();
+    }
+} catch (\Throwable $e) {
+    error_log("Dashboard appts count query error: " . $e->getMessage());
+}
 
-// 3. Today's Scheduled Appointments
-$apptsStmt = $pdo->query("SELECT * FROM appointments ORDER BY time ASC LIMIT 6");
-$appointments = $apptsStmt->fetchAll();
+try {
+    $patientsCountStmt = $pdo->query("SELECT COUNT(*) FROM patients");
+    if ($patientsCountStmt) {
+        $totalPatientsCount = (int) $patientsCountStmt->fetchColumn();
+    }
+} catch (\Throwable $e) {
+    error_log("Dashboard patients count query error: " . $e->getMessage());
+}
 
-// 4. Recent Activities
-$activities = $pdo->query("SELECT * FROM activities ORDER BY id DESC LIMIT 5")->fetchAll();
+try {
+    // 3. Today's Scheduled Appointments
+    $apptsStmt = $pdo->query("SELECT * FROM appointments ORDER BY time ASC LIMIT 6");
+    if ($apptsStmt) {
+        $appointments = $apptsStmt->fetchAll() ?: [];
+    }
+} catch (\Throwable $e) {
+    error_log("Dashboard appointments query error: " . $e->getMessage());
+}
+
+try {
+    // 4. Recent Activities
+    $actStmt = $pdo->query("SELECT * FROM activities ORDER BY id DESC LIMIT 5");
+    if ($actStmt) {
+        $activities = $actStmt->fetchAll() ?: [];
+    }
+} catch (\Throwable $e) {
+    error_log("Dashboard activities query error: " . $e->getMessage());
+}
 ?>
 
 <!-- Dashboard Top Banner -->
 <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
     <div>
         <h1 class="text-2xl font-bold text-on-surface">Clinic Overview</h1>
-        <p class="text-xs text-outline font-medium">Welcome back, <?= htmlspecialchars($currentDoctor['name']) ?>. Here is today's schedule and live queue.</p>
+        <p class="text-xs text-outline font-medium">Welcome back, <?= htmlspecialchars($currentDoctor['name'] ?? 'Doctor') ?>. Here is today's schedule and live queue.</p>
     </div>
     <div class="flex items-center gap-3">
         <a href="register_patient.php" class="px-4 py-2 bg-primary text-white text-xs font-semibold rounded-xl hover:bg-primary/90 transition shadow-xs flex items-center gap-2">
@@ -152,15 +190,15 @@ $activities = $pdo->query("SELECT * FROM activities ORDER BY id DESC LIMIT 5")->
                     <?php foreach ($queueItems as $q): ?>
                         <tr class="hover:bg-surface-container-low transition">
                             <td class="py-3 px-3 font-bold text-on-surface">
-                                <a href="clinical_visit.php?patient_id=<?= htmlspecialchars($q['patient_id']) ?>" class="hover:underline text-primary">
-                                    <?= htmlspecialchars($q['patient_name']) ?>
+                                <a href="clinical_visit.php?patient_id=<?= htmlspecialchars($q['patient_id'] ?? '') ?>" class="hover:underline text-primary">
+                                    <?= htmlspecialchars($q['patient_name'] ?? 'Patient') ?>
                                 </a>
                             </td>
-                            <td class="py-3 px-3 font-mono font-medium text-slate-600"><?= htmlspecialchars($q['mrn']) ?></td>
-                            <td class="py-3 px-3 text-outline font-medium"><?= htmlspecialchars($q['time']) ?></td>
-                            <td class="py-3 px-3 font-medium text-on-surface-variant"><?= htmlspecialchars($q['doctor_name']) ?></td>
+                            <td class="py-3 px-3 font-mono font-medium text-slate-600"><?= htmlspecialchars($q['mrn'] ?? '#00000') ?></td>
+                            <td class="py-3 px-3 text-outline font-medium"><?= htmlspecialchars($q['time'] ?? '00:00') ?></td>
+                            <td class="py-3 px-3 font-medium text-on-surface-variant"><?= htmlspecialchars($q['doctor_name'] ?? 'Doctor') ?></td>
                             <td class="py-3 px-3">
-                                <?php if ($q['status'] === 'In Room'): ?>
+                                <?php if (($q['status'] ?? '') === 'In Room'): ?>
                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-blue-100 text-blue-800">
                                         <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
                                         <?= htmlspecialchars($q['room'] ?: 'In Room') ?>
@@ -173,23 +211,23 @@ $activities = $pdo->query("SELECT * FROM activities ORDER BY id DESC LIMIT 5")->
                                 <?php endif; ?>
                             </td>
                             <td class="py-3 px-3 text-right space-x-1">
-                                <?php if ($q['status'] === 'Waiting'): ?>
+                                <?php if (($q['status'] ?? '') === 'Waiting'): ?>
                                     <form action="actions/queue_update.php" method="POST" class="inline">
                                         <input type="hidden" name="csrf_token" value="<?= getCsrfToken() ?>">
-                                        <input type="hidden" name="queue_id" value="<?= htmlspecialchars($q['id']) ?>">
+                                        <input type="hidden" name="queue_id" value="<?= htmlspecialchars($q['id'] ?? '') ?>">
                                         <input type="hidden" name="action" value="check_in">
                                         <button type="submit" class="px-2.5 py-1 bg-emerald-600 text-white rounded-lg text-[11px] font-semibold hover:bg-emerald-700 transition">
                                             Check In
                                         </button>
                                     </form>
                                 <?php else: ?>
-                                    <a href="clinical_visit.php?patient_id=<?= htmlspecialchars($q['patient_id']) ?>" class="inline-block px-2.5 py-1 bg-primary text-white rounded-lg text-[11px] font-semibold hover:bg-primary/90 transition">
+                                    <a href="clinical_visit.php?patient_id=<?= htmlspecialchars($q['patient_id'] ?? '') ?>" class="inline-block px-2.5 py-1 bg-primary text-white rounded-lg text-[11px] font-semibold hover:bg-primary/90 transition">
                                         Start Encounter
                                     </a>
                                 <?php endif; ?>
                                 <form action="actions/queue_update.php" method="POST" class="inline">
                                     <input type="hidden" name="csrf_token" value="<?= getCsrfToken() ?>">
-                                    <input type="hidden" name="queue_id" value="<?= htmlspecialchars($q['id']) ?>">
+                                    <input type="hidden" name="queue_id" value="<?= htmlspecialchars($q['id'] ?? '') ?>">
                                     <input type="hidden" name="action" value="complete">
                                     <button type="submit" class="px-2.5 py-1 bg-slate-200 text-slate-700 rounded-lg text-[11px] font-semibold hover:bg-slate-300 transition">
                                         Complete
@@ -210,12 +248,15 @@ $activities = $pdo->query("SELECT * FROM activities ORDER BY id DESC LIMIT 5")->
             <span>Recent Activity</span>
         </h2>
         <div class="space-y-4">
+            <?php if (empty($activities)): ?>
+                <p class="text-xs text-outline italic">No recent system activity logged.</p>
+            <?php endif; ?>
             <?php foreach ($activities as $act): ?>
                 <div class="flex items-start gap-3 text-xs">
                     <div class="w-2 h-2 rounded-full bg-primary mt-1.5 shrink-0"></div>
                     <div>
-                        <p class="font-semibold text-on-surface"><?= htmlspecialchars($act['title']) ?></p>
-                        <p class="text-[11px] text-outline mt-0.5"><?= htmlspecialchars($act['detail']) ?></p>
+                        <p class="font-semibold text-on-surface"><?= htmlspecialchars($act['title'] ?? 'Activity') ?></p>
+                        <p class="text-[11px] text-outline mt-0.5"><?= htmlspecialchars($act['detail'] ?? '') ?></p>
                     </div>
                 </div>
             <?php endforeach; ?>
