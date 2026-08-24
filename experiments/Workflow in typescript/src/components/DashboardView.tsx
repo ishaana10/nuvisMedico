@@ -3,7 +3,7 @@ import {
   Users,
   UserPlus,
   Receipt,
-  PackageX,
+  Package,
   Calendar,
   AlertTriangle,
   Clock,
@@ -11,7 +11,9 @@ import {
   FileText,
   CalendarX,
   AlertCircle,
-  ArrowUpRight,
+  Plus,
+  ChevronRight,
+  TrendingUp,
 } from 'lucide-react';
 import { useClinic } from '../context/ClinicContext';
 import { Appointment, Patient } from '../types';
@@ -54,30 +56,30 @@ export const DashboardView: React.FC = () => {
     switch (status) {
       case 'Arrived':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-black/20 bg-white text-[10px] font-mono uppercase tracking-wider text-[#1C1C1C]">
-            <span className="w-1.5 h-1.5 bg-[#1C1C1C]"></span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-800">
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-600"></span>
             Arrived
           </span>
         );
       case 'In Progress':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-amber-500/40 bg-amber-50 text-[10px] font-mono uppercase tracking-wider text-amber-900">
-            <span className="w-1.5 h-1.5 bg-amber-600 animate-pulse"></span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
             In Progress
           </span>
         );
       case 'Waiting':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-rose-400/40 bg-rose-50 text-[10px] font-mono uppercase tracking-wider text-rose-900">
-            <span className="w-1.5 h-1.5 bg-rose-600"></span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-800">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
             Waiting
           </span>
         );
       case 'Scheduled':
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-black/10 bg-[#F5F5F0] text-[10px] font-mono uppercase tracking-wider text-[#555]">
-            <span className="w-1.5 h-1.5 bg-[#888]"></span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-100/70 text-blue-800">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
             Scheduled
           </span>
         );
@@ -88,31 +90,31 @@ export const DashboardView: React.FC = () => {
     switch (type) {
       case 'patient_registered':
         return (
-          <div className="w-7 h-7 border border-black flex items-center justify-center bg-black text-white shrink-0">
+          <div className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5">
             <UserPlus className="w-3.5 h-3.5" />
           </div>
         );
       case 'visit_completed':
         return (
-          <div className="w-7 h-7 border border-black/20 flex items-center justify-center bg-[#F5F5F0] text-black shrink-0">
+          <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 mt-0.5">
             <CheckCircle2 className="w-3.5 h-3.5" />
           </div>
         );
       case 'lab_received':
         return (
-          <div className="w-7 h-7 border border-amber-300 flex items-center justify-center bg-amber-50 text-amber-900 shrink-0">
+          <div className="w-7 h-7 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 mt-0.5">
             <FileText className="w-3.5 h-3.5" />
           </div>
         );
       case 'appointment_cancelled':
         return (
-          <div className="w-7 h-7 border border-rose-300 flex items-center justify-center bg-rose-50 text-rose-900 shrink-0">
+          <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center shrink-0 mt-0.5">
             <CalendarX className="w-3.5 h-3.5" />
           </div>
         );
       default:
         return (
-          <div className="w-7 h-7 border border-black/20 flex items-center justify-center bg-white text-black shrink-0">
+          <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center shrink-0 mt-0.5">
             <Clock className="w-3.5 h-3.5" />
           </div>
         );
@@ -120,242 +122,167 @@ export const DashboardView: React.FC = () => {
   };
 
   return (
-    <div id="dashboard-view" className="p-8 lg:p-10 max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-200">
-      {/* Editorial Hero Header */}
-      <div className="border border-black/15 bg-white p-8 relative overflow-hidden flex flex-col md:flex-row md:items-end justify-between gap-6 shadow-2xs">
-        <div className="absolute top-2 right-6 text-[140px] font-serif italic leading-none opacity-5 select-none pointer-events-none">
-          CC
-        </div>
-        <div className="z-10 max-w-2xl">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="w-2 h-2 bg-black"></span>
-            <span className="text-[10px] font-mono font-bold tracking-[0.35em] uppercase text-[#777]">
-              OPERATIONS ARCHIVE • ACTIVE ROSTER
-            </span>
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-serif italic text-[#1C1C1C] tracking-tight leading-tight">
-            Consultation Matrix & Overview
-          </h2>
-          <p className="text-xs text-[#666] tracking-wide mt-2">
-            Welcome, <span className="font-semibold text-black">{currentDoctor?.name || 'Dr. Sarah Jenkins'}</span> ({currentDoctor?.specialty || 'General Practice'}). All triage queues and laboratory telemetry are synchronized.
+    <div id="dashboard-view" className="p-8 max-w-[1600px] mx-auto space-y-6 animate-in fade-in duration-200 font-sans">
+      {/* Welcome Banner */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <p className="text-sm font-medium text-slate-600">
+            Welcome back, <span className="font-semibold text-slate-900">{currentDoctor?.name || 'Dr. Sarah Jenkins'}</span>. Here is today's summary.
           </p>
         </div>
-
-        {/* Date Selector Badge */}
-        <div className="z-10 flex items-center gap-3 bg-[#FDFCFB] border border-black/20 px-4 py-2 text-xs font-mono text-[#1C1C1C]">
-          <Calendar className="w-3.5 h-3.5 text-[#555]" />
-          <span className="uppercase tracking-widest font-semibold">OCTOBER 24, 2026</span>
+        <div className="flex items-center gap-2">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 shadow-xs">
+            <Calendar className="w-3.5 h-3.5 text-slate-400" />
+            <span>October 24, 2023</span>
+          </div>
         </div>
       </div>
 
-      {/* 4 Artistic Metric Cards Grid (Theme Palette: Stark White, Pitch Black, Warm Stone) */}
+      {/* 4 Metric Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 01: Today's Appointments (Stark White) */}
+        {/* Card 1: Today's Appointments */}
         <div
           id="metric-todays-appointments"
           onClick={() => setActiveTab('calendar')}
-          className="bg-white border border-black/20 p-6 hover:border-black transition-all cursor-pointer flex flex-col justify-between group shadow-2xs"
+          className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-blue-300 transition-all cursor-pointer flex flex-col justify-between"
         >
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-mono text-[#888] font-bold">01 / QUEUE</span>
-              <span className="text-[10px] font-mono border border-black/20 px-2 py-0.5 uppercase tracking-wider bg-[#F5F5F0]">
-                +12% CAP
-              </span>
+          <div className="flex items-start justify-between">
+            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white">
+              <Users className="w-5 h-5" />
             </div>
-            <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-[#555] mb-2">
-              Today's Encounters
-            </h3>
-            <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-serif italic text-[#1C1C1C] leading-none">42</span>
-              <span className="text-sm font-mono text-[#888]">/ 48 Target</span>
-            </div>
-          </div>
-          <div className="mt-6 pt-4 border-t border-black/10">
-            <div className="w-full bg-[#E5E5E5] h-1.5 overflow-hidden">
-              <div
-                className="bg-[#1C1C1C] h-full transition-all duration-500"
-                style={{ width: `${(42 / 48) * 100}%` }}
-              ></div>
-            </div>
-            <span className="text-[10px] font-mono text-[#777] mt-2 block tracking-wider uppercase">
-              87.5% Completed or in-room
+            <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
+              +12%
             </span>
+          </div>
+          <div className="mt-4">
+            <p className="text-xs font-medium text-slate-500">Today's Appointments</p>
+            <div className="flex items-baseline gap-1 mt-1">
+              <span className="text-3xl font-bold text-slate-900">42</span>
+              <span className="text-xs font-medium text-slate-400">/ 48</span>
+            </div>
+            <div className="w-full bg-slate-100 h-1.5 rounded-full mt-3 overflow-hidden">
+              <div className="bg-blue-600 h-full rounded-full" style={{ width: '87.5%' }}></div>
+            </div>
           </div>
         </div>
 
-        {/* Card 02: New Patients Intake (Inverted Black Block from Theme) */}
+        {/* Card 2: New Patients (Week) */}
         <div
           id="metric-new-patients"
           onClick={() => setActiveTab('patients')}
-          className="bg-[#1C1C1C] text-white border border-black p-6 hover:bg-black transition-all cursor-pointer flex flex-col justify-between group shadow-2xs"
+          className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-emerald-300 transition-all cursor-pointer flex flex-col justify-between"
         >
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-mono text-white/60 font-bold">02 / INTAKE</span>
-              <span className="text-[10px] font-mono border border-white/30 px-2 py-0.5 uppercase tracking-wider bg-white/10">
-                +5% WK
-              </span>
+          <div className="flex items-start justify-between">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center text-white">
+              <UserPlus className="w-5 h-5" />
             </div>
-            <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-white/80 mb-2">
-              New Patient Intakes
-            </h3>
-            <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-serif italic text-white leading-none">18</span>
-              <span className="text-xs font-mono text-white/50">Verified MRNs</span>
-            </div>
+            <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
+              +5%
+            </span>
           </div>
-          <div className="mt-6 pt-4 border-t border-white/15 flex items-center justify-between text-[10px] font-mono text-white/70">
-            <span className="tracking-wider uppercase">Registry expansion</span>
-            <ArrowUpRight className="w-3.5 h-3.5 text-white/60" />
+          <div className="mt-4">
+            <p className="text-xs font-medium text-slate-500">New Patients (Week)</p>
+            <span className="text-3xl font-bold text-slate-900 mt-1 block">18</span>
           </div>
         </div>
 
-        {/* Card 03: Pending Ledger (Warm Stone Tone #F5F5F0 from Theme) */}
+        {/* Card 3: Pending Billing */}
         <div
           id="metric-pending-billing"
           onClick={() => setActiveTab('billing')}
-          className="bg-[#F5F5F0] border border-black/20 p-6 hover:border-black transition-all cursor-pointer flex flex-col justify-between group shadow-2xs"
+          className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-amber-300 transition-all cursor-pointer flex flex-col justify-between"
         >
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-mono text-[#777] font-bold">03 / LEDGER</span>
-              <span className="text-[10px] font-mono border border-amber-600/30 px-2 py-0.5 uppercase tracking-wider bg-amber-100 text-amber-900">
-                AUDIT
-              </span>
-            </div>
-            <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-[#555] mb-2">
-              Pending Balances
-            </h3>
-            <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-serif italic text-[#1C1C1C] leading-none">$4,250</span>
+          <div className="flex items-start justify-between">
+            <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center text-white">
+              <Receipt className="w-5 h-5" />
             </div>
           </div>
-          <div className="mt-6 pt-4 border-t border-black/10 flex items-center gap-1.5 text-[10px] font-mono text-amber-900">
-            <AlertTriangle className="w-3 h-3 text-amber-700 shrink-0" />
-            <span className="uppercase tracking-wider">12 Invoices pending claim</span>
+          <div className="mt-4">
+            <p className="text-xs font-medium text-slate-500">Pending Billing</p>
+            <span className="text-3xl font-bold text-slate-900 mt-1 block">$4,250</span>
+            <p className="text-xs text-amber-600 font-semibold mt-1 flex items-center gap-1">
+              <AlertTriangle className="w-3.5 h-3.5" />
+              <span>12 invoices overdue</span>
+            </p>
           </div>
         </div>
 
-        {/* Card 04: Critical Apothecary / Low Stock */}
+        {/* Card 4: Low Stock Alerts */}
         <div
           id="metric-low-stock"
           onClick={() => setActiveTab('inventory')}
-          className="bg-white border border-rose-300 p-6 hover:border-rose-700 transition-all cursor-pointer flex flex-col justify-between group shadow-2xs"
+          className="bg-white p-5 rounded-2xl border border-red-200 shadow-xs hover:border-red-400 transition-all cursor-pointer flex flex-col justify-between"
         >
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-mono text-rose-800 font-bold">04 / APOTHECARY</span>
-              <span className="text-[10px] font-mono border border-rose-300 px-2 py-0.5 uppercase tracking-wider bg-rose-50 text-rose-900">
-                CRITICAL
-              </span>
+          <div className="flex items-start justify-between">
+            <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center text-red-600">
+              <Package className="w-5 h-5" />
             </div>
-            <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-[#555] mb-2">
-              Stock Reorders
-            </h3>
-            <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-serif italic text-rose-900 leading-none">03</span>
-              <span className="text-xs font-mono text-rose-700">Formularies</span>
-            </div>
+            <span className="w-2 h-2 rounded-full bg-red-500"></span>
           </div>
-          <div className="mt-6 pt-4 border-t border-rose-200 flex items-center justify-between text-[10px] font-mono text-rose-900">
-            <span className="tracking-wider uppercase">Amoxicillin & Epinephrine</span>
-            <AlertCircle className="w-3.5 h-3.5 text-rose-700" />
+          <div className="mt-4">
+            <p className="text-xs font-medium text-slate-500">Low Stock Alerts</p>
+            <span className="text-3xl font-bold text-red-600 mt-1 block">3</span>
+            <p className="text-xs text-red-600 font-semibold mt-1">Items need reorder</p>
           </div>
         </div>
       </div>
 
-      {/* Main Content: Upcoming Appointments + Right Column */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Left Column: Upcoming Appointments (8 cols) */}
-        <div className="lg:col-span-8 bg-white border border-black/20 shadow-2xs">
-          {/* Header */}
-          <div className="px-6 py-5 border-b border-black/15 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="w-2 h-2 bg-black"></span>
-              <div>
-                <span className="text-[9px] font-mono font-bold uppercase tracking-[0.25em] text-[#888] block">
-                  TIMELINE
-                </span>
-                <h3 className="font-serif italic text-xl text-[#1C1C1C]">Today's Scheduled Consultations</h3>
-              </div>
-            </div>
+      {/* Main Grid: Upcoming Appointments + Quick Actions & Recent Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Upcoming Appointments Table */}
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-blue-600" />
+              <span>Upcoming Appointments</span>
+            </h2>
             <button
               id="btn-view-all-appointments"
               onClick={() => setActiveTab('calendar')}
-              className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] border border-black/20 hover:border-black px-3 py-1.5 bg-[#F5F5F0] hover:bg-black hover:text-white transition-all cursor-pointer"
+              className="text-xs font-bold text-blue-600 hover:text-blue-800 transition uppercase tracking-wider cursor-pointer"
             >
-              FULL CALENDAR →
+              VIEW ALL
             </button>
           </div>
 
-          {/* Table */}
           <div className="overflow-x-auto">
-            <table id="upcoming-appointments-table" className="w-full text-left border-collapse">
+            <table id="upcoming-appointments-table" className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-black/15 text-[10px] font-mono font-semibold text-[#777] uppercase tracking-[0.2em] bg-[#FDFCFB]">
-                  <th className="py-3 px-6">Time Slot</th>
-                  <th className="py-3 px-6">Patient & MRN</th>
-                  <th className="py-3 px-6">Practitioner</th>
-                  <th className="py-3 px-6">Encounter Type</th>
-                  <th className="py-3 px-6 text-right">Status</th>
+                <tr className="border-b border-slate-200 text-slate-400 font-semibold uppercase text-[10px] tracking-wider">
+                  <th className="py-3 px-3">Time</th>
+                  <th className="py-3 px-3">Patient</th>
+                  <th className="py-3 px-3">Doctor</th>
+                  <th className="py-3 px-3">Type</th>
+                  <th className="py-3 px-3 text-right">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-black/10 text-xs">
+              <tbody className="divide-y divide-slate-100 font-medium">
                 {(appointments || []).slice(0, 5).map((apt) => (
                   <tr
                     key={apt.id}
                     onClick={() => handlePatientRowClick(apt)}
-                    className="hover:bg-[#F5F5F0] transition-colors cursor-pointer group"
+                    className="hover:bg-slate-50/80 transition-colors cursor-pointer"
                   >
-                    {/* Time */}
-                    <td className="py-4 px-6 font-mono font-semibold text-[#1C1C1C] whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        {apt.isUrgent && (
-                          <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" title="Urgent Case" />
-                        )}
-                        <span>{apt.time}</span>
-                      </div>
+                    <td className="py-3 px-3 text-slate-900 font-semibold whitespace-nowrap">
+                      {apt.isUrgent && <span className="text-red-500 font-bold mr-1">!</span>}
+                      {apt.time}
                     </td>
 
-                    {/* Patient */}
-                    <td className="py-4 px-6">
-                      <div className="flex items-center gap-3">
-                        {apt.patientAvatar ? (
-                          <img
-                            src={apt.patientAvatar}
-                            alt={apt.patientName}
-                            referrerPolicy="no-referrer"
-                            className="w-8 h-8 object-cover border border-black"
-                          />
-                        ) : (
-                          <div className="w-8 h-8 border border-black bg-[#F5F5F0] text-black font-mono font-bold text-xs flex items-center justify-center shrink-0">
-                            {apt.patientInitials}
-                          </div>
-                        )}
+                    <td className="py-3 px-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-800 text-xs font-bold flex items-center justify-center shrink-0">
+                          {apt.patientInitials}
+                        </div>
                         <div>
-                          <p className="font-serif italic text-sm text-[#1C1C1C] group-hover:underline">
-                            {apt.patientName}
-                          </p>
-                          <p className="text-[10px] font-mono text-[#888]">MRN {apt.patientMrn}</p>
+                          <div className="font-bold text-slate-900">{apt.patientName}</div>
+                          <div className="text-[10px] text-slate-400 font-normal">MRN: {apt.patientMrn}</div>
                         </div>
                       </div>
                     </td>
 
-                    {/* Doctor */}
-                    <td className="py-4 px-6 font-sans text-[#444] whitespace-nowrap">
-                      {apt.doctorName}
-                    </td>
-
-                    {/* Type */}
-                    <td className="py-4 px-6 text-[#555] font-mono text-[11px] whitespace-nowrap">
-                      {apt.type}
-                    </td>
-
-                    {/* Status Badge */}
-                    <td className="py-4 px-6 text-right whitespace-nowrap">
-                      {getStatusBadge(apt.status)}
-                    </td>
+                    <td className="py-3 px-3 text-slate-600 whitespace-nowrap">{apt.doctorName}</td>
+                    <td className="py-3 px-3 text-slate-600 whitespace-nowrap">{apt.type}</td>
+                    <td className="py-3 px-3 text-right whitespace-nowrap">{getStatusBadge(apt.status)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -363,58 +290,51 @@ export const DashboardView: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Column: Quick Actions & Recent Activity (4 cols) */}
-        <div className="lg:col-span-4 space-y-6">
+        {/* Right Column Stack */}
+        <div className="space-y-6">
           {/* Quick Actions Card */}
-          <div id="quick-actions-card" className="bg-white border border-black/20 p-6 shadow-2xs">
-            <div className="mb-4 pb-3 border-b border-black/10">
-              <span className="text-[9px] font-mono font-bold uppercase tracking-[0.25em] text-[#888] block">
-                FACILITATION
-              </span>
-              <h3 className="font-serif italic text-lg text-[#1C1C1C]">Desk Actions</h3>
-            </div>
-
-            <div className="space-y-2.5">
+          <div id="quick-actions-card" className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs">
+            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2 mb-4">
+              <span className="material-symbols-outlined text-blue-600 text-lg">bolt</span>
+              <span>Quick Actions</span>
+            </h2>
+            <div className="space-y-3">
               <button
                 id="btn-quick-register-patient"
                 onClick={() => setActiveTab('register-patient')}
-                className="w-full bg-[#1C1C1C] hover:bg-black text-white font-mono text-xs uppercase tracking-[0.2em] py-3.5 px-4 border border-black flex items-center justify-center gap-2 transition-all cursor-pointer"
+                className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-[#0f2d71] hover:bg-[#0a1f50] text-white font-semibold text-xs rounded-xl shadow-xs transition cursor-pointer"
               >
-                <UserPlus className="w-3.5 h-3.5" />
+                <UserPlus className="w-4 h-4" />
                 <span>Register New Patient</span>
               </button>
 
               <button
                 id="btn-quick-book-appointment"
                 onClick={() => setIsBookModalOpen(true)}
-                className="w-full bg-white hover:bg-[#F5F5F0] text-[#1C1C1C] border border-black font-mono text-xs uppercase tracking-[0.2em] py-3.5 px-4 flex items-center justify-center gap-2 transition-all cursor-pointer"
+                className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-white border border-blue-200 text-blue-900 hover:bg-blue-50 font-semibold text-xs rounded-xl transition cursor-pointer"
               >
-                <Calendar className="w-3.5 h-3.5" />
-                <span>Schedule Consultation</span>
+                <Calendar className="w-4 h-4" />
+                <span>Book Appointment</span>
               </button>
             </div>
           </div>
 
           {/* Recent Activity Card */}
-          <div id="recent-activity-card" className="bg-white border border-black/20 p-6 shadow-2xs">
-            <div className="mb-4 pb-3 border-b border-black/10 flex items-center justify-between">
-              <div>
-                <span className="text-[9px] font-mono font-bold uppercase tracking-[0.25em] text-[#888] block">
-                  TELEMETRY
-                </span>
-                <h3 className="font-serif italic text-lg text-[#1C1C1C]">Activity Stream</h3>
-              </div>
-              <span className="text-[10px] font-mono text-[#888]">LIVE</span>
-            </div>
+          <div id="recent-activity-card" className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs">
+            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2 mb-4">
+              <Clock className="w-4 h-4 text-blue-600" />
+              <span>Recent Activity</span>
+            </h2>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               {(activities || []).slice(0, 4).map((act) => (
-                <div key={act.id} className="flex items-start gap-3 text-xs p-2.5 bg-[#FDFCFB] border border-black/10">
+                <div key={act.id} className="flex items-start gap-3">
                   {getActivityIcon(act.type)}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-serif italic text-sm text-[#1C1C1C] leading-snug">{act.title}</p>
-                    <p className="text-[11px] text-[#666] mt-0.5 truncate">{act.detail}</p>
-                    <span className="text-[9px] font-mono text-[#999] mt-1 block">RECORDED LOG</span>
+                  <div>
+                    <p className="text-xs font-bold text-slate-900">
+                      {act.title}: <span className="font-normal text-slate-700">{act.detail}</span>
+                    </p>
+                    <p className="text-[10px] text-slate-400 mt-0.5">Recently updated</p>
                   </div>
                 </div>
               ))}
@@ -423,9 +343,9 @@ export const DashboardView: React.FC = () => {
             <button
               id="btn-load-more-activity"
               onClick={() => showToast('Audit Ledger', 'Clinical telemetry records up to date.', 'info')}
-              className="w-full mt-5 py-2.5 text-center text-[10px] font-mono font-bold text-[#1C1C1C] hover:bg-black hover:text-white border border-black/20 tracking-[0.2em] uppercase transition-all cursor-pointer"
+              className="w-full mt-4 py-2 text-center text-xs font-bold text-blue-600 hover:text-blue-800 uppercase tracking-wider border-t border-slate-100 pt-3 cursor-pointer"
             >
-              EXPAND AUDIT LOG →
+              LOAD MORE
             </button>
           </div>
         </div>
