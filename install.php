@@ -77,7 +77,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     stripos($msg, 'duplicate') === false &&
                                     stripos($msg, '1050') === false &&
                                     stripos($msg, '1060') === false &&
-                                    stripos($msg, '1061') === false
+                                    stripos($msg, '1061') === false &&
+                                    stripos($msg, '1072') === false &&
+                                    stripos($msg, '1091') === false
                                 ) {
                                     throw $e;
                                 }
