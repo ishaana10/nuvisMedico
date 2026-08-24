@@ -53,6 +53,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
             ]);
 
+            // Disable foreign key checks during schema creation
+            $pdo->exec("SET FOREIGN_KEY_CHECKS = 0;");
+
             // Run Schema Creation
             $schemaFile = __DIR__ . '/database/schema.sql';
             if (file_exists($schemaFile)) {
@@ -79,7 +82,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     stripos($msg, '1060') === false &&
                                     stripos($msg, '1061') === false &&
                                     stripos($msg, '1072') === false &&
-                                    stripos($msg, '1091') === false
+                                    stripos($msg, '1091') === false &&
+                                    stripos($msg, '3780') === false
                                 ) {
                                     throw $e;
                                 }
@@ -89,6 +93,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                 }
             }
+
+            // Re-enable foreign key checks
+            $pdo->exec("SET FOREIGN_KEY_CHECKS = 1;");
 
             // Seed Initial Developer / Administrator Account
             $stmtUser = $pdo->prepare("INSERT INTO doctors (id, name, specialty, email, password_hash, role, color, dot_color_class, avatar) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name), email = VALUES(email), password_hash = VALUES(password_hash), role = VALUES(role)");
