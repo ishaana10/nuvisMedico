@@ -17,17 +17,32 @@ $navItems = [
 ?>
 
 <!-- Desktop Sidebar -->
-<aside class="w-64 bg-surface-container-lowest border-r border-outline-variant/30 flex flex-col justify-between p-4 shrink-0 hidden md:flex">
-    <div class="space-y-1">
-        <div class="px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-outline/70">
-            Main Menu
+<aside class="w-64 bg-white border-r border-slate-200/80 flex flex-col justify-between p-4 shrink-0 hidden md:flex min-h-[calc(100vh-65px)]">
+    <div class="space-y-5">
+        <!-- Clinic Profile Badge -->
+        <div class="flex items-center gap-3 px-2 py-1">
+            <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold shadow-md shadow-blue-500/20">
+                <span class="material-symbols-outlined text-xl">local_hospital</span>
+            </div>
+            <div class="overflow-hidden">
+                <div class="font-bold text-sm text-slate-900 truncate">City Clinic</div>
+                <div class="text-[11px] font-medium text-slate-500">Admin Portal</div>
+            </div>
         </div>
+
+        <!-- Primary Action Button -->
+        <a href="register_patient.php" class="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-blue-700 hover:bg-blue-800 text-white font-semibold text-xs rounded-xl shadow-md shadow-blue-700/20 transition">
+            <span class="material-symbols-outlined text-lg">add</span>
+            <span>Register Patient</span>
+        </a>
+
+        <!-- Navigation Menu -->
         <nav class="space-y-1">
             <?php foreach ($navItems as $item):
                 $isActive = ($activePage === $item['id']);
             ?>
-                <a href="<?= $item['url'] ?>" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs transition-all <?= $isActive ? 'bg-surface-container-high text-primary font-bold shadow-2xs' : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface' ?>">
-                    <span class="material-symbols-outlined text-lg <?= $isActive ? 'fill text-primary' : '' ?>"><?= $item['icon'] ?></span>
+                <a href="<?= $item['url'] ?>" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs transition-all <?= $isActive ? 'bg-blue-600 text-white font-semibold shadow-md shadow-blue-600/20' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' ?>">
+                    <span class="material-symbols-outlined text-lg <?= $isActive ? 'fill' : '' ?>"><?= $item['icon'] ?></span>
                     <span><?= htmlspecialchars($item['label']) ?></span>
                 </a>
             <?php endforeach; ?>
@@ -35,16 +50,15 @@ $navItems = [
     </div>
 
     <!-- Quick Help & Doctor Profile Badge -->
-    <div class="space-y-3 pt-4 border-t border-outline-variant/30">
-        <div class="p-3 bg-surface-container-low rounded-xl text-xs">
-            <div class="flex items-center justify-between mb-1">
-                <span class="font-bold text-on-surface">Clinic Status</span>
-                <span class="inline-flex items-center gap-1 text-[10px] text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Open
-                </span>
-            </div>
-            <p class="text-[11px] text-outline">Queue capacity: Standard</p>
-        </div>
+    <div class="space-y-2 pt-4 border-t border-slate-200/80 text-xs">
+        <a href="#" class="flex items-center gap-3 px-3.5 py-2 text-slate-600 hover:bg-slate-100 rounded-xl transition">
+            <span class="material-symbols-outlined text-lg">help_outline</span>
+            <span>Help</span>
+        </a>
+        <a href="actions/logout.php" class="flex items-center gap-3 px-3.5 py-2 text-slate-600 hover:bg-red-50 hover:text-red-600 rounded-xl transition">
+            <span class="material-symbols-outlined text-lg">logout</span>
+            <span>Logout</span>
+        </a>
     </div>
 </aside>
 
