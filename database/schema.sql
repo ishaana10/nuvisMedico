@@ -91,10 +91,10 @@ CREATE TABLE IF NOT EXISTS appointments (
     FOREIGN KEY (doctor_id) REFERENCES doctors(id) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS idx_appointments_date ON appointments(appointment_date);
-CREATE INDEX IF NOT EXISTS idx_appointments_patient ON appointments(patient_id);
-CREATE INDEX IF NOT EXISTS idx_appointments_doctor ON appointments(doctor_id);
-CREATE INDEX IF NOT EXISTS idx_appointments_status ON appointments(status);
+CREATE INDEX idx_appointments_date ON appointments(appointment_date);
+CREATE INDEX idx_appointments_patient ON appointments(patient_id);
+CREATE INDEX idx_appointments_doctor ON appointments(doctor_id);
+CREATE INDEX idx_appointments_status ON appointments(status);
 
 CREATE TABLE IF NOT EXISTS queue (
     id VARCHAR(50) PRIMARY KEY,
@@ -111,8 +111,8 @@ CREATE TABLE IF NOT EXISTS queue (
     FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS idx_queue_status ON queue(status);
-CREATE INDEX IF NOT EXISTS idx_queue_patient ON queue(patient_id);
+CREATE INDEX idx_queue_status ON queue(status);
+CREATE INDEX idx_queue_patient ON queue(patient_id);
 
 CREATE TABLE IF NOT EXISTS vitals (
     id VARCHAR(50) PRIMARY KEY,
@@ -129,7 +129,7 @@ CREATE TABLE IF NOT EXISTS vitals (
     FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS idx_vitals_patient ON vitals(patient_id);
+CREATE INDEX idx_vitals_patient ON vitals(patient_id);
 
 CREATE TABLE IF NOT EXISTS soap_notes (
     id VARCHAR(50) PRIMARY KEY,
@@ -143,7 +143,7 @@ CREATE TABLE IF NOT EXISTS soap_notes (
     FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS idx_soap_patient ON soap_notes(patient_id);
+CREATE INDEX idx_soap_patient ON soap_notes(patient_id);
 
 CREATE TABLE IF NOT EXISTS prescriptions (
     id VARCHAR(50) PRIMARY KEY,
@@ -159,7 +159,7 @@ CREATE TABLE IF NOT EXISTS prescriptions (
     FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS idx_prescriptions_patient ON prescriptions(patient_id);
+CREATE INDEX idx_prescriptions_patient ON prescriptions(patient_id);
 
 CREATE TABLE IF NOT EXISTS past_visits (
     id VARCHAR(50) PRIMARY KEY,
@@ -177,7 +177,7 @@ CREATE TABLE IF NOT EXISTS past_visits (
     FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS idx_past_visits_patient ON past_visits(patient_id);
+CREATE INDEX idx_past_visits_patient ON past_visits(patient_id);
 
 CREATE TABLE IF NOT EXISTS activities (
     id VARCHAR(50) PRIMARY KEY,
@@ -231,10 +231,10 @@ CREATE TABLE IF NOT EXISTS invoices (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX IF NOT EXISTS idx_invoices_mrn ON invoices(patient_mrn);
-CREATE INDEX IF NOT EXISTS idx_invoices_status ON invoices(status);
-CREATE INDEX IF NOT EXISTS idx_invoices_fiscalized ON invoices(is_fiscalized);
-CREATE INDEX IF NOT EXISTS idx_invoices_type ON invoices(invoice_type, transaction_type);
+CREATE INDEX idx_invoices_mrn ON invoices(patient_mrn);
+CREATE INDEX idx_invoices_status ON invoices(status);
+CREATE INDEX idx_invoices_fiscalized ON invoices(is_fiscalized);
+CREATE INDEX idx_invoices_type ON invoices(invoice_type, transaction_type);
 
 CREATE TABLE IF NOT EXISTS invoice_items (
     id VARCHAR(50) PRIMARY KEY,
@@ -252,7 +252,7 @@ CREATE TABLE IF NOT EXISTS invoice_items (
     FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS idx_invoice_items_inv ON invoice_items(invoice_id);
+CREATE INDEX idx_invoice_items_inv ON invoice_items(invoice_id);
 
 CREATE TABLE IF NOT EXISTS vms_logs (
     id VARCHAR(50) PRIMARY KEY,
@@ -266,7 +266,7 @@ CREATE TABLE IF NOT EXISTS vms_logs (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX IF NOT EXISTS idx_vms_logs_invoice ON vms_logs(invoice_id);
+CREATE INDEX idx_vms_logs_invoice ON vms_logs(invoice_id);
 
 CREATE TABLE IF NOT EXISTS inventory (
     id VARCHAR(50) PRIMARY KEY,
@@ -288,8 +288,8 @@ CREATE TABLE IF NOT EXISTS inventory (
     custom_fields TEXT
 );
 
-CREATE INDEX IF NOT EXISTS idx_inventory_sku ON inventory(sku);
-CREATE INDEX IF NOT EXISTS idx_inventory_active ON inventory(is_active);
+CREATE INDEX idx_inventory_sku ON inventory(sku);
+CREATE INDEX idx_inventory_active ON inventory(is_active);
 
 CREATE TABLE IF NOT EXISTS inventory_logs (
     id VARCHAR(50) PRIMARY KEY,
@@ -307,7 +307,7 @@ CREATE TABLE IF NOT EXISTS inventory_logs (
     FOREIGN KEY (inventory_id) REFERENCES inventory(id) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS idx_inventory_logs_item ON inventory_logs(inventory_id);
+CREATE INDEX idx_inventory_logs_item ON inventory_logs(inventory_id);
 
 CREATE TABLE IF NOT EXISTS medical_certificates (
     id VARCHAR(50) PRIMARY KEY,
@@ -327,7 +327,7 @@ CREATE TABLE IF NOT EXISTS medical_certificates (
     FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS idx_medcert_patient ON medical_certificates(patient_id);
+CREATE INDEX idx_medcert_patient ON medical_certificates(patient_id);
 
 CREATE TABLE IF NOT EXISTS audit_logs (
     id VARCHAR(50) PRIMARY KEY,
