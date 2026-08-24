@@ -1,78 +1,76 @@
-# ClinicFlow - Deployment & MySQL Configuration Guide
+# Nuvis Medcare X - Deployment & System Release Notes
 
-This document explains how to set up, configure, and install the MySQL database for ClinicFlow on **A2 Hosting** or any PHP 8.1+ web server.
+**Current Version:** `v2.1.0-VMS3` (FRCS Fiji VMS Phase 3 & Inventory Module Release)
+**Target Environment:** Native PHP 8.1+ PDO Architecture (A2 Hosting / MySQL & SQLite compatible)
 
 ---
 
-## 1. Quick Web Installer (Recommended)
+## 🚀 Recent Release Updates & Feature Progress
 
-You can install and configure ClinicFlow in under 1 minute using the built-in **Web Installation Wizard**:
+### 1. FRCS Fiji VMS Phase 3 Billing & POS Integration
+- **SDC Fiscalization Engine (`src/Services/VMSService.php`):** Implemented calculations for FRCS Fiji VAT Monitoring System Phase 3 compliance:
+  - **Tax Labels:** Label A (15.00% VAT), Label E (Exempt 0%), Label F (Zero-rated 0%), Label P (0.25% Levy).
+  - **Invoice & Transaction Types:** Normal Sales, Advance Invoices, Proforma Invoices, Copy Invoices, Training Invoices, and Refund Transactions.
+  - **Multi-Payment Split:** Full breakdown support across Cash, Card, Mobile Pay, Insurance, and Check.
+  - **Fiscal Receipts & Invoices (`print_invoice.php`, `print_receipt.php`):** Generated fiscalized receipt layouts containing SDC Time, SDC Invoice No, Buyer TIN, internal QR verification URL, and Tax Itemization.
+  - **Invoice Cancellations:** Automated buyer TIN fallback to seller TIN per VMS Phase 3 rules (Section 10.2).
+  - **Daily Z-Report Summaries:** Automated daily fiscal sales, refund totals, and tax breakdowns.
 
-1. Upload the project files to your A2 Hosting server (e.g., `public_html/` or a subdomain folder).
+### 2. Enhanced Inventory Management Module (`inventory.php`)
+- **Stock & Cost Tracking:** Full tracking for Selling Unit Price, Cost Price, Batch Numbers, Expiry Dates, and VMS Tax Classifications per item.
+- **Restocking Workflow:** Added support for quick single-item restocks and detailed batch-based restocking modal forms (`actions/inventory_restock.php`).
+- **Movement Audit Log (`inventory_logs` table):** Records all inventory adjustments, stock additions, price updates, and soft deletions with timestamp and practitioner credentials.
+- **Soft Deletion & Role Safeguards:** Soft-delete mechanism (`is_active = 0`) preserving historical visit line items while hiding inactive stock items from active dropdowns (`actions/inventory_delete.php`).
+- **Developer Settings:** Dynamic custom JSON fields setup in `admin.php` for custom stock attributes.
+
+### 3. Account Security & User Self-Service
+- **User Password Change:** Integrated "Change Password" modal in header navigation bar handled by `actions/change_password.php`.
+- **CSRF & Autoloader Enhancements:** Centralized security helpers in `includes/security.php` (`getCsrfToken()`, `validateCsrfRequest()`) and standard PSR-4 autoloader fallback (`includes/autoloader.php`).
+
+### 4. Application Versioning & Dual DB Engine
+- **Versioning Metadata (`config/version.php`):** Defined system release constants (`APP_NAME`, `APP_VERSION`, `APP_RELEASE_DATE`, `APP_BUILD_NAME`) displayed in login pages, header bars, and footers.
+- **Dual Database Persistence:** Native PDO layer supporting both SQLite (`database/clinicflow.sqlite`) and MySQL with automatic query dialect resolution (`ON CONFLICT` vs `ON DUPLICATE KEY UPDATE`).
+
+---
+
+## 🛠️ Quick Setup & Installation Guide
+
+### Web Installer (Recommended)
+1. Upload the application files to your web server (e.g., `public_html/` or a subdomain folder).
 2. Open your browser and navigate to:
    `https://yourdomain.com/install.php`
-3. Fill in your MySQL credentials:
-   - **Database Host**: `localhost` or your A2 Hosting MySQL server address.
-   - **Database Name**: Your MySQL database name (e.g., `cpaneluser_clinicflow`).
-   - **Port**: `3306`
-   - **Database Username**: Your MySQL user name (e.g., `cpaneluser_clinicuser`).
-   - **Database Password**: Your MySQL password.
-   - **Administrator Doctor Details**: Specify the chief physician's name and specialty.
+3. Enter database credentials (MySQL or SQLite setup) and clinic administrator profiles.
 4. Click **Save Config & Install Database**.
 
-The wizard will:
-- Test the database connection.
-- Create the database if it doesn't exist.
-- Automatically execute `database/schema.sql` to build all required tables.
-- Seed initial mock data and administrator profiles.
-- Write your settings to `config/config.php`.
-
----
-
-## 2. Manual Configuration File Setup
-
-If you prefer to configure MySQL manually without using the web installer:
-
-1. Copy `config/config.example.php` to `config/config.php`:
+### Manual Configuration
+1. Copy `config/config.example.php` to `config/config.php`.
+2. Configure database host, username, password, and database name.
+3. Import schema:
    ```bash
-   cp config/config.example.php config/config.php
+   mysql -u user -p database_name < database/schema.sql
    ```
-
-2. Open `config/config.php` in a text editor and enter your MySQL details:
-
-   ```php
-   <?php
-   return [
-       'db_driver' => 'mysql',
-       'db_host'   => 'localhost',
-       'db_port'   => '3306',
-       'db_name'   => 'cpaneluser_clinicflow',
-       'db_user'   => 'cpaneluser_clinicuser',
-       'db_pass'   => 'YourStrongPassword123!',
-
-       'admin_doctor' => [
-           'name'      => 'Dr. Sarah Jenkins',
-           'specialty' => 'Internal Medicine',
-       ]
-   ];
-   ```
-
-3. Import the database schema into MySQL via phpMyAdmin or command line:
-   ```bash
-   mysql -u cpaneluser_clinicuser -p cpaneluser_clinicflow < database/schema.sql
-   ```
-
-4. Run the seed script to populate initial mock data:
+4. Run seed data script:
    ```bash
    php database/seed.php
    ```
 
 ---
 
-## 3. Directory Structure
+## 🧪 Testing & Verification
+Execute the PHPUnit unit test suite to verify VMS Phase 3 calculations and database repository functions:
+```bash
+vendor/bin/phpunit tests
+```
+*Status:* All 6 unit tests (24 assertions) passing 100%.
 
-- `config/config.php` - Stores active database credentials and server settings.
-- `config/database.php` - Standard PDO Database connection layer.
-- `database/schema.sql` - Full MySQL schema definition.
-- `database/seed.php` - CLI database seeding script.
-- `install.php` - Web installation wizard.
+---
+
+## 📁 Key File Structure
+
+- `config/version.php` - Release version metadata.
+- `src/Services/VMSService.php` - FRCS Fiji VMS Phase 3 core service class.
+- `billing.php` & `actions/vms_*.php` - Billing ledger and SDC fiscalization actions.
+- `inventory.php` & `actions/inventory_*.php` - Inventory stock management & audit logging.
+- `includes/security.php` - CSRF protection, rate limiting, and session security helpers.
+- `includes/autoloader.php` - PSR-4 ClinicFlow autoloader fallback.
+- `print_invoice.php` & `print_receipt.php` - Printable fiscal invoice & receipt templates.
