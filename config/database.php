@@ -236,6 +236,50 @@ function ensureDoctorColumnsExist(PDO $pdo): void {
             }
         }
 
+        // Auto-migrate invoices table columns
+        $invTableCols = [];
+        if ($driver === 'sqlite') {
+            $stmt = $pdo->query("PRAGMA table_info(invoices)");
+            while ($row = $stmt->fetch()) {
+                $invTableCols[] = strtolower($row['name']);
+            }
+        } else {
+            $stmt = $pdo->query("DESCRIBE invoices");
+            while ($row = $stmt->fetch()) {
+                $invTableCols[] = strtolower($row['Field']);
+            }
+        }
+
+        if (!empty($invTableCols)) {
+            $newInvoiceCols = [
+                'invoice_type' => "VARCHAR(20) NOT NULL DEFAULT 'Normal'",
+                'transaction_type' => "VARCHAR(20) NOT NULL DEFAULT 'Sale'",
+                'seller_tin' => "VARCHAR(50) DEFAULT '502579006'",
+                'business_location' => "VARCHAR(255) DEFAULT 'Suva Central Clinic, 2 Woodstand Road, Suva'",
+                'cashier' => "VARCHAR(100) DEFAULT 'Admin'",
+                'buyer_tin' => 'VARCHAR(50)',
+                'buyer_cost_center' => 'VARCHAR(100)',
+                'pos_number' => "VARCHAR(50) DEFAULT 'CF-POS-V3/1.0'",
+                'pos_time' => 'VARCHAR(50)',
+                'ref_no' => 'VARCHAR(100)',
+                'ref_time' => 'VARCHAR(50)',
+                'is_fiscalized' => 'TINYINT(1) DEFAULT 0',
+                'sdc_invoice_no' => 'VARCHAR(100)',
+                'sdc_time' => 'VARCHAR(50)',
+                'invoice_counter' => 'VARCHAR(100)',
+                'verification_url' => 'TEXT',
+                'digital_signature' => 'TEXT',
+                'total_tax' => 'DECIMAL(10,2) DEFAULT 0.00',
+                'payment_methods' => 'TEXT'
+            ];
+
+            foreach ($newInvoiceCols as $colName => $colDef) {
+                if (!in_array($colName, $invTableCols)) {
+                    $pdo->exec("ALTER TABLE invoices ADD COLUMN {$colName} {$colDef}");
+                }
+            }
+        }
+
         // Auto-create inventory_logs if missing
         if ($driver === 'sqlite') {
             $pdo->exec("CREATE TABLE IF NOT EXISTS inventory_logs (
@@ -327,7 +371,9 @@ function executeAutoSchemaMigrations(PDO $pdo): array {
                 stripos($msg, 'duplicate') !== false ||
                 stripos($msg, '1050') !== false || // MySQL Table already exists
                 stripos($msg, '1060') !== false || // MySQL Duplicate column name
-                stripos($msg, '1061') !== false    // MySQL Duplicate key name
+                stripos($msg, '1061') !== false || // MySQL Duplicate key name
+                stripos($msg, '1072') !== false || // MySQL Key column doesn't exist
+                stripos($msg, '1091') !== false    // MySQL Can't DROP key/column; check that column/key exists
             ) {
                 $results['skipped']++;
             } else {
