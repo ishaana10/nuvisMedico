@@ -36,106 +36,89 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $passHash = password_hash($adminPass, PASSWORD_DEFAULT);
 
-    if ($dbDriver === 'mysql') {
-        try {
-            // First test connection to MySQL server
-            $dsnNoDb = "mysql:host={$dbHost};port={$dbPort};charset=utf8mb4";
-            $pdoTest = new PDO($dsnNoDb, $dbUser, $dbPass, [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-            ]);
+    try {
+        // First test connection to MySQL server
+        $dsnNoDb = "mysql:host={$dbHost};port={$dbPort};charset=utf8mb4";
+        $pdoTest = new PDO($dsnNoDb, $dbUser, $dbPass, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+        ]);
 
-            // Attempt to create database if it doesn't exist
-            $pdoTest->exec("CREATE DATABASE IF NOT EXISTS `$dbName` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;");
+        // Attempt to create database if it doesn't exist
+        $pdoTest->exec("CREATE DATABASE IF NOT EXISTS `$dbName` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;");
 
-            // Connect to specific database
-            $dsnWithDb = "mysql:host={$dbHost};port={$dbPort};dbname={$dbName};charset=utf8mb4";
-            $pdo = new PDO($dsnWithDb, $dbUser, $dbPass, [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-            ]);
+        // Connect to specific database
+        $dsnWithDb = "mysql:host={$dbHost};port={$dbPort};dbname={$dbName};charset=utf8mb4";
+        $pdo = new PDO($dsnWithDb, $dbUser, $dbPass, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+        ]);
 
-            require_once __DIR__ . '/config/database.php';
+        require_once __DIR__ . '/config/database.php';
 
-            // Disable foreign key checks during schema creation
-            $pdo->exec("SET FOREIGN_KEY_CHECKS = 0;");
+        // Disable foreign key checks during schema creation
+        $pdo->exec("SET FOREIGN_KEY_CHECKS = 0;");
 
-            // Run Schema Creation via executeAutoSchemaMigrations
-            $schemaRes = executeAutoSchemaMigrations($pdo);
-            if (!empty($schemaRes['errors'])) {
-                throw new Exception("Schema execution encountered errors: " . implode('; ', $schemaRes['errors']));
-            }
-
-            // Re-enable foreign key checks
-            $pdo->exec("SET FOREIGN_KEY_CHECKS = 1;");
-
-            // Seed Initial Developer / Administrator Account
-            $stmtUser = $pdo->prepare("INSERT INTO doctors (id, name, specialty, email, password_hash, role, color, dot_color_class, avatar) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name), email = VALUES(email), password_hash = VALUES(password_hash), role = VALUES(role)");
-            $stmtUser->execute([
-                'doc-1', $adminName, 'Developer / IT Administrator', $adminEmail, $passHash, $adminRole, '#10B981', 'bg-emerald-500', 'assets/images/nuvis_medico_logo.png'
-            ]);
-
-            // Seed initial clinic settings
-            $settingsStmt = $pdo->prepare("INSERT INTO clinic_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
-            $settingsStmt->execute(['clinic_name', $clinicName]);
-            $settingsStmt->execute(['clinic_subtitle', $clinicSubtitle]);
-            $settingsStmt->execute(['clinic_phone', $clinicPhone]);
-            $settingsStmt->execute(['clinic_email', $clinicEmail]);
-            $settingsStmt->execute(['clinic_address', $clinicAddress]);
-
-            // Insert Developer Custom Fields
-            for ($i = 0; $i < count($customKeys); $i++) {
-                $k = trim($customKeys[$i]);
-                $v = trim($customValues[$i] ?? '');
-                if ($k !== '') {
-                    $settingsStmt->execute([$k, $v]);
-                }
-            }
-
-            // Seed rest of mock clinical data if patients table is empty
-            $patCount = $pdo->query("SELECT COUNT(*) FROM patients")->fetchColumn();
-            if ($patCount == 0) {
-                require_once __DIR__ . '/database/seed.php';
-            }
-
-            // Write Config File
-            $configContent = "<?php\n" .
-                "/**\n * Auto-generated Nuvis Medico Configuration\n */\n" .
-                "return [\n" .
-                "    'db_driver' => " . var_export($dbDriver, true) . ",\n" .
-                "    'db_host'   => " . var_export($dbHost, true) . ",\n" .
-                "    'db_port'   => " . var_export($dbPort, true) . ",\n" .
-                "    'db_name'   => " . var_export($dbName, true) . ",\n" .
-                "    'db_user'   => " . var_export($dbUser, true) . ",\n" .
-                "    'db_pass'   => " . var_export($dbPass, true) . ",\n" .
-                "    'admin_account' => [\n" .
-                "        'name'  => " . var_export($adminName, true) . ",\n" .
-                "        'email' => " . var_export($adminEmail, true) . ",\n" .
-                "        'role'  => " . var_export($adminRole, true) . ",\n" .
-                "    ]\n" .
-                "];\n";
-
-            file_put_contents(__DIR__ . '/config/config.php', $configContent);
-
-            $success = "Database installation completed successfully! Developer credentials and clinic profile saved.";
-            $step = 2;
-
-        } catch (Exception $e) {
-            $error = "Database setup failed: " . $e->getMessage();
+        // Run Schema Creation via executeAutoSchemaMigrations
+        $schemaRes = executeAutoSchemaMigrations($pdo);
+        if (!empty($schemaRes['errors'])) {
+            throw new Exception("Schema execution encountered errors: " . implode('; ', $schemaRes['errors']));
         }
-    } else {
-        // SQLite mode
-        try {
+
+        // Re-enable foreign key checks
+        $pdo->exec("SET FOREIGN_KEY_CHECKS = 1;");
+
+        // Seed Initial Developer / Administrator Account
+        $stmtUser = $pdo->prepare("INSERT INTO doctors (id, name, specialty, email, password_hash, role, color, dot_color_class, avatar) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name), email = VALUES(email), password_hash = VALUES(password_hash), role = VALUES(role)");
+        $stmtUser->execute([
+            'doc-1', $adminName, 'Developer / IT Administrator', $adminEmail, $passHash, $adminRole, '#10B981', 'bg-emerald-500', 'assets/images/nuvis_medico_logo.png'
+        ]);
+
+        // Seed initial clinic settings
+        $settingsStmt = $pdo->prepare("INSERT INTO clinic_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
+        $settingsStmt->execute(['clinic_name', $clinicName]);
+        $settingsStmt->execute(['clinic_subtitle', $clinicSubtitle]);
+        $settingsStmt->execute(['clinic_phone', $clinicPhone]);
+        $settingsStmt->execute(['clinic_email', $clinicEmail]);
+        $settingsStmt->execute(['clinic_address', $clinicAddress]);
+
+        // Insert Developer Custom Fields
+        for ($i = 0; $i < count($customKeys); $i++) {
+            $k = trim($customKeys[$i]);
+            $v = trim($customValues[$i] ?? '');
+            if ($k !== '') {
+                $settingsStmt->execute([$k, $v]);
+            }
+        }
+
+        // Seed rest of mock clinical data if patients table is empty
+        $patCount = $pdo->query("SELECT COUNT(*) FROM patients")->fetchColumn();
+        if ($patCount == 0) {
             require_once __DIR__ . '/database/seed.php';
-            $configContent = "<?php\n" .
-                "return [\n" .
-                "    'db_driver' => 'sqlite',\n" .
-                "    'admin_account' => ['name' => " . var_export($adminName, true) . ", 'email' => " . var_export($adminEmail, true) . ", 'role' => " . var_export($adminRole, true) . "]\n" .
-                "];\n";
-            file_put_contents(__DIR__ . '/config/config.php', $configContent);
-            $success = "SQLite Database initialized successfully!";
-            $step = 2;
-        } catch (Exception $e) {
-            $error = "Error initializing SQLite: " . $e->getMessage();
         }
+
+        // Write Config File
+        $configContent = "<?php\n" .
+            "/**\n * Auto-generated Nuvis Medico Configuration\n */\n" .
+            "return [\n" .
+            "    'db_driver' => 'mysql',\n" .
+            "    'db_host'   => " . var_export($dbHost, true) . ",\n" .
+            "    'db_port'   => " . var_export($dbPort, true) . ",\n" .
+            "    'db_name'   => " . var_export($dbName, true) . ",\n" .
+            "    'db_user'   => " . var_export($dbUser, true) . ",\n" .
+            "    'db_pass'   => " . var_export($dbPass, true) . ",\n" .
+            "    'admin_account' => [\n" .
+            "        'name'  => " . var_export($adminName, true) . ",\n" .
+            "        'email' => " . var_export($adminEmail, true) . ",\n" .
+            "        'role'  => " . var_export($adminRole, true) . ",\n" .
+            "    ]\n" .
+            "];\n";
+
+        file_put_contents(__DIR__ . '/config/config.php', $configContent);
+
+        $success = "Database installation completed successfully! Developer credentials and clinic profile saved.";
+        $step = 2;
+
+    } catch (Exception $e) {
+        $error = "Database setup failed: " . $e->getMessage();
     }
 }
 ?>
@@ -207,8 +190,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div>
                             <label class="block font-bold text-slate-700 mb-1">Database Engine</label>
                             <select name="db_driver" class="w-full bg-slate-50 px-3 py-2.5 rounded-xl border border-slate-300 font-semibold focus:outline-none focus:border-blue-600">
-                                <option value="mysql">MySQL (A2 Hosting / Production)</option>
-                                <option value="sqlite">SQLite (Local Dev Mode)</option>
+                                <option value="mysql" selected>MySQL (Production & Local)</option>
                             </select>
                         </div>
 
