@@ -100,17 +100,9 @@ function ensureDoctorColumnsExist(PDO $pdo): void {
 
     try {
         $cols = [];
-        $driver = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
-        if ($driver === 'sqlite') {
-            $stmt = $pdo->query("PRAGMA table_info(doctors)");
-            while ($row = $stmt->fetch()) {
-                $cols[] = strtolower($row['name']);
-            }
-        } else {
-            $stmt = $pdo->query("DESCRIBE doctors");
-            while ($row = $stmt->fetch()) {
-                $cols[] = strtolower($row['Field']);
-            }
+        $stmt = $pdo->query("DESCRIBE doctors");
+        while ($row = $stmt->fetch()) {
+            $cols[] = strtolower($row['Field']);
         }
 
         $newCols = [
@@ -129,16 +121,9 @@ function ensureDoctorColumnsExist(PDO $pdo): void {
 
         // Auto-migrate visit_id for prescriptions table
         $rxCols = [];
-        if ($driver === 'sqlite') {
-            $stmt = $pdo->query("PRAGMA table_info(prescriptions)");
-            while ($row = $stmt->fetch()) {
-                $rxCols[] = strtolower($row['name']);
-            }
-        } else {
-            $stmt = $pdo->query("DESCRIBE prescriptions");
-            while ($row = $stmt->fetch()) {
-                $rxCols[] = strtolower($row['Field']);
-            }
+        $stmt = $pdo->query("DESCRIBE prescriptions");
+        while ($row = $stmt->fetch()) {
+            $rxCols[] = strtolower($row['Field']);
         }
 
         if (!in_array('visit_id', $rxCols)) {
@@ -147,16 +132,9 @@ function ensureDoctorColumnsExist(PDO $pdo): void {
 
         // Auto-migrate columns for past_visits table
         $pvCols = [];
-        if ($driver === 'sqlite') {
-            $stmt = $pdo->query("PRAGMA table_info(past_visits)");
-            while ($row = $stmt->fetch()) {
-                $pvCols[] = strtolower($row['name']);
-            }
-        } else {
-            $stmt = $pdo->query("DESCRIBE past_visits");
-            while ($row = $stmt->fetch()) {
-                $pvCols[] = strtolower($row['Field']);
-            }
+        $stmt = $pdo->query("DESCRIBE past_visits");
+        while ($row = $stmt->fetch()) {
+            $pvCols[] = strtolower($row['Field']);
         }
 
         $newPvCols = [
@@ -174,16 +152,9 @@ function ensureDoctorColumnsExist(PDO $pdo): void {
 
         // Auto-migrate inventory table
         $invCols = [];
-        if ($driver === 'sqlite') {
-            $stmt = $pdo->query("PRAGMA table_info(inventory)");
-            while ($row = $stmt->fetch()) {
-                $invCols[] = strtolower($row['name']);
-            }
-        } else {
-            $stmt = $pdo->query("DESCRIBE inventory");
-            while ($row = $stmt->fetch()) {
-                $invCols[] = strtolower($row['Field']);
-            }
+        $stmt = $pdo->query("DESCRIBE inventory");
+        while ($row = $stmt->fetch()) {
+            $invCols[] = strtolower($row['Field']);
         }
 
         $newInvCols = [
@@ -204,16 +175,9 @@ function ensureDoctorColumnsExist(PDO $pdo): void {
 
         // Auto-migrate invoices table columns
         $invTableCols = [];
-        if ($driver === 'sqlite') {
-            $stmt = $pdo->query("PRAGMA table_info(invoices)");
-            while ($row = $stmt->fetch()) {
-                $invTableCols[] = strtolower($row['name']);
-            }
-        } else {
-            $stmt = $pdo->query("DESCRIBE invoices");
-            while ($row = $stmt->fetch()) {
-                $invTableCols[] = strtolower($row['Field']);
-            }
+        $stmt = $pdo->query("DESCRIBE invoices");
+        while ($row = $stmt->fetch()) {
+            $invTableCols[] = strtolower($row['Field']);
         }
 
         if (!empty($invTableCols)) {
@@ -247,35 +211,19 @@ function ensureDoctorColumnsExist(PDO $pdo): void {
         }
 
         // Auto-create inventory_logs if missing
-        if ($driver === 'sqlite') {
-            $pdo->exec("CREATE TABLE IF NOT EXISTS inventory_logs (
-                id TEXT PRIMARY KEY,
-                inventory_id TEXT NOT NULL,
-                change_amount INTEGER NOT NULL,
-                previous_stock INTEGER NOT NULL,
-                new_stock INTEGER NOT NULL,
-                type TEXT NOT NULL,
-                supplier TEXT,
-                unit_cost REAL DEFAULT 0.00,
-                notes TEXT,
-                created_by TEXT DEFAULT 'System',
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            );");
-        } else {
-            $pdo->exec("CREATE TABLE IF NOT EXISTS inventory_logs (
-                id VARCHAR(50) PRIMARY KEY,
-                inventory_id VARCHAR(50) NOT NULL,
-                change_amount INT NOT NULL,
-                previous_stock INT NOT NULL,
-                new_stock INT NOT NULL,
-                type VARCHAR(50) NOT NULL,
-                supplier VARCHAR(255),
-                unit_cost DECIMAL(10,2) DEFAULT 0.00,
-                notes TEXT,
-                created_by VARCHAR(255) DEFAULT 'System',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );");
-        }
+        $pdo->exec("CREATE TABLE IF NOT EXISTS inventory_logs (
+            id VARCHAR(50) PRIMARY KEY,
+            inventory_id VARCHAR(50) NOT NULL,
+            change_amount INT NOT NULL,
+            previous_stock INT NOT NULL,
+            new_stock INT NOT NULL,
+            type VARCHAR(50) NOT NULL,
+            supplier VARCHAR(255),
+            unit_cost DECIMAL(10,2) DEFAULT 0.00,
+            notes TEXT,
+            created_by VARCHAR(255) DEFAULT 'System',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );");
     } catch (Exception $e) {
         // Table might not exist yet during fresh install
     }
