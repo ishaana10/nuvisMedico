@@ -53,45 +53,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
             ]);
 
+            require_once __DIR__ . '/config/database.php';
+
             // Disable foreign key checks during schema creation
             $pdo->exec("SET FOREIGN_KEY_CHECKS = 0;");
 
-            // Run Schema Creation
-            $schemaFile = __DIR__ . '/database/schema.sql';
-            if (file_exists($schemaFile)) {
-                $sqlContent = file_get_contents($schemaFile);
-                $lines = explode("\n", $sqlContent);
-                $currentQuery = '';
-                foreach ($lines as $line) {
-                    $trimmed = trim($line);
-                    if ($trimmed === '' || strpos($trimmed, '--') === 0 || strpos($trimmed, '#') === 0) {
-                        continue;
-                    }
-                    $currentQuery .= $line . "\n";
-                    if (substr(rtrim($trimmed), -1) === ';') {
-                        $q = trim($currentQuery);
-                        if (!empty($q)) {
-                            try {
-                                $pdo->exec($q);
-                            } catch (PDOException $e) {
-                                $msg = $e->getMessage();
-                                if (
-                                    stripos($msg, 'already exists') === false &&
-                                    stripos($msg, 'duplicate') === false &&
-                                    stripos($msg, '1050') === false &&
-                                    stripos($msg, '1060') === false &&
-                                    stripos($msg, '1061') === false &&
-                                    stripos($msg, '1072') === false &&
-                                    stripos($msg, '1091') === false &&
-                                    stripos($msg, '3780') === false
-                                ) {
-                                    throw $e;
-                                }
-                            }
-                        }
-                        $currentQuery = '';
-                    }
-                }
+            // Run Schema Creation via executeAutoSchemaMigrations
+            $schemaRes = executeAutoSchemaMigrations($pdo);
+            if (!empty($schemaRes['errors'])) {
+                throw new Exception("Schema execution encountered errors: " . implode('; ', $schemaRes['errors']));
             }
 
             // Re-enable foreign key checks
