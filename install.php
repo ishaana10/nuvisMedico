@@ -56,8 +56,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Run Schema Creation
             $schemaFile = __DIR__ . '/database/schema.sql';
             if (file_exists($schemaFile)) {
-                $sql = file_get_contents($schemaFile);
-                $pdo->exec($sql);
+                $sqlContent = file_get_contents($schemaFile);
+                $lines = explode("\n", $sqlContent);
+                $currentQuery = '';
+                foreach ($lines as $line) {
+                    $trimmed = trim($line);
+                    if ($trimmed === '' || strpos($trimmed, '--') === 0 || strpos($trimmed, '#') === 0) {
+                        continue;
+                    }
+                    $currentQuery .= $line . "\n";
+                    if (substr(rtrim($trimmed), -1) === ';') {
+                        $q = trim($currentQuery);
+                        if (!empty($q)) {
+                            try {
+                                $pdo->exec($q);
+                            } catch (PDOException $e) {
+                                $msg = $e->getMessage();
+                                if (
+                                    stripos($msg, 'already exists') === false &&
+                                    stripos($msg, 'duplicate') === false &&
+                                    stripos($msg, '1050') === false &&
+                                    stripos($msg, '1060') === false &&
+                                    stripos($msg, '1061') === false
+                                ) {
+                                    throw $e;
+                                }
+                            }
+                        }
+                        $currentQuery = '';
+                    }
+                }
             }
 
             // Seed Initial Developer / Administrator Account
