@@ -47,55 +47,35 @@ $currentDoctor = reset($currentDoctor) ?: ($doctors[0] ?? ['id' => 'doc-1', 'nam
         theme: {
           extend: {
             colors: {
-              "surface-dim": "#cbdbf5",
-              "on-tertiary-fixed": "#2a1700",
-              "on-tertiary": "#ffffff",
-              "on-background": "#0b1c30",
-              "surface-container-low": "#eff4ff",
-              "tertiary-fixed-dim": "#ffb95f",
-              "surface-container": "#e5eeff",
-              "tertiary-container": "#7c4d00",
-              "on-primary": "#ffffff",
+              primary: {
+                DEFAULT: '#1d4ed8', // Vibrant modern blue matching Dashboard.png
+                50: '#eff6ff',
+                100: '#dbeafe',
+                500: '#3b82f6',
+                600: '#2563eb',
+                700: '#1d4ed8',
+                800: '#1e40af',
+                900: '#1e3a8a',
+              },
+              brand: {
+                blue: '#1d4ed8',
+                accent: '#2563eb',
+                bg: '#f8fafc',
+                card: '#ffffff',
+                border: '#e2e8f0',
+                sidebar: '#f8fafc',
+              },
               "surface-container-lowest": "#ffffff",
-              "on-secondary-fixed": "#002113",
-              "inverse-on-surface": "#eaf1ff",
-              "inverse-primary": "#b0c6ff",
-              "secondary": "#006c49",
-              "primary-fixed": "#d9e2ff",
-              "surface-bright": "#f8f9ff",
-              "surface-container-highest": "#d3e4fe",
-              "on-surface-variant": "#434653",
-              "surface-container-high": "#dce9ff",
-              "on-surface": "#0b1c30",
-              "surface-variant": "#d3e4fe",
-              "primary-container": "#0f52ba",
-              "on-error-container": "#93000a",
-              "inverse-surface": "#213145",
-              "error-container": "#ffdad6",
-              "primary": "#003c90",
-              "tertiary-fixed": "#ffddb8",
-              "secondary-fixed-dim": "#4edea3",
-              "outline-variant": "#c3c6d5",
-              "outline": "#737784",
-              "on-primary-fixed-variant": "#00419c",
-              "surface-tint": "#1d59c1",
-              "secondary-container": "#6cf8bb",
-              "on-primary-container": "#bcceff",
-              "background": "#f8f9ff",
-              "on-tertiary-container": "#ffc278",
-              "tertiary": "#5c3800",
-              "on-error": "#ffffff",
-              "secondary-fixed": "#6ffbbe",
-              "on-secondary-fixed-variant": "#005236",
-              "on-tertiary-fixed-variant": "#653e00",
-              "on-secondary": "#ffffff",
-              "primary-fixed-dim": "#b0c6ff",
-              "on-secondary-container": "#00714d",
-              "error": "#ba1a1a",
-              "on-primary-fixed": "#001945"
+              "surface-container-low": "#f8fafc",
+              "surface-container": "#f1f5f9",
+              "surface-container-high": "#e2e8f0",
+              "on-surface": "#0f172a",
+              "on-surface-variant": "#475569",
+              "outline": "#64748b",
+              "outline-variant": "#cbd5e1"
             },
             fontFamily: {
-              sans: ["Inter", "sans-serif"],
+              sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
               mono: ["JetBrains Mono", "monospace"]
             }
           }
@@ -136,58 +116,52 @@ $currentDoctor = reset($currentDoctor) ?: ($doctors[0] ?? ['id' => 'doc-1', 'nam
 <?php endif; ?>
 
 <!-- Top Navigation Bar -->
-<header class="bg-surface-container-lowest border-b border-outline-variant/30 sticky top-0 z-30 shadow-xs">
+<header class="bg-white border-b border-slate-200/80 sticky top-0 z-30 shadow-xs">
     <div class="flex items-center justify-between px-3 sm:px-6 py-2.5 sm:py-3">
-        <!-- Mobile Menu Toggle & Logo -->
-        <div class="flex items-center gap-2 sm:gap-3 shrink-0">
-            <button type="button" onclick="toggleMobileSidebar()" aria-label="Toggle Navigation Menu" class="md:hidden p-2 text-primary hover:bg-primary/10 rounded-xl transition flex items-center justify-center border border-primary/20">
+        <!-- Logo & Mobile Toggle -->
+        <div class="flex items-center gap-3 shrink-0">
+            <button type="button" onclick="toggleMobileSidebar()" aria-label="Toggle Navigation Menu" class="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition flex items-center justify-center border border-slate-200">
                 <span class="material-symbols-outlined text-2xl font-bold">menu</span>
             </button>
             <a href="index.php" class="flex items-center gap-2">
-                <img src="assets/images/NuvisMedcareX_banner (1).jpg" alt="Nuvis Medcare X" class="h-7 sm:h-10 object-contain max-w-[120px] sm:max-w-none rounded-md">
+                <span class="font-bold text-xl text-blue-800 tracking-tight">ClinicFlow</span>
             </a>
         </div>
 
-        <!-- Global Search (Desktop) -->
-        <div class="relative w-80 lg:w-96 hidden md:block">
+        <!-- Global Search Bar (Dashboard.png style) -->
+        <div class="relative w-80 lg:w-[480px] hidden md:block">
             <form action="patients.php" method="GET" class="relative">
-                <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-outline text-lg">search</span>
-                <input type="text" name="q" placeholder="Search patients by name, MRN..." class="w-full bg-surface-container-low pl-10 pr-4 py-2 rounded-xl text-xs border border-transparent focus:border-primary focus:bg-white focus:outline-none transition-all">
+                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+                <input type="text" name="q" placeholder="Search patients, doctors..." class="w-full bg-slate-100/80 pl-11 pr-4 py-2 rounded-full text-xs font-medium border border-transparent focus:border-blue-500 focus:bg-white focus:outline-none transition-all placeholder:text-slate-400">
             </form>
         </div>
 
-        <!-- Right Quick Actions & Doctor Switcher -->
-        <div class="flex items-center gap-1.5 sm:gap-3 shrink-0">
-            <a href="register_patient.php" class="hidden md:inline-flex items-center gap-1.5 px-3 py-2 bg-primary text-white text-xs font-semibold rounded-xl hover:bg-primary/90 transition shadow-sm">
-                <span class="material-symbols-outlined text-base">person_add</span>
-                <span class="hidden lg:inline">Register Patient</span>
-            </a>
-            <a href="calendar.php?action=book" class="hidden md:inline-flex items-center gap-1.5 px-3 py-2 bg-primary-container text-white text-xs font-semibold rounded-xl hover:bg-primary-container/90 transition shadow-sm">
-                <span class="material-symbols-outlined text-base">calendar_add_on</span>
-                <span class="hidden lg:inline">Book Appointment</span>
-            </a>
+        <!-- Right Utilities & Profile -->
+        <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+            <!-- Notifications Icon -->
+            <button type="button" class="relative p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-full transition flex items-center">
+                <span class="material-symbols-outlined text-xl">notifications</span>
+                <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 border border-white"></span>
+            </button>
 
-            <!-- Doctor Selector & Logout -->
-            <div class="flex items-center gap-1.5 sm:gap-3 pl-1.5 sm:pl-3 border-l border-outline-variant/40">
-                <form action="actions/set_doctor.php" method="POST" class="flex items-center gap-1 sm:gap-2">
+            <!-- Help Icon -->
+            <button type="button" class="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-full transition flex items-center">
+                <span class="material-symbols-outlined text-xl">help</span>
+            </button>
+
+            <!-- Doctor Selector & Profile -->
+            <div class="flex items-center gap-2 pl-2 border-l border-slate-200">
+                <form action="actions/set_doctor.php" method="POST" class="flex items-center gap-2">
                     <input type="hidden" name="csrf_token" value="<?= getCsrfToken() ?>">
-                    <div class="flex items-center gap-1 sm:gap-2">
-                        <img src="<?= htmlspecialchars($currentDoctor['avatar'] ?? '') ?>" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-primary/20" alt="Doctor">
-                        <select name="doctor_id" onchange="this.form.submit()" class="bg-surface-container-low border border-outline-variant/50 text-[11px] sm:text-xs font-semibold text-on-surface rounded-lg px-1.5 py-1 sm:px-2 sm:py-1.5 focus:outline-none max-w-[90px] sm:max-w-none truncate">
-                            <?php foreach ($doctors as $doc): ?>
-                                <option value="<?= htmlspecialchars($doc['id']) ?>" <?= $doc['id'] === $currentDoctor['id'] ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($doc['name']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
+                    <select name="doctor_id" onchange="this.form.submit()" class="bg-transparent border-none text-xs font-bold text-slate-800 focus:outline-none cursor-pointer max-w-[130px] sm:max-w-none truncate">
+                        <?php foreach ($doctors as $doc): ?>
+                            <option value="<?= htmlspecialchars($doc['id']) ?>" <?= $doc['id'] === $currentDoctor['id'] ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($doc['name']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
                 </form>
-                <button type="button" onclick="openChangePasswordModal()" title="Change My Password" class="p-1.5 text-slate-500 hover:text-primary rounded-lg hover:bg-slate-100 transition flex items-center">
-                    <span class="material-symbols-outlined text-lg">key</span>
-                </button>
-                <a href="actions/logout.php" title="Sign Out" class="p-1.5 text-slate-500 hover:text-red-600 rounded-lg hover:bg-slate-100 transition flex items-center">
-                    <span class="material-symbols-outlined text-lg">logout</span>
-                </a>
+                <img src="<?= htmlspecialchars($currentDoctor['avatar'] ?? 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=200') ?>" class="w-8 h-8 rounded-full object-cover border border-slate-200 shadow-xs" alt="Doctor Avatar">
             </div>
         </div>
     </div>
