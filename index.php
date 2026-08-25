@@ -5,6 +5,9 @@ if (str_contains($uri, 'assets/')) {
     $assetPos = strpos($uri, 'assets/');
     $assetRel = '/' . substr($uri, $assetPos);
     $assetFile = __DIR__ . '/dist' . $assetRel;
+    if (!file_exists($assetFile) || !is_file($assetFile)) {
+        $assetFile = __DIR__ . '/' . substr($uri, $assetPos);
+    }
     if (file_exists($assetFile) && is_file($assetFile)) {
         $mime = str_ends_with($assetFile, '.css') ? 'text/css' : (str_ends_with($assetFile, '.js') ? 'application/javascript' : 'text/plain');
         header("Content-Type: $mime");

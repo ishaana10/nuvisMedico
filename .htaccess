@@ -3,6 +3,13 @@ AddType application/javascript .js .mjs
 AddType text/css .css
 AddDefaultCharset UTF-8
 
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # If assets are requested directly and exist in /assets or /dist/assets, serve directly
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^assets/(.*)$ dist/assets/$1 [L]
+</IfModule>
+
 <IfModule mod_headers.c>
     Header set Access-Control-Allow-Origin "*"
 </IfModule>
