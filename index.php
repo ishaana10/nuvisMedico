@@ -1,9 +1,9 @@
 <?php
-// Serve dist static assets if requested (handles relative path requests under subdirectories)
+// Serve dist static assets if requested (handles relative or absolute /assets/ path requests)
 $uri = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
-if (str_contains($uri, '/assets/')) {
-    $assetPos = strpos($uri, '/assets/');
-    $assetRel = substr($uri, $assetPos);
+if (str_contains($uri, 'assets/')) {
+    $assetPos = strpos($uri, 'assets/');
+    $assetRel = '/' . substr($uri, $assetPos);
     $assetFile = __DIR__ . '/dist' . $assetRel;
     if (file_exists($assetFile) && is_file($assetFile)) {
         $mime = str_ends_with($assetFile, '.css') ? 'text/css' : (str_ends_with($assetFile, '.js') ? 'application/javascript' : 'text/plain');
