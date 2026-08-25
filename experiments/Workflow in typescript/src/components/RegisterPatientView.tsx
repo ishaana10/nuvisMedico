@@ -120,40 +120,29 @@ export const RegisterPatientView: React.FC = () => {
   return (
     <div id="register-patient-view" className="p-8 lg:p-10 max-w-5xl mx-auto space-y-8 animate-in fade-in duration-200">
       {/* Page Header */}
-      <div className="border-b border-black/15 pb-6">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="w-2 h-2 bg-black"></span>
-          <span className="text-[10px] font-mono font-bold tracking-[0.3em] uppercase text-[#777]">
-            REGISTRATION FOLIO
-          </span>
-        </div>
-        <h1 className="text-3xl font-serif italic text-[#1C1C1C] tracking-tight">
-          New Patient Intake Registration
+      <div className="border-b border-slate-200 pb-5">
+        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+          New Patient Registration
         </h1>
-        <p className="text-xs text-[#666] mt-1 font-sans">
-          Record demographic identity, insurance verification, and preliminary allergy alerts.
+        <p className="text-xs text-slate-500 mt-0.5">
+          Record demographic identity, insurance details, and preliminary allergy information.
         </p>
       </div>
 
-      <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-8">
+      <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-6">
         {/* Section 1: Demographics */}
-        <div className="bg-white border border-black/20 p-8 shadow-2xs">
-          <div className="mb-6 pb-4 border-b border-black/10 flex items-center justify-between">
-            <div className="flex items-center gap-3 text-black">
-              <UserCheck className="w-4 h-4" />
-              <h2 className="font-serif italic text-xl text-[#1C1C1C]">Demographic Record</h2>
-            </div>
-            <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-[#888]">
-              01 / IDENTITY
-            </span>
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-2xs">
+          <div className="mb-6 pb-4 border-b border-slate-100 flex items-center gap-2.5 text-slate-900">
+            <UserCheck className="w-5 h-5 text-blue-600" />
+            <h2 className="font-bold text-base">Demographics</h2>
           </div>
 
-          <div className="space-y-5">
+          <div className="space-y-4">
             {/* First Name & Last Name */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[10px] font-mono font-bold text-[#555] uppercase tracking-wider mb-1.5">
-                  First Legal Name
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  First Name
                 </label>
                 <input
                   id="input-first-name"
@@ -162,16 +151,16 @@ export const RegisterPatientView: React.FC = () => {
                   placeholder="e.g. Eleanor"
                   value={formData.firstName}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-3 border ${
-                    errors.firstName ? 'border-rose-500 bg-rose-50/30' : 'border-black/20 focus:border-black'
-                  } bg-[#FDFCFB] text-xs font-sans text-black focus:outline-none transition-colors`}
+                  className={`w-full px-3.5 py-2.5 border ${
+                    errors.firstName ? 'border-red-500 bg-red-50/50' : 'border-slate-200 focus:border-blue-600'
+                  } bg-slate-50/50 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none transition-all`}
                 />
-                {errors.firstName && <p className="text-[10px] font-mono text-rose-600 mt-1">{errors.firstName}</p>}
+                {errors.firstName && <p className="text-xs text-red-600 mt-1">{errors.firstName}</p>}
               </div>
 
               <div>
-                <label className="block text-[10px] font-mono font-bold text-[#555] uppercase tracking-wider mb-1.5">
-                  Surname / Family Name
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Last Name
                 </label>
                 <input
                   id="input-last-name"
@@ -180,18 +169,18 @@ export const RegisterPatientView: React.FC = () => {
                   placeholder="e.g. Vance"
                   value={formData.lastName}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-3 border ${
-                    errors.lastName ? 'border-rose-500 bg-rose-50/30' : 'border-black/20 focus:border-black'
-                  } bg-[#FDFCFB] text-xs font-sans text-black focus:outline-none transition-colors`}
+                  className={`w-full px-3.5 py-2.5 border ${
+                    errors.lastName ? 'border-red-500 bg-red-50/50' : 'border-slate-200 focus:border-blue-600'
+                  } bg-slate-50/50 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none transition-all`}
                 />
-                {errors.lastName && <p className="text-[10px] font-mono text-rose-600 mt-1">{errors.lastName}</p>}
+                {errors.lastName && <p className="text-xs text-red-600 mt-1">{errors.lastName}</p>}
               </div>
             </div>
 
             {/* Date of Birth & Gender */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[10px] font-mono font-bold text-[#555] uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-slate-700 mb-1">
                   Date of Birth
                 </label>
                 <input
@@ -200,16 +189,16 @@ export const RegisterPatientView: React.FC = () => {
                   name="dob"
                   value={formData.dob}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-3 border ${
-                    errors.dob ? 'border-rose-500 bg-rose-50/30' : 'border-black/20 focus:border-black'
-                  } bg-[#FDFCFB] text-xs font-mono text-black focus:outline-none transition-colors`}
+                  className={`w-full px-3.5 py-2.5 border ${
+                    errors.dob ? 'border-red-500 bg-red-50/50' : 'border-slate-200 focus:border-blue-600'
+                  } bg-slate-50/50 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none transition-all`}
                 />
-                {errors.dob && <p className="text-[10px] font-mono text-rose-600 mt-1">{errors.dob}</p>}
+                {errors.dob && <p className="text-xs text-red-600 mt-1">{errors.dob}</p>}
               </div>
 
               <div>
-                <label className="block text-[10px] font-mono font-bold text-[#555] uppercase tracking-wider mb-1.5">
-                  Biological Gender
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Gender
                 </label>
                 <div className="relative">
                   <select
@@ -217,22 +206,22 @@ export const RegisterPatientView: React.FC = () => {
                     name="gender"
                     value={formData.gender}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-black/20 focus:border-black bg-[#FDFCFB] text-xs font-sans text-black appearance-none focus:outline-none transition-colors cursor-pointer"
+                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:border-blue-600 bg-slate-50/50 text-xs text-slate-900 appearance-none focus:bg-white focus:outline-none transition-all cursor-pointer"
                   >
                     <option value="Female">Female</option>
                     <option value="Male">Male</option>
                     <option value="Other">Other / Non-binary</option>
                   </select>
-                  <ChevronDown className="w-4 h-4 text-black absolute right-4 top-3.5 pointer-events-none" />
+                  <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3.5 top-3 pointer-events-none" />
                 </div>
               </div>
             </div>
 
             {/* Phone Number & Email Address */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[10px] font-mono font-bold text-[#555] uppercase tracking-wider mb-1.5">
-                  Primary Contact Phone
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Phone Number
                 </label>
                 <input
                   id="input-phone"
@@ -241,16 +230,16 @@ export const RegisterPatientView: React.FC = () => {
                   placeholder="(555) 000-0000"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-3 border ${
-                    errors.phone ? 'border-rose-500 bg-rose-50/30' : 'border-black/20 focus:border-black'
-                  } bg-[#FDFCFB] text-xs font-mono text-black focus:outline-none transition-colors`}
+                  className={`w-full px-3.5 py-2.5 border ${
+                    errors.phone ? 'border-red-500 bg-red-50/50' : 'border-slate-200 focus:border-blue-600'
+                  } bg-slate-50/50 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none transition-all`}
                 />
-                {errors.phone && <p className="text-[10px] font-mono text-rose-600 mt-1">{errors.phone}</p>}
+                {errors.phone && <p className="text-xs text-red-600 mt-1">{errors.phone}</p>}
               </div>
 
               <div>
-                <label className="block text-[10px] font-mono font-bold text-[#555] uppercase tracking-wider mb-1.5">
-                  Electronic Mail Address
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Email Address
                 </label>
                 <input
                   id="input-email"
@@ -259,15 +248,15 @@ export const RegisterPatientView: React.FC = () => {
                   placeholder="patient@example.com"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-black/20 focus:border-black bg-[#FDFCFB] text-xs font-sans text-black focus:outline-none transition-colors"
+                  className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:border-blue-600 bg-slate-50/50 text-xs text-slate-900 focus:bg-white focus:outline-none transition-all"
                 />
               </div>
             </div>
 
             {/* Full Address */}
             <div>
-              <label className="block text-[10px] font-mono font-bold text-[#555] uppercase tracking-wider mb-1.5">
-                Physical Residential Address
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Residential Address
               </label>
               <input
                 id="input-address"
@@ -276,60 +265,55 @@ export const RegisterPatientView: React.FC = () => {
                 placeholder="Street address, Suite, City, State, Postal code"
                 value={formData.address}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-black/20 focus:border-black bg-[#FDFCFB] text-xs font-sans text-black focus:outline-none transition-colors"
+                className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:border-blue-600 bg-slate-50/50 text-xs text-slate-900 focus:bg-white focus:outline-none transition-all"
               />
             </div>
           </div>
         </div>
 
         {/* Section 2 & 3: Emergency Contact & Insurance Information */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Emergency Contact */}
-          <div className="bg-white border border-black/20 p-8 shadow-2xs flex flex-col justify-between">
+          <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-2xs flex flex-col justify-between">
             <div>
-              <div className="mb-5 pb-3 border-b border-black/10 flex items-center justify-between">
-                <div className="flex items-center gap-2.5 text-black">
-                  <PhoneCall className="w-4 h-4" />
-                  <h2 className="font-serif italic text-lg text-[#1C1C1C]">Emergency Liaison</h2>
-                </div>
-                <span className="text-[9px] font-mono uppercase tracking-[0.25em] text-[#888]">
-                  02 / CONTACT
-                </span>
+              <div className="mb-5 pb-3 border-b border-slate-100 flex items-center gap-2.5 text-slate-900">
+                <PhoneCall className="w-5 h-5 text-blue-600" />
+                <h2 className="font-bold text-base">Emergency Contact</h2>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-[10px] font-mono font-bold text-[#555] uppercase tracking-wider mb-1.5">
-                    Contact Full Name
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Contact Name
                   </label>
                   <input
                     id="input-emergency-name"
                     type="text"
                     name="emergencyContactName"
-                    placeholder="Liaison Name"
+                    placeholder="Full Name"
                     value={formData.emergencyContactName}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-black/20 focus:border-black bg-[#FDFCFB] text-xs font-sans text-black focus:outline-none transition-colors"
+                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:border-blue-600 bg-slate-50/50 text-xs text-slate-900 focus:bg-white focus:outline-none transition-all"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[10px] font-mono font-bold text-[#555] uppercase tracking-wider mb-1.5">
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
                       Relationship
                     </label>
                     <input
                       id="input-emergency-relationship"
                       type="text"
                       name="emergencyContactRelationship"
-                      placeholder="e.g. Spouse, Parent"
+                      placeholder="e.g. Spouse"
                       value={formData.emergencyContactRelationship}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-black/20 focus:border-black bg-[#FDFCFB] text-xs font-sans text-black focus:outline-none transition-colors"
+                      className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:border-blue-600 bg-slate-50/50 text-xs text-slate-900 focus:bg-white focus:outline-none transition-all"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-mono font-bold text-[#555] uppercase tracking-wider mb-1.5">
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
                       Phone Number
                     </label>
                     <input
@@ -339,7 +323,7 @@ export const RegisterPatientView: React.FC = () => {
                       placeholder="(555) 000-0000"
                       value={formData.emergencyContactPhone}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-black/20 focus:border-black bg-[#FDFCFB] text-xs font-mono text-black focus:outline-none transition-colors"
+                      className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:border-blue-600 bg-slate-50/50 text-xs text-slate-900 focus:bg-white focus:outline-none transition-all"
                     />
                   </div>
                 </div>
@@ -348,38 +332,33 @@ export const RegisterPatientView: React.FC = () => {
           </div>
 
           {/* Insurance Information */}
-          <div className="bg-white border border-black/20 p-8 shadow-2xs flex flex-col justify-between">
+          <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-2xs flex flex-col justify-between">
             <div>
-              <div className="mb-5 pb-3 border-b border-black/10 flex items-center justify-between">
-                <div className="flex items-center gap-2.5 text-black">
-                  <ShieldCheck className="w-4 h-4" />
-                  <h2 className="font-serif italic text-lg text-[#1C1C1C]">Coverage & Payer</h2>
-                </div>
-                <span className="text-[9px] font-mono uppercase tracking-[0.25em] text-[#888]">
-                  03 / POLICY
-                </span>
+              <div className="mb-5 pb-3 border-b border-slate-100 flex items-center gap-2.5 text-slate-900">
+                <ShieldCheck className="w-5 h-5 text-blue-600" />
+                <h2 className="font-bold text-base">Insurance Coverage</h2>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-[10px] font-mono font-bold text-[#555] uppercase tracking-wider mb-1.5">
-                    Insurance Underwriter
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Insurance Provider
                   </label>
                   <input
                     id="input-insurance-provider"
                     type="text"
                     name="insuranceProvider"
-                    placeholder="e.g. Blue Cross, Aetna, Cigna, Medicare"
+                    placeholder="e.g. Blue Cross, Aetna, Medicare"
                     value={formData.insuranceProvider}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-black/20 focus:border-black bg-[#FDFCFB] text-xs font-sans text-black focus:outline-none transition-colors"
+                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:border-blue-600 bg-slate-50/50 text-xs text-slate-900 focus:bg-white focus:outline-none transition-all"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[10px] font-mono font-bold text-[#555] uppercase tracking-wider mb-1.5">
-                      Policy Identifier
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Policy Number
                     </label>
                     <input
                       id="input-insurance-policy"
@@ -388,11 +367,11 @@ export const RegisterPatientView: React.FC = () => {
                       placeholder="POL-984210"
                       value={formData.insurancePolicyNumber}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-black/20 focus:border-black bg-[#FDFCFB] text-xs font-mono text-black focus:outline-none transition-colors"
+                      className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:border-blue-600 bg-slate-50/50 text-xs text-slate-900 focus:bg-white focus:outline-none transition-all"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-mono font-bold text-[#555] uppercase tracking-wider mb-1.5">
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
                       Group ID
                     </label>
                     <input
@@ -402,7 +381,7 @@ export const RegisterPatientView: React.FC = () => {
                       placeholder="GRP-4412"
                       value={formData.insuranceGroupNumber}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-black/20 focus:border-black bg-[#FDFCFB] text-xs font-mono text-black focus:outline-none transition-colors"
+                      className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:border-blue-600 bg-slate-50/50 text-xs text-slate-900 focus:bg-white focus:outline-none transition-all"
                     />
                   </div>
                 </div>
@@ -412,39 +391,34 @@ export const RegisterPatientView: React.FC = () => {
         </div>
 
         {/* Section 4: Clinical Overview */}
-        <div className="bg-white border border-black/20 p-8 shadow-2xs relative overflow-hidden">
-          <div className="mb-6 pb-4 border-b border-black/10 flex items-center justify-between">
-            <div className="flex items-center gap-2.5 text-black">
-              <HeartPulse className="w-4 h-4" />
-              <h2 className="font-serif italic text-xl text-[#1C1C1C]">Preliminary Clinical Overview</h2>
-            </div>
-            <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-[#888]">
-              04 / TRIAGE
-            </span>
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-2xs relative overflow-hidden">
+          <div className="mb-6 pb-4 border-b border-slate-100 flex items-center gap-2.5 text-slate-900">
+            <HeartPulse className="w-5 h-5 text-blue-600" />
+            <h2 className="font-bold text-base">Clinical Overview</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Known Allergies with Stark Highlight */}
+            {/* Known Allergies */}
             <div className="md:col-span-2">
-              <label className="flex items-center gap-1.5 text-[10px] font-mono font-bold text-rose-700 uppercase tracking-wider mb-1.5">
-                <AlertTriangle className="w-3.5 h-3.5" />
-                <span>CRITICAL ALLERGIES & ADVERSE REACTIONS</span>
+              <label className="flex items-center gap-1.5 text-xs font-bold text-red-700 mb-1">
+                <AlertTriangle className="w-4 h-4 text-red-600" />
+                <span>Known Allergies</span>
               </label>
               <input
                 id="input-known-allergies"
                 type="text"
                 name="knownAllergies"
-                placeholder="e.g. Penicillin Allergy, Peanuts, Sulfa"
+                placeholder="e.g. Penicillin, Peanuts, Sulfa"
                 value={formData.knownAllergies}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-rose-400 bg-rose-50/30 focus:border-rose-700 text-xs font-mono text-black placeholder-rose-400 focus:outline-none transition-colors"
+                className="w-full px-3.5 py-2.5 border border-red-200 bg-red-50/40 rounded-xl focus:border-red-500 text-xs text-slate-900 focus:bg-white focus:outline-none transition-all"
               />
             </div>
 
             {/* Blood Group */}
             <div>
-              <label className="block text-[10px] font-mono font-bold text-[#555] uppercase tracking-wider mb-1.5">
-                Blood Classification
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Blood Group
               </label>
               <div className="relative">
                 <select
@@ -452,7 +426,7 @@ export const RegisterPatientView: React.FC = () => {
                   name="bloodGroup"
                   value={formData.bloodGroup}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-black/20 focus:border-black bg-[#FDFCFB] text-xs font-mono text-black appearance-none focus:outline-none transition-colors cursor-pointer"
+                  className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:border-blue-600 bg-slate-50/50 text-xs text-slate-900 appearance-none focus:bg-white focus:outline-none transition-all cursor-pointer"
                 >
                   <option value="A+">A+</option>
                   <option value="A-">A-</option>
@@ -463,23 +437,23 @@ export const RegisterPatientView: React.FC = () => {
                   <option value="AB+">AB+</option>
                   <option value="AB-">AB-</option>
                 </select>
-                <ChevronDown className="w-4 h-4 text-black absolute right-4 top-3.5 pointer-events-none" />
+                <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3.5 top-3 pointer-events-none" />
               </div>
             </div>
           </div>
 
-          <div className="mt-6">
-            <label className="block text-[10px] font-mono font-bold text-[#555] uppercase tracking-wider mb-1.5">
-              Preliminary Medical Conditions & Notes
+          <div className="mt-4">
+            <label className="block text-xs font-bold text-slate-700 mb-1">
+              Medical History / Chronic Conditions
             </label>
             <textarea
               id="input-chronic-conditions"
               name="chronicConditions"
               rows={2}
-              placeholder="e.g. Hypertension, prior appendectomy, chronic asthma..."
+              placeholder="e.g. Hypertension, prior surgeries, asthma..."
               value={formData.chronicConditions}
               onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-black/20 focus:border-black bg-[#FDFCFB] text-xs font-sans text-black focus:outline-none transition-colors"
+              className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:border-blue-600 bg-slate-50/50 text-xs text-slate-900 focus:bg-white focus:outline-none transition-all"
             ></textarea>
           </div>
         </div>
@@ -489,16 +463,16 @@ export const RegisterPatientView: React.FC = () => {
           <button
             type="button"
             onClick={handleReset}
-            className="w-full sm:w-auto px-5 py-3.5 border border-black/20 hover:border-black bg-white text-black text-xs font-mono font-bold uppercase tracking-[0.2em] flex items-center justify-center gap-2 transition-colors cursor-pointer"
+            className="w-full sm:w-auto px-5 py-2.5 border border-slate-200 hover:bg-slate-50 rounded-xl text-slate-700 text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset Folio</span>
+            <RotateCcw className="w-4 h-4" />
+            <span>Reset Form</span>
           </button>
 
           <button
             type="button"
             onClick={(e) => handleSubmit(e, true)}
-            className="w-full sm:w-auto px-6 py-3.5 border border-black bg-white hover:bg-black hover:text-white text-black text-xs font-mono font-bold uppercase tracking-[0.2em] flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
+            className="w-full sm:w-auto px-5 py-2.5 bg-blue-50 text-blue-800 hover:bg-blue-100 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer"
           >
             <span>Register & Start Encounter</span>
           </button>
@@ -506,10 +480,10 @@ export const RegisterPatientView: React.FC = () => {
           <button
             type="submit"
             id="btn-submit-register-patient"
-            className="w-full sm:w-auto px-8 py-3.5 bg-black hover:bg-neutral-800 text-white text-xs font-mono font-bold uppercase tracking-[0.2em] border border-black flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
+            className="w-full sm:w-auto px-6 py-2.5 bg-[#0f2d71] hover:bg-[#0c245a] text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
           >
-            <Check className="w-4 h-4 stroke-[2.5]" />
-            <span>Save to Archive</span>
+            <Check className="w-4 h-4" />
+            <span>Save Patient</span>
           </button>
         </div>
       </form>

@@ -105,35 +105,32 @@ export const CalendarView: React.FC = () => {
   return (
     <div id="calendar-view" className="p-8 lg:p-10 max-w-[1700px] mx-auto space-y-8 animate-in fade-in duration-200">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-black/15 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="w-2 h-2 bg-black"></span>
-            <span className="text-[10px] font-mono font-bold tracking-[0.3em] uppercase text-[#777]">
-              OPERATIONS SCHEDULE
-            </span>
-          </div>
-          <h1 className="text-3xl font-serif italic text-[#1C1C1C] tracking-tight">
-            Appointment Grid & Triage Stream
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+            Appointment Grid & Operations
           </h1>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Real-time appointment calendar, practitioner allocation, and triage queue.
+          </p>
         </div>
 
         <div className="flex items-center gap-3">
           <button
             id="btn-print-calendar"
             onClick={() => window.print()}
-            className="px-4 py-2.5 border border-black/20 bg-white hover:bg-[#F5F5F0] text-xs font-mono font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-all cursor-pointer"
+            className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-xl flex items-center gap-2 transition-all cursor-pointer shadow-2xs"
           >
-            <Printer className="w-3.5 h-3.5 text-black" />
-            <span>Print Grid</span>
+            <Printer className="w-4 h-4 text-slate-500" />
+            <span>Print Schedule</span>
           </button>
 
           <button
             id="btn-calendar-book-appointment"
             onClick={() => setIsBookModalOpen(true)}
-            className="px-5 py-2.5 bg-black hover:bg-neutral-800 text-white text-xs font-mono font-bold uppercase tracking-[0.2em] border border-black flex items-center gap-2 transition-all cursor-pointer shadow-xs"
+            className="px-5 py-2 bg-[#0f2d71] hover:bg-[#0c245a] text-white text-xs font-semibold rounded-xl flex items-center gap-2 transition-all cursor-pointer shadow-sm"
           >
-            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+            <Plus className="w-4 h-4" />
             <span>Schedule Slot</span>
           </button>
         </div>
@@ -144,21 +141,21 @@ export const CalendarView: React.FC = () => {
         {/* Left Column: Mini Calendar & Filter by Provider (3 cols) */}
         <div className="lg:col-span-3 space-y-6">
           {/* Mini Calendar Card */}
-          <div id="mini-calendar-widget" className="bg-white border border-black/20 p-6 shadow-2xs">
-            <div className="flex items-center justify-between mb-4 pb-3 border-b border-black/10">
-              <h2 className="font-serif italic text-base text-[#1C1C1C]">November 2026</h2>
-              <div className="flex items-center gap-1 text-black">
-                <button className="p-1 hover:bg-[#F5F5F0] border border-black/10 transition-colors cursor-pointer">
-                  <ChevronLeft className="w-3.5 h-3.5" />
+          <div id="mini-calendar-widget" className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs">
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+              <h2 className="font-bold text-sm text-slate-900">November 2026</h2>
+              <div className="flex items-center gap-1 text-slate-600">
+                <button className="p-1 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer">
+                  <ChevronLeft className="w-4 h-4" />
                 </button>
-                <button className="p-1 hover:bg-[#F5F5F0] border border-black/10 transition-colors cursor-pointer">
-                  <ChevronRight className="w-3.5 h-3.5" />
+                <button className="p-1 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer">
+                  <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
             {/* Weekday headers */}
-            <div className="grid grid-cols-7 text-center text-[10px] font-mono font-semibold text-[#888] mb-2 uppercase">
+            <div className="grid grid-cols-7 text-center text-[10px] font-semibold text-slate-400 mb-2 uppercase tracking-wider">
               <span>Su</span>
               <span>Mo</span>
               <span>Tu</span>
@@ -169,21 +166,21 @@ export const CalendarView: React.FC = () => {
             </div>
 
             {/* Days grid */}
-            <div className="grid grid-cols-7 gap-1 text-center text-xs font-mono">
+            <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium">
               {miniCalendarDays.map((item, idx) => {
                 const isSelected = item.day === selectedDay && item.currentMonth;
                 return (
                   <button
                     key={idx}
                     onClick={() => item.currentMonth && setSelectedDay(item.day)}
-                    className={`h-7 w-7 mx-auto flex items-center justify-center transition-all cursor-pointer ${
+                    className={`h-7 w-7 mx-auto rounded-full flex items-center justify-center transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-black text-white font-bold border border-black'
+                        ? 'bg-blue-600 text-white font-bold'
                         : item.isHighlighted
-                        ? 'bg-[#E5E5E5] text-black font-semibold'
+                        ? 'bg-blue-50 text-blue-700 font-bold'
                         : item.currentMonth
-                        ? 'text-[#222] hover:bg-[#F5F5F0]'
-                        : 'text-[#BBB]'
+                        ? 'text-slate-700 hover:bg-slate-100'
+                        : 'text-slate-300'
                     }`}
                   >
                     {item.day}
@@ -194,25 +191,22 @@ export const CalendarView: React.FC = () => {
           </div>
 
           {/* Filter by Provider Card */}
-          <div id="filter-provider-card" className="bg-white border border-black/20 p-6 shadow-2xs">
-            <div className="mb-4 pb-3 border-b border-black/10">
-              <span className="text-[9px] font-mono font-bold uppercase tracking-[0.25em] text-[#888] block">
-                ROSTER
-              </span>
-              <h2 className="font-serif italic text-base text-[#1C1C1C]">Attending Physicians</h2>
+          <div id="filter-provider-card" className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs">
+            <div className="mb-4 pb-3 border-b border-slate-100">
+              <h2 className="font-bold text-sm text-slate-900">Attending Physicians</h2>
             </div>
 
-            <div className="space-y-2.5 text-xs font-mono">
+            <div className="space-y-2 text-xs">
               {/* All Providers Checkbox */}
-              <label className="flex items-center gap-3 cursor-pointer select-none group p-1.5 hover:bg-[#F5F5F0]">
+              <label className="flex items-center gap-3 cursor-pointer select-none group p-1.5 rounded-lg hover:bg-slate-50">
                 <input
                   type="checkbox"
                   checked={allProviders}
                   onChange={toggleAllProviders}
-                  className="w-3.5 h-3.5 accent-black cursor-pointer"
+                  className="w-4 h-4 accent-blue-600 rounded cursor-pointer"
                 />
-                <span className="font-bold text-black uppercase tracking-wider text-[11px]">
-                  ALL PRACTITIONERS
+                <span className="font-bold text-slate-900 text-xs">
+                  All Practitioners
                 </span>
               </label>
 
@@ -220,16 +214,16 @@ export const CalendarView: React.FC = () => {
               {doctors.map((doc) => {
                 const isChecked = allProviders || selectedDoctors.includes(doc.id);
                 return (
-                  <label key={doc.id} className="flex items-center gap-3 cursor-pointer select-none group p-1.5 hover:bg-[#F5F5F0] transition-colors">
+                  <label key={doc.id} className="flex items-center gap-3 cursor-pointer select-none group p-1.5 rounded-lg hover:bg-slate-50 transition-colors">
                     <input
                       type="checkbox"
                       checked={isChecked}
                       onChange={() => toggleDoctorFilter(doc.id)}
-                      className="w-3.5 h-3.5 accent-black cursor-pointer"
+                      className="w-4 h-4 accent-blue-600 rounded cursor-pointer"
                     />
                     <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 bg-black"></span>
-                      <span className="text-[#333] group-hover:text-black font-sans text-xs">
+                      <span className="w-2 h-2 rounded-full bg-blue-600"></span>
+                      <span className="text-slate-700 group-hover:text-slate-900 text-xs font-medium">
                         {doc.name}
                       </span>
                     </div>

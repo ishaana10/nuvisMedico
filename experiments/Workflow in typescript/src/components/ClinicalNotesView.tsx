@@ -112,12 +112,8 @@ export const ClinicalNotesView: React.FC = () => {
 
   return (
     <div id="clinical-notes-view" className="p-8 lg:p-10 max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-200">
-      {/* Top Patient Dossier Banner with Artistic Flair */}
-      <div className="bg-white border border-black/20 p-8 shadow-2xs flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative overflow-hidden">
-        <div className="absolute -top-6 -right-6 text-[110px] font-serif italic leading-none opacity-5 select-none pointer-events-none">
-          Rx
-        </div>
-
+      {/* Top Patient Dossier Banner */}
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-2xs flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative overflow-hidden">
         {/* Left: Patient Profile Details */}
         <div className="flex items-start sm:items-center gap-5 z-10">
           <img
@@ -127,43 +123,38 @@ export const ClinicalNotesView: React.FC = () => {
             }
             alt={activePatient.firstName}
             referrerPolicy="no-referrer"
-            className="w-18 h-18 object-cover border-2 border-black shrink-0"
+            className="w-16 h-16 object-cover rounded-full border-2 border-slate-200 shrink-0"
           />
 
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-3">
-              <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-[#888] block">
-                PATIENT DOSSIER
-              </span>
-              <span className="font-mono text-[10px] bg-[#F5F5F0] border border-black/20 px-2 py-0.5 text-black">
-                MRN #{activePatient.mrn}
-              </span>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-3xl font-serif italic text-[#1C1C1C] tracking-tight">
+              <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
                 {activePatient.firstName} {activePatient.lastName}
               </h1>
+
+              <span className="text-xs font-semibold bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full">
+                MRN #{activePatient.mrn}
+              </span>
 
               {/* Allergy Warning Badge */}
               {activePatient.clinicalOverview.knownAllergies &&
                 activePatient.clinicalOverview.knownAllergies.toLowerCase() !== 'none' &&
                 activePatient.clinicalOverview.knownAllergies.toLowerCase() !== 'none reported' && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 border border-rose-600 bg-rose-50 text-rose-900 font-mono text-xs uppercase tracking-wider">
-                    <AlertTriangle className="w-3.5 h-3.5 text-rose-700" />
-                    <span>ALLERGY: {activePatient.clinicalOverview.knownAllergies}</span>
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-red-100 text-red-700 text-xs font-semibold rounded-full">
+                    <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
+                    <span>Allergy: {activePatient.clinicalOverview.knownAllergies}</span>
                   </span>
                 )}
             </div>
 
-            <p className="text-xs font-mono text-[#666] flex flex-wrap items-center gap-2">
-              <span>DOB: {activePatient.dob} ({activePatient.age} YRS)</span>
+            <p className="text-xs text-slate-500 flex flex-wrap items-center gap-2">
+              <span>DOB: {activePatient.dob} ({activePatient.age} yrs)</span>
               <span>•</span>
-              <span>GENDER: {activePatient.gender.toUpperCase()}</span>
+              <span>Gender: {activePatient.gender}</span>
               <span>•</span>
-              <span>BLOOD: {activePatient.clinicalOverview.bloodGroup || 'O+'}</span>
+              <span>Blood Group: {activePatient.clinicalOverview.bloodGroup || 'O+'}</span>
               <span>•</span>
-              <span>INSURANCE: {activePatient.insurance.provider}</span>
+              <span>Insurance: {activePatient.insurance.provider}</span>
             </p>
           </div>
         </div>
@@ -173,18 +164,18 @@ export const ClinicalNotesView: React.FC = () => {
           <button
             id="btn-print-prescription"
             onClick={() => setIsPrintRxModalOpen(true)}
-            className="px-5 py-3.5 border border-black bg-white hover:bg-[#F5F5F0] text-[#1C1C1C] text-xs font-mono font-bold uppercase tracking-[0.2em] flex items-center gap-2 transition-all cursor-pointer shadow-2xs"
+            className="px-4 py-2.5 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-xl flex items-center gap-2 transition-all cursor-pointer shadow-2xs"
           >
-            <Printer className="w-4 h-4 text-black" />
+            <Printer className="w-4 h-4 text-slate-500" />
             <span>Generate Rx</span>
           </button>
 
           <button
             id="btn-finish-visit"
             onClick={handleFinishVisitWithCelebration}
-            className="px-6 py-3.5 bg-black hover:bg-neutral-800 text-white text-xs font-mono font-bold uppercase tracking-[0.2em] border border-black flex items-center gap-2 transition-all cursor-pointer shadow-2xs"
+            className="px-5 py-2.5 bg-[#0f2d71] hover:bg-[#0c245a] text-white text-xs font-semibold rounded-xl flex items-center gap-2 transition-all cursor-pointer shadow-sm"
           >
-            <CheckCircle className="w-4 h-4 stroke-[2.5]" />
+            <CheckCircle className="w-4 h-4" />
             <span>Conclude Encounter</span>
           </button>
         </div>
