@@ -21,47 +21,38 @@ export const InventoryView: React.FC = () => {
   return (
     <div id="inventory-view" className="p-8 lg:p-10 max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-200">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-black/15 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="w-2 h-2 bg-black"></span>
-            <span className="text-[10px] font-mono font-bold tracking-[0.3em] uppercase text-[#777]">
-              SUPPLY CHAIN & DISPENSARY
-            </span>
-          </div>
-          <h1 className="text-3xl font-serif italic text-[#1C1C1C] tracking-tight">
-            Apothecary & Clinical Dispensary
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+            Inventory & Dispensary
           </h1>
-          <p className="text-xs text-[#666] mt-1 font-sans">
-            Inventory stock levels, pharmaceutical replenishment thresholds, and automated vendor procurement.
+          <p className="text-xs text-slate-500 mt-0.5">
+            Stock level management, pharmaceutical replenishment thresholds, and automated reorders.
           </p>
         </div>
 
         <button
-          onClick={() => showToast('Procurement Request Sent', 'Automated purchase orders transmitted to Cardinal Health.')}
-          className="px-6 py-3 bg-black hover:bg-neutral-800 text-white text-xs font-mono font-bold uppercase tracking-[0.2em] border border-black flex items-center gap-2 transition-all self-start sm:self-auto cursor-pointer shadow-xs"
+          onClick={() => showToast('Procurement Request Sent', 'Automated purchase orders transmitted to supplier.')}
+          className="px-5 py-2.5 bg-[#0f2d71] hover:bg-[#0c245a] text-white text-xs font-semibold rounded-xl flex items-center gap-2 transition-all self-start sm:self-auto cursor-pointer shadow-sm"
         >
-          <RotateCw className="w-3.5 h-3.5" />
+          <RotateCw className="w-4 h-4" />
           <span>Restock Depleted Items</span>
         </button>
       </div>
 
       {/* Low Stock Alerts Banner */}
       {lowStockItems.length > 0 && (
-        <div className="bg-rose-50 border border-rose-500 p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="bg-red-50 border border-red-200 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 border border-rose-600 bg-rose-100 text-rose-900 flex items-center justify-center shrink-0">
-              <AlertTriangle className="w-5 h-5 text-rose-700" />
+            <div className="w-10 h-10 rounded-xl bg-red-100 text-red-600 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-5 h-5 text-red-600" />
             </div>
             <div>
-              <span className="text-[9px] font-mono font-bold uppercase tracking-[0.25em] text-rose-800 block">
-                DEPLETION WARNING
-              </span>
-              <h3 className="text-sm font-serif italic text-rose-950 font-bold">
-                {lowStockItems.length} Pharmaceutical Items Below Safety Threshold
+              <h3 className="text-sm font-bold text-red-900">
+                {lowStockItems.length} Items Below Minimum Par Level
               </h3>
-              <p className="text-xs font-mono text-rose-800 mt-0.5">
-                {lowStockItems.map((i) => `${i.name} [${i.quantity} left]`).join(' • ')}
+              <p className="text-xs text-red-700 mt-0.5">
+                {lowStockItems.map((i) => `${i.name} (${i.quantity} left)`).join(' • ')}
               </p>
             </div>
           </div>
@@ -69,28 +60,28 @@ export const InventoryView: React.FC = () => {
       )}
 
       {/* Filter and Table */}
-      <div className="bg-white border border-black/20 shadow-2xs overflow-hidden">
-        <div className="p-4 border-b border-black/15 flex flex-col sm:flex-row items-center justify-between gap-4 bg-[#FDFCFB]">
+      <div className="bg-white border border-slate-200/80 rounded-2xl shadow-2xs overflow-hidden">
+        <div className="p-4 border-b border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50/50">
           <div className="relative flex-1 w-full max-w-md">
-            <Search className="w-3.5 h-3.5 text-black absolute left-3 top-3" />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5" />
             <input
               type="text"
-              placeholder="Search formulary, SKU, or storage shelf..."
+              placeholder="Search items, SKU, or bin location..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 border border-black/20 focus:border-black text-xs font-mono text-black placeholder-[#888] bg-white focus:outline-none transition-colors"
+              className="w-full pl-10 pr-3 py-2 border border-slate-200 rounded-xl focus:border-blue-600 text-xs text-slate-900 placeholder-slate-400 bg-white focus:outline-none transition-all"
             />
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 bg-slate-200/60 p-1 rounded-xl">
             {['All', 'Pharmaceuticals', 'Diagnostics', 'PPE', 'Consumables'].map((cat) => (
               <button
                 key={cat}
                 onClick={() => setCategoryFilter(cat)}
-                className={`px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider transition-all cursor-pointer border ${
+                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                   categoryFilter === cat
-                    ? 'bg-black text-white border-black font-bold'
-                    : 'bg-white text-[#555] border-black/15 hover:border-black'
+                    ? 'bg-white text-blue-700 shadow-xs font-bold'
+                    : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 {cat}
@@ -103,47 +94,47 @@ export const InventoryView: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="border-b border-black/15 text-[10px] font-mono font-bold text-[#888] uppercase tracking-[0.2em] bg-[#F5F5F0]">
+              <tr className="border-b border-slate-200 text-[11px] font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/50">
                 <th className="py-3.5 px-6">SKU Code</th>
-                <th className="py-3.5 px-6">Formulary Compound</th>
-                <th className="py-3.5 px-6">Classification</th>
+                <th className="py-3.5 px-6">Item Name</th>
+                <th className="py-3.5 px-6">Category</th>
                 <th className="py-3.5 px-6 text-center">In Stock</th>
-                <th className="py-3.5 px-6 text-center">Par Level</th>
-                <th className="py-3.5 px-6">Dispensary Bin</th>
+                <th className="py-3.5 px-6 text-center">Min Threshold</th>
+                <th className="py-3.5 px-6">Location</th>
                 <th className="py-3.5 px-6 text-center">Status</th>
                 <th className="py-3.5 px-6 text-right">Quick Restock</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-black/10 text-xs">
+            <tbody className="divide-y divide-slate-100 text-xs font-medium">
               {filteredInventory.map((item) => {
                 const isLow = item.quantity <= item.minThreshold;
                 return (
-                  <tr key={item.id} className="hover:bg-[#FDFCFB] transition-colors">
-                    <td className="py-4 px-6 font-mono text-black">{item.sku}</td>
-                    <td className="py-4 px-6 font-serif italic text-sm text-black font-semibold">{item.name}</td>
-                    <td className="py-4 px-6 font-mono text-[#666]">{item.category}</td>
-                    <td className="py-4 px-6 text-center font-mono font-bold text-black">
+                  <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-4 px-6 font-mono text-slate-600">{item.sku}</td>
+                    <td className="py-4 px-6 font-bold text-slate-900">{item.name}</td>
+                    <td className="py-4 px-6 text-slate-600">{item.category}</td>
+                    <td className="py-4 px-6 text-center font-bold text-slate-900">
                       {item.quantity} {item.unit}
                     </td>
-                    <td className="py-4 px-6 text-center font-mono text-[#888]">
+                    <td className="py-4 px-6 text-center text-slate-400">
                       {item.minThreshold} {item.unit}
                     </td>
-                    <td className="py-4 px-6 font-mono text-[#555]">{item.location}</td>
+                    <td className="py-4 px-6 text-slate-600">{item.location}</td>
                     <td className="py-4 px-6 text-center">
                       <span
-                        className={`inline-block px-2.5 py-0.5 text-[9px] font-mono uppercase tracking-wider border ${
+                        className={`inline-block px-2.5 py-1 rounded-full text-[11px] font-semibold ${
                           isLow
-                            ? 'bg-rose-50 border-rose-500 text-rose-900 font-bold'
-                            : 'bg-[#F5F5F0] border-black/20 text-black'
+                            ? 'bg-red-100 text-red-700'
+                            : 'bg-emerald-100 text-emerald-800'
                         }`}
                       >
-                        {isLow ? 'CRITICAL LOW' : 'OPTIMAL'}
+                        • {isLow ? 'Low Stock' : 'Optimal'}
                       </span>
                     </td>
                     <td className="py-4 px-6 text-right">
                       <button
                         onClick={() => restockItem(item.id, 20)}
-                        className="px-3 py-1 bg-white hover:bg-black hover:text-white border border-black font-mono text-[10px] uppercase tracking-wider transition-colors cursor-pointer"
+                        className="px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs font-semibold rounded-lg transition-colors cursor-pointer"
                       >
                         + 20 {item.unit}
                       </button>

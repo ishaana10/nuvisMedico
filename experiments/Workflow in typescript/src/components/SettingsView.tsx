@@ -17,109 +17,93 @@ export const SettingsView: React.FC = () => {
 
   return (
     <div id="settings-view" className="p-8 lg:p-10 max-w-4xl mx-auto space-y-8 animate-in fade-in duration-200">
-      <div className="border-b border-black/15 pb-6">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="w-2 h-2 bg-black"></span>
-          <span className="text-[10px] font-mono font-bold tracking-[0.3em] uppercase text-[#777]">
-            SYSTEM CONFIGURATION
-          </span>
-        </div>
-        <h1 className="text-3xl font-serif italic text-[#1C1C1C] tracking-tight">
-          Practice Protocol & Parameters
+      <div className="border-b border-slate-200 pb-5">
+        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+          System Configuration & Settings
         </h1>
-        <p className="text-xs text-[#666] mt-1 font-sans">
-          Configure clinical institutional identity, automated SMS patient outreach, and biometric alerts.
+        <p className="text-xs text-slate-500 mt-0.5">
+          Configure clinic identity, notifications, automated SMS, and operational preferences.
         </p>
       </div>
 
-      <form onSubmit={handleSave} className="space-y-8">
+      <form onSubmit={handleSave} className="space-y-6">
         {/* Practice Information */}
-        <div className="bg-white border border-black/20 p-8 shadow-2xs space-y-6">
-          <div className="flex items-center justify-between border-b border-black/10 pb-4">
-            <div className="flex items-center gap-3 text-black">
-              <Building2 className="w-4 h-4" />
-              <h2 className="font-serif italic text-xl text-[#1C1C1C]">Institutional Identity</h2>
-            </div>
-            <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-[#888]">
-              01 / PRACTICE
-            </span>
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-2xs space-y-6">
+          <div className="flex items-center gap-3 border-b border-slate-100 pb-4 text-slate-900">
+            <Building2 className="w-5 h-5 text-blue-600" />
+            <h2 className="font-bold text-base">Practice Identity</h2>
           </div>
 
-          <div className="space-y-5 text-xs font-mono">
+          <div className="space-y-4 text-xs font-medium">
             <div>
-              <label className="block text-[10px] font-bold text-[#555] uppercase tracking-wider mb-1.5">
-                Practice Designation
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Clinic Name
               </label>
               <input
                 type="text"
                 value={clinicName}
                 onChange={(e) => setClinicName(e.target.value)}
-                className="w-full p-3 border border-black/20 focus:border-black bg-[#FDFCFB] text-xs font-sans text-black focus:outline-none transition-colors"
+                className="w-full p-2.5 border border-slate-200 rounded-xl focus:border-blue-600 bg-slate-50/50 text-xs text-slate-900 focus:bg-white focus:outline-none transition-all"
               />
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold text-[#555] uppercase tracking-wider mb-1.5">
-                Physical Dispensary Address
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Clinic Address
               </label>
               <input
                 type="text"
                 value={clinicAddress}
                 onChange={(e) => setClinicAddress(e.target.value)}
-                className="w-full p-3 border border-black/20 focus:border-black bg-[#FDFCFB] text-xs font-sans text-black focus:outline-none transition-colors"
+                className="w-full p-2.5 border border-slate-200 rounded-xl focus:border-blue-600 bg-slate-50/50 text-xs text-slate-900 focus:bg-white focus:outline-none transition-all"
               />
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold text-[#555] uppercase tracking-wider mb-1.5">
-                Switchboard Communications Line
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Phone Line
               </label>
               <input
                 type="text"
                 value={clinicPhone}
                 onChange={(e) => setClinicPhone(e.target.value)}
-                className="w-full p-3 border border-black/20 focus:border-black bg-[#FDFCFB] text-xs font-mono text-black focus:outline-none transition-colors"
+                className="w-full p-2.5 border border-slate-200 rounded-xl focus:border-blue-600 bg-slate-50/50 text-xs text-slate-900 focus:bg-white focus:outline-none transition-all"
               />
             </div>
           </div>
         </div>
 
         {/* Notifications & Patient Automation */}
-        <div className="bg-white border border-black/20 p-8 shadow-2xs space-y-6">
-          <div className="flex items-center justify-between border-b border-black/10 pb-4">
-            <div className="flex items-center gap-3 text-black">
-              <Bell className="w-4 h-4" />
-              <h2 className="font-serif italic text-xl text-[#1C1C1C]">Automated Telemetry & Alerts</h2>
-            </div>
-            <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-[#888]">
-              02 / AUTOMATION
-            </span>
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-2xs space-y-6">
+          <div className="flex items-center gap-3 border-b border-slate-100 pb-4 text-slate-900">
+            <Bell className="w-5 h-5 text-blue-600" />
+            <h2 className="font-bold text-base">Automated Notifications</h2>
           </div>
 
-          <div className="space-y-3 font-mono text-xs">
-            <label className="flex items-center justify-between p-4 bg-[#FDFCFB] border border-black/10 cursor-pointer hover:border-black transition-colors">
+          <div className="space-y-3 text-xs">
+            <label className="flex items-center justify-between p-4 bg-slate-50/50 rounded-xl border border-slate-200/60 cursor-pointer hover:bg-slate-100/50 transition-colors">
               <div>
-                <span className="font-bold text-black uppercase tracking-wider text-[11px] block">
+                <span className="font-bold text-slate-900 text-xs block">
                   Automated Appointment SMS Reminders
                 </span>
-                <p className="text-[10px] text-[#666] mt-0.5 font-sans">
-                  Send 24-hour scheduled triage alert to confirmed patients
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Send 24-hour reminder alert to confirmed patients
                 </p>
               </div>
               <input
                 type="checkbox"
                 checked={smsReminders}
                 onChange={(e) => setSmsReminders(e.target.checked)}
-                className="w-4 h-4 accent-black cursor-pointer"
+                className="w-4 h-4 accent-blue-600 rounded cursor-pointer"
               />
             </label>
 
-            <label className="flex items-center justify-between p-4 bg-[#FDFCFB] border border-black/10 cursor-pointer hover:border-black transition-colors">
+            <label className="flex items-center justify-between p-4 bg-slate-50/50 rounded-xl border border-slate-200/60 cursor-pointer hover:bg-slate-100/50 transition-colors">
               <div>
-                <span className="font-bold text-black uppercase tracking-wider text-[11px] block">
-                  Critical Pathology Alert Stream
+                <span className="font-bold text-slate-900 text-xs block">
+                  Critical Pathology Alert Notifications
                 </span>
-                <p className="text-[10px] text-[#666] mt-0.5 font-sans">
+                <p className="text-xs text-slate-500 mt-0.5">
                   Notify attending physician immediately upon critical out-of-range diagnostics
                 </p>
               </div>
@@ -127,7 +111,7 @@ export const SettingsView: React.FC = () => {
                 type="checkbox"
                 checked={emailAlerts}
                 onChange={(e) => setEmailAlerts(e.target.checked)}
-                className="w-4 h-4 accent-black cursor-pointer"
+                className="w-4 h-4 accent-blue-600 rounded cursor-pointer"
               />
             </label>
           </div>
@@ -137,10 +121,10 @@ export const SettingsView: React.FC = () => {
         <div className="flex justify-end">
           <button
             type="submit"
-            className="px-8 py-3.5 bg-black hover:bg-neutral-800 text-white font-mono font-bold uppercase tracking-[0.2em] text-xs border border-black shadow-xs flex items-center gap-2 transition-all cursor-pointer"
+            className="px-6 py-3 bg-[#0f2d71] hover:bg-[#0c245a] text-white font-semibold text-xs rounded-xl shadow-sm flex items-center gap-2 transition-all cursor-pointer"
           >
             <Save className="w-4 h-4" />
-            <span>Commit Configuration</span>
+            <span>Save Settings</span>
           </button>
         </div>
       </form>

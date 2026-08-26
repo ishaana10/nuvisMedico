@@ -63,82 +63,76 @@ export const BillingView: React.FC = () => {
   return (
     <div id="billing-view" className="p-8 lg:p-10 max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-200">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-black/15 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="w-2 h-2 bg-black"></span>
-            <span className="text-[10px] font-mono font-bold tracking-[0.3em] uppercase text-[#777]">
-              LEDGER & ACCOUNTS
-            </span>
-          </div>
-          <h1 className="text-3xl font-serif italic text-[#1C1C1C] tracking-tight">
-            Fiscal Claims & Accounts Receivable
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+            Fiscal Claims & Billing
           </h1>
-          <p className="text-xs text-[#666] mt-1 font-sans">
-            Maintain reconciliation of patient statements, third-party payer disbursements, and overdue balances.
+          <p className="text-xs text-slate-500 mt-0.5">
+            Reconciliation of patient statements, third-party payer claims, and overdue balances.
           </p>
         </div>
 
         <button
           onClick={() => setShowCreateModal(true)}
-          className="px-6 py-3 bg-black hover:bg-neutral-800 text-white text-xs font-mono font-bold uppercase tracking-[0.2em] border border-black flex items-center gap-2 transition-all self-start sm:self-auto cursor-pointer shadow-xs"
+          className="px-5 py-2.5 bg-[#0f2d71] hover:bg-[#0c245a] text-white text-xs font-semibold rounded-xl flex items-center gap-2 transition-all self-start sm:self-auto cursor-pointer shadow-sm"
         >
-          <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-          <span>Issue Statement</span>
+          <Plus className="w-4 h-4" />
+          <span>Issue Invoice</span>
         </button>
       </div>
 
-      {/* Overview Cards (Artistic Stat Boxes) */}
+      {/* Overview Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div className="bg-white border border-black/20 p-6 shadow-2xs relative">
-          <span className="text-[9px] font-mono font-bold text-[#888] uppercase tracking-[0.25em] block">
-            01 / PENDING RECEIVABLES
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs">
+          <span className="text-xs font-medium text-slate-500 block">
+            Pending Receivables
           </span>
-          <p className="text-3xl font-serif italic text-black mt-2">${totalPending.toLocaleString()}</p>
-          <span className="text-[10px] font-mono text-[#666] mt-1 block">Active claims awaiting payer remittance</span>
+          <p className="text-2xl font-bold text-slate-900 mt-1">${totalPending.toLocaleString()}</p>
+          <span className="text-[11px] font-semibold text-amber-600 mt-1 block">Active claims awaiting remittance</span>
         </div>
 
-        <div className="bg-white border border-rose-400 p-6 shadow-2xs relative">
-          <span className="text-[9px] font-mono font-bold text-rose-800 uppercase tracking-[0.25em] block">
-            02 / DELINQUENT BALANCES
+        <div className="bg-white border border-red-200 rounded-2xl p-5 shadow-2xs">
+          <span className="text-xs font-medium text-slate-500 block">
+            Delinquent / Overdue
           </span>
-          <p className="text-3xl font-serif italic text-rose-950 mt-2">{overdueCount}</p>
-          <span className="text-[10px] font-mono text-rose-700 mt-1 block">Accounts requiring collection notice</span>
+          <p className="text-2xl font-bold text-red-600 mt-1">{overdueCount} Accounts</p>
+          <span className="text-[11px] font-semibold text-red-600 mt-1 block">Requires collection action</span>
         </div>
 
-        <div className="bg-white border border-black/20 p-6 shadow-2xs relative">
-          <span className="text-[9px] font-mono font-bold text-[#888] uppercase tracking-[0.25em] block">
-            03 / MONTHLY RECONCILIATION
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs">
+          <span className="text-xs font-medium text-slate-500 block">
+            Monthly Collection Rate
           </span>
-          <p className="text-3xl font-serif italic text-black mt-2">$28,450</p>
-          <span className="text-[10px] font-mono text-[#666] mt-1 block">96.4% payer acceptance rate</span>
+          <p className="text-2xl font-bold text-slate-900 mt-1">96.4%</p>
+          <span className="text-[11px] font-semibold text-emerald-600 mt-1 block">+2.1% from previous month</span>
         </div>
       </div>
 
       {/* Invoices Table Card */}
-      <div className="bg-white border border-black/20 shadow-2xs overflow-hidden">
+      <div className="bg-white border border-slate-200/80 rounded-2xl shadow-2xs overflow-hidden">
         {/* Filters */}
-        <div className="p-4 border-b border-black/15 flex flex-col sm:flex-row items-center justify-between gap-4 bg-[#FDFCFB]">
+        <div className="p-4 border-b border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50/50">
           <div className="relative flex-1 w-full max-w-md">
-            <Search className="w-3.5 h-3.5 text-black absolute left-3 top-3" />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5" />
             <input
               type="text"
-              placeholder="Search invoice identifier, patient name, or MRN..."
+              placeholder="Search invoice #, patient name, or MRN..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 border border-black/20 focus:border-black text-xs font-mono text-black placeholder-[#888] bg-white focus:outline-none transition-colors"
+              className="w-full pl-10 pr-3 py-2 border border-slate-200 rounded-xl focus:border-blue-600 text-xs text-slate-900 placeholder-slate-400 bg-white focus:outline-none transition-all"
             />
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 bg-slate-200/60 p-1 rounded-xl">
             {['All', 'Overdue', 'Pending', 'Paid'].map((st) => (
               <button
                 key={st}
                 onClick={() => setStatusFilter(st)}
-                className={`px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider transition-all cursor-pointer border ${
+                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                   statusFilter === st
-                    ? 'bg-black text-white border-black font-bold'
-                    : 'bg-white text-[#555] border-black/15 hover:border-black'
+                    ? 'bg-white text-blue-700 shadow-xs font-bold'
+                    : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 {st}
@@ -151,57 +145,57 @@ export const BillingView: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="border-b border-black/15 text-[10px] font-mono font-bold text-[#888] uppercase tracking-[0.2em] bg-[#F5F5F0]">
+              <tr className="border-b border-slate-200 text-[11px] font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/50">
                 <th className="py-3.5 px-6">Invoice #</th>
-                <th className="py-3.5 px-6">Patient Dossier</th>
+                <th className="py-3.5 px-6">Patient</th>
                 <th className="py-3.5 px-6">Service Date</th>
-                <th className="py-3.5 px-6">Clinical Line Items</th>
+                <th className="py-3.5 px-6">Line Items</th>
                 <th className="py-3.5 px-6 text-right">Gross Total</th>
                 <th className="py-3.5 px-6 text-right">Patient Portion</th>
                 <th className="py-3.5 px-6 text-center">Status</th>
                 <th className="py-3.5 px-6 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-black/10 text-xs">
+            <tbody className="divide-y divide-slate-100 text-xs font-medium">
               {filteredInvoices.map((inv) => (
-                <tr key={inv.id} className="hover:bg-[#FDFCFB] transition-colors">
-                  <td className="py-4 px-6 font-mono font-bold text-black">{inv.invoiceNumber}</td>
+                <tr key={inv.id} className="hover:bg-slate-50/80 transition-colors">
+                  <td className="py-4 px-6 font-bold text-slate-900">{inv.invoiceNumber}</td>
                   <td className="py-4 px-6">
-                    <p className="font-serif italic text-sm text-black font-semibold">{inv.patientName}</p>
-                    <p className="text-[10px] font-mono text-[#888]">MRN #{inv.patientMrn}</p>
+                    <p className="font-bold text-slate-900">{inv.patientName}</p>
+                    <p className="text-[10px] text-slate-400">MRN #{inv.patientMrn}</p>
                   </td>
-                  <td className="py-4 px-6 font-mono text-[#666] whitespace-nowrap">{inv.serviceDate}</td>
-                  <td className="py-4 px-6 text-[#555] max-w-xs truncate font-sans">{inv.services.join(', ')}</td>
-                  <td className="py-4 px-6 text-right font-mono font-bold text-black">${inv.amount}</td>
-                  <td className="py-4 px-6 text-right font-mono font-bold text-black">${inv.patientOwed}</td>
+                  <td className="py-4 px-6 text-slate-600 whitespace-nowrap">{inv.serviceDate}</td>
+                  <td className="py-4 px-6 text-slate-600 max-w-xs truncate">{inv.services.join(', ')}</td>
+                  <td className="py-4 px-6 text-right font-bold text-slate-900">${inv.amount}</td>
+                  <td className="py-4 px-6 text-right font-bold text-slate-900">${inv.patientOwed}</td>
                   <td className="py-4 px-6 text-center">
                     <span
-                      className={`inline-block px-2.5 py-0.5 text-[9px] font-mono uppercase tracking-wider border ${
+                      className={`inline-block px-2.5 py-1 rounded-full text-[11px] font-semibold ${
                         inv.status === 'Paid'
-                          ? 'bg-[#F5F5F0] border-black text-black font-bold'
+                          ? 'bg-emerald-100 text-emerald-800'
                           : inv.status === 'Overdue'
-                          ? 'bg-rose-50 border-rose-500 text-rose-900 font-bold'
-                          : 'bg-white border-black/30 text-[#555]'
+                          ? 'bg-red-100 text-red-700'
+                          : 'bg-amber-100 text-amber-800'
                       }`}
                     >
-                      {inv.status}
+                      • {inv.status}
                     </span>
                   </td>
                   <td className="py-4 px-6 text-right">
                     {inv.status !== 'Paid' ? (
                       <button
                         onClick={() => markInvoicePaid(inv.id)}
-                        className="px-3 py-1 bg-black text-white hover:bg-neutral-800 font-mono text-[10px] uppercase tracking-wider transition-colors cursor-pointer border border-black"
+                        className="px-3 py-1 bg-emerald-600 text-white hover:bg-emerald-700 text-xs font-semibold rounded-lg transition-colors cursor-pointer shadow-xs"
                       >
                         Settle
                       </button>
                     ) : (
                       <button
                         onClick={() => showToast('Receipt Downloaded', `Receipt for ${inv.invoiceNumber} generated.`, 'info')}
-                        className="p-1.5 border border-black/20 hover:bg-black hover:text-white transition-colors cursor-pointer inline-flex items-center"
+                        className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer inline-flex items-center"
                         title="Print Receipt"
                       >
-                        <Printer className="w-3.5 h-3.5" />
+                        <Printer className="w-4 h-4" />
                       </button>
                     )}
                   </td>
