@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/includes/security.php';
 $pageTitle = "Administrator Settings - ClinicFlow";
 $activePage = "admin";
 include __DIR__ . '/includes/header.php';
@@ -287,6 +288,31 @@ $activeTab = $_GET['tab'] ?? 'users';
             <div class="md:col-span-2">
                 <label class="block font-bold text-slate-700 mb-1">Receipt Thank You & Confirmation Message</label>
                 <textarea name="receipt_thank_you_msg" rows="2" class="w-full bg-surface-container-low p-3 rounded-xl border border-outline-variant/40 font-medium"><?= htmlspecialchars($settings['receipt_thank_you_msg'] ?? 'Thank you for your payment. Your account balance for this invoice is cleared.') ?></textarea>
+            </div>
+        </div>
+
+        <hr class="border-outline-variant/20">
+
+        <!-- Fully Customisable Medical Certificate Settings -->
+        <h2 class="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-2">
+            <span class="material-symbols-outlined text-base">badge</span>
+            <span>4. Medical Certificate Customization</span>
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div class="md:col-span-2">
+                <label class="block font-bold text-slate-700 mb-1">Medical Certificate Header Title</label>
+                <input type="text" name="cert_header_title" value="<?= htmlspecialchars($settings['cert_header_title'] ?? 'OFFICIAL MEDICAL CERTIFICATE') ?>" class="w-full bg-surface-container-low px-3.5 py-2.5 rounded-xl border border-outline-variant/40 font-bold">
+            </div>
+
+            <div class="md:col-span-2">
+                <label class="block font-bold text-slate-700 mb-1">Certificate Purpose & Disclaimer Statement</label>
+                <textarea name="cert_disclaimer" rows="2" class="w-full bg-surface-container-low p-3 rounded-xl border border-outline-variant/40 font-medium"><?= htmlspecialchars($settings['cert_disclaimer'] ?? 'This medical certificate is issued upon request of the patient for whatever legal or administrative purpose it may serve.') ?></textarea>
+            </div>
+
+            <div class="md:col-span-2">
+                <label class="block font-bold text-slate-700 mb-1">Certificate Footer Note / Validity Notice</label>
+                <textarea name="cert_footer_note" rows="2" class="w-full bg-surface-container-low p-3 rounded-xl border border-outline-variant/40 font-medium"><?= htmlspecialchars($settings['cert_footer_note'] ?? 'Valid with official clinic digital stamp and physician e-signature.') ?></textarea>
             </div>
         </div>
 

@@ -33,6 +33,9 @@ $settings = [
     'invoice_footer_note'   => trim($_POST['invoice_footer_note'] ?? ''),
     'receipt_header_title'  => trim($_POST['receipt_header_title'] ?? 'OFFICIAL PAYMENT RECEIPT'),
     'receipt_thank_you_msg' => trim($_POST['receipt_thank_you_msg'] ?? ''),
+    'cert_header_title'     => trim($_POST['cert_header_title'] ?? 'OFFICIAL MEDICAL CERTIFICATE'),
+    'cert_disclaimer'       => trim($_POST['cert_disclaimer'] ?? ''),
+    'cert_footer_note'      => trim($_POST['cert_footer_note'] ?? ''),
     'doc_prc_no'            => trim($_POST['doc_prc_no'] ?? ''),
     'doc_ptr_no'            => trim($_POST['doc_ptr_no'] ?? '')
 ];

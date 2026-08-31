@@ -23,6 +23,10 @@ $clinicAddress = $settings['clinic_address'] ?? '100 Healthcare Way, Suite 400, 
 $clinicPhone = $settings['clinic_phone'] ?? '(555) 019-2831';
 $clinicEmail = $settings['clinic_email'] ?? 'contact@clinicflow.com';
 
+$certHeaderTitle = $settings['cert_header_title'] ?? 'OFFICIAL MEDICAL CERTIFICATE';
+$certDisclaimer = $settings['cert_disclaimer'] ?? 'This medical certificate is issued upon request of the patient for whatever legal or administrative purpose it may serve.';
+$certFooterNote = $settings['cert_footer_note'] ?? 'Valid with official clinic digital stamp and physician e-signature.';
+
 // Fetch Certificate details
 $cert = null;
 if ($certId) {
@@ -126,7 +130,7 @@ $digitalStamp = $doctor['digital_stamp'] ?? '';
                 <span class="text-xs text-slate-500 font-mono block">Certificate No: <strong class="text-slate-900"><?= htmlspecialchars($cert['certificate_number']) ?></strong></span>
             </div>
             <div class="text-center">
-                <h2 class="text-xl font-bold uppercase tracking-widest text-slate-900 border-b-2 border-slate-900 pb-1 px-4">Medical Certificate</h2>
+                <h2 class="text-xl font-bold uppercase tracking-widest text-slate-900 border-b-2 border-slate-900 pb-1 px-4"><?= htmlspecialchars($certHeaderTitle) ?></h2>
             </div>
             <div class="text-right">
                 <span class="text-xs text-slate-500 font-mono block">Date: <strong class="text-slate-900"><?= htmlspecialchars(date('F d, Y', strtotime($cert['issue_date']))) ?></strong></span>
@@ -177,8 +181,13 @@ $digitalStamp = $doctor['digital_stamp'] ?? '';
             <?php endif; ?>
 
             <p class="text-xs text-slate-500 italic pt-2">
-                This medical certificate is issued upon request of the patient for whatever legal or administrative purpose it may serve.
+                <?= htmlspecialchars($certDisclaimer) ?>
             </p>
+            <?php if (!empty($certFooterNote)): ?>
+                <p class="text-[11px] text-slate-400 font-mono italic">
+                    Note: <?= htmlspecialchars($certFooterNote) ?>
+                </p>
+            <?php endif; ?>
         </div>
 
         <!-- Physician Signature Block & Digital Stamp -->
