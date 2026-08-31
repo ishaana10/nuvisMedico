@@ -42,17 +42,34 @@ function getDB(): PDO {
     $user = $cfg['db_user'] ?? 'root';
     $pass = $cfg['db_pass'] ?? '';
 
-    $dsn = "mysql:host={$host};port={$port};dbname={$dbname};charset=utf8mb4";
-    $pdo = new PDO($dsn, $user, $pass, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES => false,
-    ]);
-    executeAutoSchemaMigrations($pdo);
-    ensureDoctorColumnsExist($pdo);
-    runDatabaseMigrations($pdo);
-    seedDefaultUsersIfEmpty($pdo);
-    return $pdo;
+    try {
+        $dsn = "mysql:host={$host};port={$port};dbname={$dbname};charset=utf8mb4";
+        $pdo = new PDO($dsn, $user, $pass, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false,
+        ]);
+        executeAutoSchemaMigrations($pdo);
+        ensureDoctorColumnsExist($pdo);
+        runDatabaseMigrations($pdo);
+        seedDefaultUsersIfEmpty($pdo);
+        return $pdo;
+    } catch (PDOException $e) {
+        // In local environments without MySQL daemon, fallback seamlessly to SQLite file DB
+        $sqliteDir = __DIR__ . '/../database';
+        if (!is_dir($sqliteDir)) {
+            @mkdir($sqliteDir, 0777, true);
+        }
+        $sqlitePath = $sqliteDir . '/clinicflow.sqlite';
+        $pdo = new PDO("sqlite:" . $sqlitePath, null, null, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        ]);
+        executeAutoSchemaMigrations($pdo);
+        ensureDoctorColumnsExist($pdo);
+        seedDefaultUsersIfEmpty($pdo);
+        return $pdo;
+    }
 }
 
 /**
