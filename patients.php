@@ -24,23 +24,23 @@ try {
 
 <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
     <div>
-        <h1 class="text-2xl font-bold text-on-surface">Patient Records</h1>
-        <p class="text-xs text-outline font-medium">Browse and search registered patient charts, medical history, and clinical profiles</p>
+        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Patient Records</h1>
+        <p class="text-xs text-slate-500 font-medium">Browse and search registered patient charts, medical history, and clinical profiles</p>
     </div>
-    <a href="register_patient.php" class="px-4 py-2 bg-primary text-white text-xs font-semibold rounded-xl hover:bg-primary/90 transition shadow-xs flex items-center gap-2 self-start md:self-auto">
+    <a href="register_patient.php" class="btn-primary">
         <span class="material-symbols-outlined text-base">person_add</span>
-        <span>Register New Patient</span>
+        <span>Register Patient</span>
     </a>
 </div>
 
 <!-- Search & Filter Bar -->
-<div class="bg-surface-container-lowest rounded-2xl border border-outline-variant/30 p-4 mb-6 shadow-xs flex flex-col md:flex-row gap-4 justify-between items-center">
+<div class="card-container mb-6 flex flex-col md:flex-row gap-4 justify-between items-center">
     <form action="patients.php" method="GET" class="relative w-full md:w-96">
-        <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-outline text-lg">search</span>
-        <input type="text" name="q" value="<?= htmlspecialchars($search) ?>" placeholder="Search by name, MRN, phone number..." class="w-full bg-surface-container-low pl-10 pr-4 py-2 rounded-xl text-xs border border-transparent focus:border-primary focus:bg-white focus:outline-none transition">
+        <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+        <input type="text" name="q" value="<?= htmlspecialchars($search) ?>" placeholder="Search by name, MRN, phone..." class="form-input pl-10">
     </form>
-    <p class="text-xs text-outline font-medium">
-        Showing <span class="font-bold text-on-surface"><?= count($patients) ?></span> registered patients
+    <p class="text-xs text-slate-500 font-medium">
+        Showing <span class="font-bold text-slate-900"><?= count($patients) ?></span> registered patients
     </p>
 </div>
 

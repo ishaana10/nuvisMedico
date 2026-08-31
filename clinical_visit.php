@@ -55,42 +55,45 @@ $activePage = "clinical-visit";
 include __DIR__ . '/includes/header.php';
 ?>
 
-<!-- Patient Encounter Header Bar -->
-<div class="bg-surface-container-lowest rounded-2xl border border-outline-variant/30 p-5 mb-6 shadow-xs">
+<!-- Patient Encounter Header Bar (Matches Prescription.png) -->
+<div class="card-container mb-6">
     <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-primary text-white font-bold text-lg flex items-center justify-center">
+            <div class="w-12 h-12 rounded-xl bg-blue-700 text-white font-bold text-lg flex items-center justify-center shadow-md">
                 <?= htmlspecialchars($patient['initials'] ?: 'P') ?>
             </div>
             <div>
-                <div class="flex items-center gap-2">
-                    <h1 class="text-xl font-bold text-on-surface"><?= htmlspecialchars($patient['first_name'] . ' ' . $patient['last_name']) ?></h1>
-                    <span class="px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed text-[11px] font-bold font-mono">
-                        <?= htmlspecialchars($patient['mrn']) ?>
-                    </span>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <h1 class="text-xl font-bold text-slate-900"><?= htmlspecialchars($patient['first_name'] . ' ' . $patient['last_name']) ?></h1>
+                    <?php if (!empty($patient['allergies']) || !empty($patient['known_allergies'])): ?>
+                        <span class="badge-chip badge-allergy">
+                            <span class="material-symbols-outlined text-xs">warning</span>
+                            <?= htmlspecialchars($patient['allergies'] ?: $patient['known_allergies']) ?>
+                        </span>
+                    <?php endif; ?>
                 </div>
-                <p class="text-xs text-outline font-medium mt-0.5">
-                    <?= htmlspecialchars($patient['age']) ?> yrs • <?= htmlspecialchars($patient['gender']) ?> • DOB: <?= htmlspecialchars($patient['dob']) ?> • Attending: <strong class="text-on-surface"><?= htmlspecialchars($currentDoctor['name']) ?></strong>
+                <p class="text-xs text-slate-500 font-medium mt-1">
+                    DOB: <?= htmlspecialchars($patient['dob']) ?> (<?= htmlspecialchars($patient['age']) ?>Y) &nbsp;|&nbsp; MRN: <span class="font-mono font-bold text-slate-700"><?= htmlspecialchars($patient['mrn']) ?></span> &nbsp;|&nbsp; <?= htmlspecialchars($patient['gender']) ?>
                 </p>
             </div>
         </div>
 
-        <div class="flex flex-wrap items-center gap-3">
-            <button type="button" onclick="document.getElementById('createInvoiceModal').classList.remove('hidden')" class="px-3.5 py-2 bg-blue-700 text-white font-semibold text-xs rounded-xl hover:bg-blue-800 transition shadow-xs flex items-center gap-1.5">
+        <div class="flex flex-wrap items-center gap-2.5">
+            <button type="button" onclick="document.getElementById('createInvoiceModal').classList.remove('hidden')" class="btn-secondary text-xs py-2 px-3">
                 <span class="material-symbols-outlined text-base">receipt_long</span>
-                <span>Create Invoice</span>
+                <span>Invoice</span>
             </button>
-            <button type="button" onclick="document.getElementById('issueMedCertModal').classList.remove('hidden')" class="px-3.5 py-2 bg-emerald-700 text-white font-semibold text-xs rounded-xl hover:bg-emerald-800 transition shadow-xs flex items-center gap-1.5">
+            <button type="button" onclick="document.getElementById('issueMedCertModal').classList.remove('hidden')" class="btn-secondary text-xs py-2 px-3">
                 <span class="material-symbols-outlined text-base">workspace_premium</span>
-                <span>Medical Cert</span>
+                <span>Med Cert</span>
             </button>
-            <a href="print_prescription.php?patient_id=<?= htmlspecialchars($patient['id']) ?>&visit_id=<?= htmlspecialchars($visitId) ?>" target="_blank" class="px-3.5 py-2 bg-surface-container-high text-primary font-semibold text-xs rounded-xl hover:bg-surface-container-highest transition flex items-center gap-1.5">
+            <a href="print_prescription.php?patient_id=<?= htmlspecialchars($patient['id']) ?>&visit_id=<?= htmlspecialchars($visitId) ?>" target="_blank" class="btn-outline-blue text-xs py-2 px-3.5">
                 <span class="material-symbols-outlined text-base">print</span>
-                <span>Print Rx</span>
+                <span>Print Prescription</span>
             </a>
-            <button type="button" onclick="document.getElementById('finalizeModal').classList.remove('hidden')" class="px-4 py-2 bg-emerald-600 text-white font-semibold text-xs rounded-xl hover:bg-emerald-700 transition shadow-xs flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-base">task_alt</span>
-                <span>Finalize Visit</span>
+            <button type="button" onclick="document.getElementById('finalizeModal').classList.remove('hidden')" class="btn-primary text-xs py-2 px-4">
+                <span class="material-symbols-outlined text-base">check_circle</span>
+                <span>Finish Visit</span>
             </button>
         </div>
     </div>
@@ -105,29 +108,37 @@ include __DIR__ . '/includes/header.php';
     <!-- Left Column (2 Cols): Vitals & SOAP Notes -->
     <div class="lg:col-span-2 space-y-6">
 
-        <!-- Vitals Input Section -->
-        <div class="bg-surface-container-lowest rounded-2xl border border-outline-variant/30 p-5 shadow-xs">
-            <h2 class="text-xs font-bold text-outline uppercase tracking-wider mb-3 flex items-center gap-2">
-                <span class="material-symbols-outlined text-primary text-base">vital_signs</span>
-                <span>Patient Vitals</span>
-            </h2>
+        <!-- Vitals Summary Bar (Matches Prescription.png) -->
+        <div class="vitals-summary-bar">
+            <div class="vital-metric border-r border-slate-200 pr-4">
+                <span class="vital-label">BLOOD PRESSURE</span>
+                <div class="vital-value">
+                    <input type="text" name="blood_pressure" value="<?= htmlspecialchars($vitals['blood_pressure']) ?>" placeholder="120/80" class="border-none p-0 focus:ring-0 text-xl font-bold w-24 bg-transparent text-slate-900">
+                    <span class="vital-unit">mmHg</span>
+                </div>
+            </div>
 
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                <div>
-                    <label class="block font-bold text-slate-700 mb-1">Blood Pressure</label>
-                    <input type="text" name="blood_pressure" value="<?= htmlspecialchars($vitals['blood_pressure']) ?>" placeholder="120/80" class="w-full bg-surface-container-low px-3 py-2 rounded-xl border border-outline-variant/40 font-mono font-bold text-on-surface">
+            <div class="vital-metric border-r border-slate-200 pr-4">
+                <span class="vital-label">HEART RATE</span>
+                <div class="vital-value">
+                    <input type="number" name="heart_rate" value="<?= htmlspecialchars($vitals['heart_rate']) ?>" placeholder="72" class="border-none p-0 focus:ring-0 text-xl font-bold w-16 bg-transparent text-slate-900">
+                    <span class="vital-unit">bpm</span>
                 </div>
-                <div>
-                    <label class="block font-bold text-slate-700 mb-1">Heart Rate (bpm)</label>
-                    <input type="number" name="heart_rate" value="<?= htmlspecialchars($vitals['heart_rate']) ?>" placeholder="72" class="w-full bg-surface-container-low px-3 py-2 rounded-xl border border-outline-variant/40 font-mono font-bold text-on-surface">
+            </div>
+
+            <div class="vital-metric border-r border-slate-200 pr-4">
+                <span class="vital-label">TEMPERATURE</span>
+                <div class="vital-value">
+                    <input type="text" name="temperature" value="<?= htmlspecialchars($vitals['temperature']) ?>" placeholder="98.6" class="border-none p-0 focus:ring-0 text-xl font-bold w-16 bg-transparent text-slate-900">
+                    <span class="vital-unit">°F</span>
                 </div>
-                <div>
-                    <label class="block font-bold text-slate-700 mb-1">Temperature (°F)</label>
-                    <input type="text" name="temperature" value="<?= htmlspecialchars($vitals['temperature']) ?>" placeholder="98.6" class="w-full bg-surface-container-low px-3 py-2 rounded-xl border border-outline-variant/40 font-mono font-bold text-on-surface">
-                </div>
-                <div>
-                    <label class="block font-bold text-slate-700 mb-1">SpO2 (%)</label>
-                    <input type="number" name="oxygen_sat" value="<?= htmlspecialchars($vitals['oxygen_sat']) ?>" placeholder="99" class="w-full bg-surface-container-low px-3 py-2 rounded-xl border border-outline-variant/40 font-mono font-bold text-on-surface">
+            </div>
+
+            <div class="vital-metric">
+                <span class="vital-label">WEIGHT</span>
+                <div class="vital-value">
+                    <input type="text" name="weight" value="<?= htmlspecialchars($vitals['weight']) ?>" placeholder="145" class="border-none p-0 focus:ring-0 text-xl font-bold w-16 bg-transparent text-slate-900">
+                    <span class="vital-unit">lbs</span>
                 </div>
             </div>
         </div>
