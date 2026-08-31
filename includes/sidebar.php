@@ -21,11 +21,9 @@ $navItems = [
     <div class="space-y-5">
         <!-- Clinic Profile Badge -->
         <div class="flex items-center gap-3 px-2 py-1">
-            <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold shadow-md shadow-blue-500/20">
-                <span class="material-symbols-outlined text-xl">local_hospital</span>
-            </div>
+            <img src="assets/images/nuvis_medicoz_logo.png" alt="Nuvis Medicoz Logo" class="w-10 h-10 rounded-full object-cover border border-amber-500/50 shadow-md">
             <div class="overflow-hidden">
-                <div class="font-bold text-sm text-slate-900 truncate">City Clinic</div>
+                <div class="font-bold text-sm text-slate-900 truncate">Nuvis Medicoz</div>
                 <div class="text-[11px] font-medium text-slate-500">Admin Portal</div>
             </div>
         </div>
@@ -70,7 +68,8 @@ $navItems = [
     <div class="space-y-4">
         <div class="flex items-center justify-between border-b border-outline-variant/30 pb-3">
             <div class="flex items-center gap-2">
-                <img src="assets/images/nuvis_medico_logo.png" alt="Nuvis Medico" class="h-8 object-contain">
+                <img src="assets/images/nuvis_medicoz_logo.png" alt="Nuvis Medicoz" class="w-8 h-8 rounded-full object-cover border border-amber-500/50">
+                <span class="font-bold text-sm text-slate-900">Nuvis Medicoz</span>
             </div>
             <button onclick="toggleMobileSidebar()" class="p-1.5 text-outline hover:text-on-surface rounded-lg">
                 <span class="material-symbols-outlined text-xl">close</span>

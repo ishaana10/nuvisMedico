@@ -30,7 +30,7 @@ $currentDoctor = reset($currentDoctor) ?: ($doctors[0] ?? ['id' => 'doc-1', 'nam
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title><?= htmlspecialchars($pageTitle ?? 'ClinicFlow') ?></title>
+    <title><?= htmlspecialchars($pageTitle ?? 'Nuvis Medicoz') ?></title>
 
     <!-- Material Symbols Outlined -->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -38,6 +38,9 @@ $currentDoctor = reset($currentDoctor) ?: ($doctors[0] ?? ['id' => 'doc-1', 'nam
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+
+    <!-- Custom Unified Clinic Stylesheet -->
+    <link rel="stylesheet" href="assets/css/custom.css"/>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -124,7 +127,8 @@ $currentDoctor = reset($currentDoctor) ?: ($doctors[0] ?? ['id' => 'doc-1', 'nam
                 <span class="material-symbols-outlined text-2xl font-bold">menu</span>
             </button>
             <a href="index.php" class="flex items-center gap-2">
-                <span class="font-bold text-xl text-blue-800 tracking-tight">ClinicFlow</span>
+                <img src="assets/images/nuvis_medicoz_logo.png" alt="Nuvis Medicoz Logo" class="w-8 h-8 rounded-full object-cover border border-amber-500/50 shadow-xs">
+                <span class="font-bold text-xl text-blue-900 tracking-tight">Nuvis Medicoz</span>
             </a>
         </div>
 

@@ -44,12 +44,12 @@ $selectedPatientId = $_GET['patient_id'] ?? '';
 
 <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
     <div>
-        <h1 class="text-2xl font-bold text-on-surface">Appointments Calendar</h1>
-        <p class="text-xs text-outline font-medium">Schedule, track, and manage patient visits across attending physicians</p>
+        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Appointments & Calendar</h1>
+        <p class="text-xs text-slate-500 font-medium">Schedule, track, and manage patient visits across attending physicians</p>
     </div>
-    <a href="calendar.php?action=book" class="px-4 py-2 bg-primary text-white text-xs font-semibold rounded-xl hover:bg-primary/90 transition shadow-xs flex items-center gap-2 self-start md:self-auto">
+    <a href="calendar.php?action=book" class="btn-primary">
         <span class="material-symbols-outlined text-base">calendar_add_on</span>
-        <span>Book New Appointment</span>
+        <span>Book Appointment</span>
     </a>
 </div>
 
