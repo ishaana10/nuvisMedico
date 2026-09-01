@@ -1,7 +1,7 @@
 # Nuvis Medcare X - Deployment & System Release Notes
 
 **Current Version:** `v2.1.0-VMS3` (FRCS Fiji VMS Phase 3 & Inventory Module Release)
-**Target Environment:** Native PHP 8.1+ PDO Architecture (A2 Hosting / MySQL & SQLite compatible)
+**Target Environment:** Native PHP 8.1+ PDO Architecture (A2 Hosting / MySQL)
 
 ---
 
@@ -29,7 +29,7 @@
 
 ### 4. Application Versioning & Dual DB Engine
 - **Versioning Metadata (`config/version.php`):** Defined system release constants (`APP_NAME`, `APP_VERSION`, `APP_RELEASE_DATE`, `APP_BUILD_NAME`) displayed in login pages, header bars, and footers.
-- **Dual Database Persistence:** Native PDO layer supporting both SQLite (`database/clinicflow.sqlite`) and MySQL with automatic query dialect resolution (`ON CONFLICT` vs `ON DUPLICATE KEY UPDATE`).
+- **MySQL Database Persistence:** Native PDO layer optimized for MySQL persistence with `ON DUPLICATE KEY UPDATE` dialect resolution.
 
 ---
 
@@ -39,7 +39,7 @@
 1. Upload the application files to your web server (e.g., `public_html/` or a subdomain folder).
 2. Open your browser and navigate to:
    `https://yourdomain.com/install.php`
-3. Enter database credentials (MySQL or SQLite setup) and clinic administrator profiles.
+3. Enter database credentials (MySQL setup) and clinic administrator profiles.
 4. Click **Save Config & Install Database**.
 
 ### Manual Configuration

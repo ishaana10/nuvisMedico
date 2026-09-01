@@ -64,18 +64,10 @@ class MigrationRunner {
     }
 
     private function ensureMigrationsTable(): void {
-        $driver = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
-        if ($driver === 'sqlite') {
-            $sql = "CREATE TABLE IF NOT EXISTS schema_migrations (
-                version VARCHAR(255) PRIMARY KEY,
-                executed_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            );";
-        } else {
-            $sql = "CREATE TABLE IF NOT EXISTS schema_migrations (
-                version VARCHAR(255) PRIMARY KEY,
-                executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );";
-        }
+        $sql = "CREATE TABLE IF NOT EXISTS schema_migrations (
+            version VARCHAR(255) PRIMARY KEY,
+            executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );";
         $this->pdo->exec($sql);
     }
 
