@@ -178,4 +178,13 @@ foreach ($inventory as $item) {
     $stmt->execute($item);
 }
 
+// Medical Certificates
+$medCerts = [
+    ['mc-1', 'MC-20231024-001', 'pat-1', 'v-1', '2023-10-24', 'Acute Sinusitis (J01.90)', 'Fit for Work / School with Light Duty', '3 days medical leave recommended.', 'Rest and hydration advised. Avoid strenuous physical activity.', 'Dr. Sarah Jenkins', 'PRC-0098412', 'PTR-8842109']
+];
+$stmt = $pdo->prepare("INSERT INTO medical_certificates (id, certificate_number, patient_id, visit_id, issue_date, diagnosis, fitness_status, fit_status_details, recommendations, doctor_name, prc_number, ptr_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+foreach ($medCerts as $mc) {
+    $stmt->execute($mc);
+}
+
 echo "Database successfully initialized and seeded!\n";

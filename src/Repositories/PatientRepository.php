@@ -56,6 +56,34 @@ class PatientRepository {
         return $row ?: null;
     }
 
+    public function findAllActive(int $limit = 100, int $offset = 0): array {
+        return $this->findAll($limit, $offset);
+    }
+
+    public function search(string $query, int $limit = 50, int $offset = 0): array {
+        return $this->findAll($limit, $offset, $query);
+    }
+
+    public function update(string $id, array $data): bool {
+        $fields = [];
+        $params = [];
+        $allowed = ['mrn', 'first_name', 'last_name', 'dob', 'age', 'gender', 'phone', 'email', 'address', 'emergency_contact_name', 'blood_group', 'known_allergies', 'chronic_conditions'];
+        foreach ($allowed as $field) {
+            if (array_key_exists($field, $data)) {
+                $fields[] = "{$field} = ?";
+                $params[] = $data[$field];
+            }
+        }
+        if (empty($fields)) {
+            return true;
+        }
+        $fields[] = "updated_at = CURRENT_TIMESTAMP";
+        $params[] = $id;
+        $sql = "UPDATE patients SET " . implode(', ', $fields) . " WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute($params);
+    }
+
     public function create(array $data): string {
         $id = $data['id'] ?? ('pat-' . uniqid());
         $stmt = $this->db->prepare("

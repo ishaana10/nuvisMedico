@@ -62,4 +62,25 @@ class PatientRepositoryTest extends TestCase {
         $this->assertNotNull($patient);
         $this->assertEquals('Jane Smith', $patient['full_name']);
     }
+
+    public function testFindAllActiveAndSearchAndUpdate() {
+        $id = $this->repo->create([
+            'mrn' => 'MRN-3003',
+            'first_name' => 'Alice',
+            'last_name' => 'Wonderland',
+            'gender' => 'Female'
+        ]);
+
+        $active = $this->repo->findAllActive();
+        $this->assertNotEmpty($active);
+
+        $results = $this->repo->search('Alice');
+        $this->assertCount(1, $results);
+
+        $updated = $this->repo->update($id, ['first_name' => 'AliceUpdated']);
+        $this->assertTrue($updated);
+
+        $p = $this->repo->findById($id);
+        $this->assertEquals('AliceUpdated', $p['first_name']);
+    }
 }

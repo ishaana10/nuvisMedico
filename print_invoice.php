@@ -21,6 +21,11 @@ $sellerTin = $settings['vms_seller_tin'] ?? '502579006';
 $clinicName = $settings['clinic_name'] ?? 'Nuvis Medico Healthcare';
 $businessLocation = $settings['vms_business_location'] ?? ($settings['clinic_address'] ?? '2 Woodstand Road, Suva');
 
+$invoiceHeaderTitle = $settings['invoice_header_title'] ?? 'FISCAL INVOICE';
+$invoiceTaxId = $settings['invoice_tax_id'] ?? $sellerTin;
+$invoicePaymentTerms = $settings['invoice_payment_terms'] ?? 'Net 30 Days. Please remit payment promptly.';
+$invoiceFooterNote = $settings['invoice_footer_note'] ?? 'Thank you for choosing ClinicFlow Medical Center for your care.';
+
 // Fetch Invoice
 $stmt = $pdo->prepare("SELECT * FROM invoices WHERE id = ? OR invoice_number = ?");
 $stmt->execute([$invoiceId, $invoiceId]);
@@ -103,8 +108,8 @@ $qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=" . 
     </div>
 
     <!-- VMS Header Title Line -->
-    <div class="text-center font-bold text-sm tracking-tighter border-b border-slate-300 pb-2 mb-3">
-        ============ FISCAL INVOICE ============
+    <div class="text-center font-bold text-sm tracking-tighter border-b border-slate-300 pb-2 mb-3 uppercase">
+        ============ <?= htmlspecialchars($invoiceHeaderTitle) ?> ============
     </div>
 
     <?php if ($isNonFiscal): ?>
@@ -118,6 +123,9 @@ $qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=" . 
     <!-- Header Seller Metadata -->
     <div class="text-left space-y-0.5 mb-3 border-b border-slate-200 pb-3">
         <p class="font-bold text-sm text-slate-900"><?= htmlspecialchars($sellerTin) ?> <?= htmlspecialchars($clinicName) ?></p>
+        <?php if (!empty($invoiceTaxId) && $invoiceTaxId !== $sellerTin): ?>
+            <p>Tax ID / EIN: <span class="font-bold"><?= htmlspecialchars($invoiceTaxId) ?></span></p>
+        <?php endif; ?>
         <p><?= htmlspecialchars($businessLocation) ?></p>
         <p>Cashier: <span class="font-bold"><?= htmlspecialchars($invoice['cashier'] ?? 'Admin') ?></span></p>
         <?php if (!empty($invoice['buyer_tin'])): ?>
@@ -219,6 +227,16 @@ $qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=" . 
         <p>SDC No: <span class="font-bold"><?= htmlspecialchars($invoice['sdc_invoice_no'] ?? '7AF234D9-E377B30A-150493') ?></span></p>
         <p>Invoice Counter: <span class="font-bold"><?= htmlspecialchars($invoice['invoice_counter'] ?? '143027/150493NS') ?></span></p>
         <p>========================================</p>
+    </div>
+
+    <!-- Custom Invoice Payment Terms & Notes -->
+    <div class="my-3 space-y-1 text-[10px] text-slate-600 border-b border-slate-300 pb-3 font-sans">
+        <?php if (!empty($invoicePaymentTerms)): ?>
+            <p><strong>Payment Terms:</strong> <?= htmlspecialchars($invoicePaymentTerms) ?></p>
+        <?php endif; ?>
+        <?php if (!empty($invoiceFooterNote)): ?>
+            <p class="italic"><?= htmlspecialchars($invoiceFooterNote) ?></p>
+        <?php endif; ?>
     </div>
 
     <!-- QR Code & Verification URL -->
