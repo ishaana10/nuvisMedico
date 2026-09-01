@@ -5,29 +5,16 @@ return new class {
         $driver = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
 
         // 1. Create clinics table
-        if ($driver === 'sqlite') {
-            $pdo->exec("CREATE TABLE IF NOT EXISTS clinics (
-                id VARCHAR(50) PRIMARY KEY,
-                name VARCHAR(255) NOT NULL,
-                code VARCHAR(50) UNIQUE NOT NULL,
-                address TEXT,
-                phone VARCHAR(50),
-                email VARCHAR(255),
-                is_active INTEGER DEFAULT 1,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            );");
-        } else {
-            $pdo->exec("CREATE TABLE IF NOT EXISTS clinics (
-                id VARCHAR(50) PRIMARY KEY,
-                name VARCHAR(255) NOT NULL,
-                code VARCHAR(50) UNIQUE NOT NULL,
-                address TEXT,
-                phone VARCHAR(50),
-                email VARCHAR(255),
-                is_active TINYINT(1) DEFAULT 1,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );");
-        }
+        $pdo->exec("CREATE TABLE IF NOT EXISTS clinics (
+            id VARCHAR(50) PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            code VARCHAR(50) UNIQUE NOT NULL,
+            address TEXT,
+            phone VARCHAR(50),
+            email VARCHAR(255),
+            is_active TINYINT(1) DEFAULT 1,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );");
 
         // Insert default clinic if not exists
         $stmt = $pdo->prepare("SELECT COUNT(*) FROM clinics WHERE id = 'default-clinic'");
@@ -67,20 +54,20 @@ return new class {
         foreach ($tables as $table) {
             // Check existing columns
             $cols = [];
-            if ($driver === 'sqlite') {
-                $check = $pdo->query("PRAGMA table_info({$table})");
-                while ($row = $check->fetch()) {
-                    $cols[] = strtolower($row['name']);
-                }
-            } else {
-                try {
+            try {
+                if ($driver === 'sqlite') {
+                    $check = $pdo->query("PRAGMA table_info({$table})");
+                    while ($row = $check->fetch()) {
+                        $cols[] = strtolower($row['name']);
+                    }
+                } else {
                     $check = $pdo->query("DESCRIBE {$table}");
                     while ($row = $check->fetch()) {
                         $cols[] = strtolower($row['Field']);
                     }
-                } catch (Exception $e) {
-                    continue; // Table might not exist yet
                 }
+            } catch (Exception $e) {
+                continue; // Table might not exist yet
             }
 
             if (!empty($cols) && !in_array('clinic_id', $cols, true)) {

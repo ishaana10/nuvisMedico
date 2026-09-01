@@ -16,10 +16,13 @@ if (str_contains($uri, 'assets/')) {
     }
 }
 
-// Serve React single-page app if dist/index.html exists and classic view is not explicitly requested
-$viewMode = $_GET['view'] ?? 'react';
+// Serve React SPA only if view=react is explicitly requested; default to dynamic PHP EHR application
+$viewMode = $_GET['view'] ?? 'classic';
 if ($viewMode === 'react' && file_exists(__DIR__ . '/dist/index.html')) {
     header('Content-Type: text/html; charset=UTF-8');
+    header("Cache-Control: no-cache, no-store, must-revalidate, max-age=0");
+    header("Pragma: no-cache");
+    header("Expires: 0");
     readfile(__DIR__ . '/dist/index.html');
     exit;
 }

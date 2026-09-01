@@ -1,4 +1,4 @@
--- ClinicFlow Unified Database Schema (MySQL & SQLite Compatible)
+-- ClinicFlow Unified Database Schema (MySQL Architecture)
 
 CREATE TABLE IF NOT EXISTS clinics (
     id VARCHAR(50) PRIMARY KEY,

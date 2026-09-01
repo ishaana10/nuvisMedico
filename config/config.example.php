@@ -5,7 +5,7 @@
  */
 
 return [
-    'db_driver' => 'mysql', // 'mysql' or 'sqlite'
+    'db_driver' => 'mysql',
     'db_host'   => 'localhost',
     'db_port'   => '3306',
     'db_name'   => 'clinicflow',

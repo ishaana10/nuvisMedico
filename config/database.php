@@ -55,18 +55,14 @@ function getDB(): PDO {
         seedDefaultUsersIfEmpty($pdo);
         return $pdo;
     } catch (PDOException $e) {
-        // In local environments without MySQL daemon, fallback seamlessly to SQLite file DB
-        $sqliteDir = __DIR__ . '/../database';
-        if (!is_dir($sqliteDir)) {
-            @mkdir($sqliteDir, 0777, true);
-        }
-        $sqlitePath = $sqliteDir . '/clinicflow.sqlite';
-        $pdo = new PDO("sqlite:" . $sqlitePath, null, null, [
+        // In-memory fallback when local MySQL daemon is not reachable
+        $pdo = new PDO("sqlite::memory:", null, null, [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         ]);
         executeAutoSchemaMigrations($pdo);
         ensureDoctorColumnsExist($pdo);
+        runDatabaseMigrations($pdo);
         seedDefaultUsersIfEmpty($pdo);
         return $pdo;
     }

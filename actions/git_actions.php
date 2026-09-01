@@ -98,11 +98,10 @@ try {
         if (!$updateBranch) $updateBranch = 'main';
 
         $isSqlite = ($pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'sqlite');
-        if ($isSqlite) {
-            $stmt = $pdo->prepare("INSERT INTO clinic_settings (setting_key, setting_value) VALUES (?, ?) ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value");
-        } else {
-            $stmt = $pdo->prepare("INSERT INTO clinic_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
-        }
+        $query = $isSqlite
+            ? "INSERT INTO clinic_settings (setting_key, setting_value) VALUES (?, ?) ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value"
+            : "INSERT INTO clinic_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)";
+        $stmt = $pdo->prepare($query);
 
         $stmt->execute(['git_path', $gitPath]);
         $stmt->execute(['git_repo_dir', $gitRepoDir]);
@@ -131,12 +130,7 @@ try {
         runGitCmd($gitPath, $gitRepoDir, 'fetch origin');
 
         // Save URL setting
-        $isSqlite = ($pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'sqlite');
-        if ($isSqlite) {
-            $stmt = $pdo->prepare("INSERT INTO clinic_settings (setting_key, setting_value) VALUES (?, ?) ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value");
-        } else {
-            $stmt = $pdo->prepare("INSERT INTO clinic_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
-        }
+        $stmt = $pdo->prepare("INSERT INTO clinic_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
         $stmt->execute(['git_remote_url', $repoUrl]);
 
         echo json_encode(['success' => true, 'output' => trim($output)]);
@@ -166,12 +160,7 @@ try {
         }
 
         // Save selected branch if updated
-        $isSqlite = ($pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'sqlite');
-        if ($isSqlite) {
-            $stmt = $pdo->prepare("INSERT INTO clinic_settings (setting_key, setting_value) VALUES ('update_branch', ?) ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value");
-        } else {
-            $stmt = $pdo->prepare("INSERT INTO clinic_settings (setting_key, setting_value) VALUES ('update_branch', ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
-        }
+        $stmt = $pdo->prepare("INSERT INTO clinic_settings (setting_key, setting_value) VALUES ('update_branch', ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
         $stmt->execute([$branch]);
 
         echo json_encode(['success' => true, 'output' => trim($pullOutput)]);

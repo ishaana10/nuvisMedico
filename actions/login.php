@@ -55,6 +55,27 @@ if ($valid && $user) {
     $_SESSION['user_email'] = $user['email'];
     $_SESSION['user_role'] = $user['role'] ?? 'Doctor';
     $_SESSION['current_doctor_id'] = $user['id'];
+    $_SESSION['last_activity'] = time();
+    $_SESSION['user_agent'] = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    $_SESSION['user_ip'] = $clientIp;
+
+    // Log login activity to audit_logs
+    try {
+        $auditId = \ClinicFlow\Utils\Uuid::uuidv7();
+        $auditStmt = $pdo->prepare("INSERT INTO audit_logs (id, clinic_id, user_id, user_name, user_role, action, details, ip_address) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $auditStmt->execute([
+            $auditId,
+            'default-clinic',
+            $user['id'],
+            $user['name'],
+            $user['role'] ?? 'Doctor',
+            'USER_LOGIN',
+            'Successful user authentication',
+            $clientIp
+        ]);
+    } catch (Throwable $e) {
+        // Suppress if audit table not ready
+    }
 
     // If Developer or Administrator, automatically trigger backend database schema update
     $userRole = $_SESSION['user_role'];

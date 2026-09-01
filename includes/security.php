@@ -17,6 +17,16 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Global Security & Anti-Caching HTTP Headers
+if (!headers_sent()) {
+    header("Cache-Control: no-cache, no-store, must-revalidate, max-age=0");
+    header("Pragma: no-cache");
+    header("Expires: 0");
+    header("X-Content-Type-Options: nosniff");
+    header("X-Frame-Options: SAMEORIGIN");
+    header("X-XSS-Protection: 1; mode=block");
+}
+
 /**
  * Generate CSRF token
  */
@@ -69,6 +79,35 @@ function requireAuth(): void {
         if (isAjaxRequest()) {
             http_response_code(401);
             echo json_encode(['error' => 'Unauthenticated']);
+            exit;
+        }
+        header("Location: login.php");
+        exit;
+    }
+
+    // Inactivity timeout check (2 hours = 7200s)
+    $maxInactivity = 7200;
+    if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > $maxInactivity)) {
+        session_unset();
+        session_destroy();
+        if (isAjaxRequest()) {
+            http_response_code(401);
+            echo json_encode(['error' => 'Session expired due to inactivity.']);
+            exit;
+        }
+        header("Location: login.php?expired=1");
+        exit;
+    }
+    $_SESSION['last_activity'] = time();
+
+    // Session fingerprint check (User-Agent)
+    $currentUserAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    if (!empty($_SESSION['user_agent']) && !empty($currentUserAgent) && $_SESSION['user_agent'] !== $currentUserAgent) {
+        session_unset();
+        session_destroy();
+        if (isAjaxRequest()) {
+            http_response_code(401);
+            echo json_encode(['error' => 'Session security violation.']);
             exit;
         }
         header("Location: login.php");
